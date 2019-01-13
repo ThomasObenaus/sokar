@@ -17,8 +17,7 @@ type Connector interface {
 
 // New creates a new nomad connector
 func (cfg *Config) New(logger zerolog.Logger) (Connector, error) {
-
-	logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Connecting to nomad")
+	logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ...")
 
 	// config needed to set up a nomad api client
 	config := nomadApi.DefaultConfig()
@@ -31,10 +30,18 @@ func (cfg *Config) New(logger zerolog.Logger) (Connector, error) {
 		return nil, err
 	}
 
+	// issue test query to find out if the connection to nomad works
+	peers, err := client.Status().Peers()
+	if err != nil {
+		return nil, err
+	}
+
 	nc := &connectorImpl{
 		jobName: cfg.JobName,
 		log:     logger,
 		nomad:   client,
 	}
+
+	logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")
 	return nc, nil
 }
