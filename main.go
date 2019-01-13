@@ -20,7 +20,7 @@ func main() {
 	nomadConnectorConfig := nomadConnector.Config{
 		JobName: "ping-service",
 	}
-	nomadConnector := nomadConnectorConfig.New(log)
+	nomadConnector, _ := nomadConnectorConfig.New(log)
 
 	nomadConnector.ScaleBy(2)
 
