@@ -1,5 +1,5 @@
 .DEFAULT_GOAL				:= all
-name 								:= "sokar"
+name 								:= "sokar-bin"
 
 all: vendor build tools cover finish
 
