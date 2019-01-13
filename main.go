@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/thomasobenaus/sokar/nomadConnector"
 )
 
@@ -8,6 +10,9 @@ func main() {
 
 	// parse commandline args and consume environment variables
 	parsedArgs := parseArgs()
+	if !parsedArgs.validateArgs() {
+		os.Exit(1)
+	}
 
 	// set up logging
 	lCfg := LoggingCfg{
@@ -20,7 +25,10 @@ func main() {
 	nomadConnectorConfig := nomadConnector.Config{
 		JobName: "ping-service",
 	}
-	nomadConnector, _ := nomadConnectorConfig.New(log)
+	nomadConnector, err := nomadConnectorConfig.New(log)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed setting up nomad connector")
+	}
 
 	nomadConnector.ScaleBy(2)
 
