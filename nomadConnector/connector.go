@@ -1,16 +1,19 @@
 package nomadConnector
 
-type NomadCfg struct {
+type Config struct {
+	JobName string
 }
 
-// NomadConnector defines the interface of the component being able to communicate with nomad
-type NomadConnector interface {
-	ScaleBy(jobName string, amount int) error
+// Connector defines the interface of the component being able to communicate with nomad
+type Connector interface {
+	ScaleBy(amount int) error
 }
 
 // New creates a new nomad connector
-func (cfg *NomadCfg) New() NomadConnector {
-	nc := &nomadConnectorImpl{}
+func (cfg *Config) New() Connector {
+	nc := &connectorImpl{
+		jobName: cfg.JobName,
+	}
 
 	return nc
 }

@@ -15,12 +15,14 @@ func main() {
 		UseStructuredLogging:       parsedArgs.StructuredLogging,
 		UseUnixTimestampForLogging: parsedArgs.UseUnixTimestampForLogging,
 	}
-	log := NewLogger(lCfg)
+	log := lCfg.New()
 
-	nomadCfg := nomadConnector.NomadCfg{}
-	nomadConnector := nomadCfg.New()
+	nomadConnectorConfig := nomadConnector.Config{
+		JobName: "ping-service",
+	}
+	nomadConnector := nomadConnectorConfig.New()
 
-	nomadConnector.ScaleBy("ping-service", 2)
+	nomadConnector.ScaleBy(2)
 
 	log.Info().Float64("duration", 29.343).Str("region", "ED01").Msg("hello world")
 

@@ -1,8 +1,9 @@
 package nomadConnector
 
-type nomadConnectorImpl struct {
+type connectorImpl struct {
+	jobName string
 }
 
-func (nc *nomadConnectorImpl) ScaleBy(jobName string, amount int) error {
+func (nc *connectorImpl) ScaleBy(amount int) error {
 	return nil
 }
