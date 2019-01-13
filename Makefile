@@ -1,7 +1,7 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
-all: vendor build tools cover finish
+all: build tools cover finish
 
 .PHONY: test
 test:

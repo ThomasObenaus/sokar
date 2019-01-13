@@ -14,10 +14,10 @@ type LoggingCfg struct {
 	UseUnixTimestampForLogging bool
 }
 
-// NewLogger creates a new logger object with a given log-channel name
-func NewLogger(loggingCfg LoggingCfg) zerolog.Logger {
+// New creates a new logger object with a given log-channel name
+func (lc *LoggingCfg) New() zerolog.Logger {
 
-	if loggingCfg.UseUnixTimestampForLogging {
+	if lc.UseUnixTimestampForLogging {
 		// UNIX Time is faster and smaller than most timestamps
 		// If you set zerolog.TimeFieldFormat to an empty string,
 		// logs will write with UNIX time
@@ -25,10 +25,10 @@ func NewLogger(loggingCfg LoggingCfg) zerolog.Logger {
 	}
 
 	var logger zerolog.Logger
-	if loggingCfg.UseStructuredLogging {
-		logger = zerolog.New(os.Stdout).With().Timestamp().Str("logger", loggingCfg.LoggerName).Logger()
+	if lc.UseStructuredLogging {
+		logger = zerolog.New(os.Stdout).With().Timestamp().Str("logger", lc.LoggerName).Logger()
 	} else {
-		logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str("logger", loggingCfg.LoggerName).Logger()
+		logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str("logger", lc.LoggerName).Logger()
 	}
 
 	return logger

@@ -24,7 +24,6 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [prune]
   go-tests = true
   unused-packages = true
@@ -34,9 +33,9 @@
   version = "1.11.0"
 
 [[constraint]]
-  name = "github.com/mitchellh/cli"
-  version = "1.0.0"
-
-[[constraint]]
   name = "github.com/namsral/flag"
   version = "1.7.4-pre"
+
+[[constraint]]
+  name = "github.com/hashicorp/nomad"
+  version = "0.8.7"
