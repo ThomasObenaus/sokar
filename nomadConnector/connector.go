@@ -1,5 +1,9 @@
 package nomadConnector
 
+import (
+	"github.com/rs/zerolog"
+)
+
 type Config struct {
 	JobName string
 }
@@ -10,9 +14,10 @@ type Connector interface {
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New() Connector {
+func (cfg *Config) New(logger zerolog.Logger) Connector {
 	nc := &connectorImpl{
 		jobName: cfg.JobName,
+		log:     logger,
 	}
 
 	return nc
