@@ -2,7 +2,6 @@ package nomadConnector
 
 import (
 	nomadApi "github.com/hashicorp/nomad/api"
-	"github.com/replicator/logging"
 )
 
 // queryOptions sets sokars default QueryOptions for making GET calls to
@@ -16,43 +15,50 @@ func (nc *connectorImpl) ScaleBy(amount int) error {
 
 	// In order to scale the job, we need information on the current status of the
 	// running job from Nomad.
-	_, _, err := nc.nomad.Jobs().Info(nc.jobName, nc.queryOptions())
+	jobInfo, _, err := nc.nomad.Jobs().Info(nc.jobName, nc.queryOptions())
 
 	if err != nil {
-		logging.Error("client/job_scaling: unable to determine job info of %v: %v", nc.jobName, err)
+		nc.log.Error().Err(err).Msg("Unable to determine job info")
 		return err
 	}
 
-	//// Use the current task count in order to determine whether or not a scaling
-	//// event will violate the min/max job policy.
-	//for i, taskGroup := range jobResp.TaskGroups {
-	//	if group.ScaleDirection == ScalingDirectionOut && *taskGroup.Count >= group.Max ||
-	//		group.ScaleDirection == ScalingDirectionIn && *taskGroup.Count <= group.Min {
-	//		logging.Debug("client/job_scaling: scale %v not permitted due to constraints on job \"%v\" and group \"%v\"",
-	//			group.ScaleDirection, *jobResp.ID, group.GroupName)
-	//		return
-	//	}
-	//
-	//	logging.Info("client/job_scaling: scale %v will now be initiated against job \"%v\" and group \"%v\"",
-	//		group.ScaleDirection, jobName, group.GroupName)
-	//
-	//	// Depending on the scaling direction decrement/incrament the count;
-	//	// currently replicator only supports addition/subtraction of 1.
-	//	if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionOut {
-	//		*jobResp.TaskGroups[i].Count++
-	//		state.ScaleOutRequests++
-	//	}
-	//
-	//	if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionIn {
-	//		*jobResp.TaskGroups[i].Count--
-	//		state.ScaleInRequests++
-	//	}
-	//}
-	//
-	//// Submit the job to the Register API endpoint with the altered count number
-	//// and check that no error is returned.
-	//resp, _, err := c.nomad.Jobs().Register(jobResp, &nomad.WriteOptions{})
-	//
+	// Use the current task count in order to determine whether or not a scaling
+	// event will violate the min/max job policy.
+	for i, _ := range jobInfo.TaskGroups {
+		//if group.ScaleDirection == ScalingDirectionOut && *taskGroup.Count >= group.Max ||
+		//	group.ScaleDirection == ScalingDirectionIn && *taskGroup.Count <= group.Min {
+		//	logging.Debug("client/job_scaling: scale %v not permitted due to constraints on job \"%v\" and group \"%v\"",
+		//		group.ScaleDirection, *jobInfo.ID, group.GroupName)
+		//	return
+		//}
+
+		//logging.Info("client/job_scaling: scale %v will now be initiated against job \"%v\" and group \"%v\"",
+		//	group.ScaleDirection, jobName, group.GroupName)
+
+		// Depending on the scaling direction decrement/incrament the count;
+		// currently replicator only supports addition/subtraction of 1.
+		//if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionOut {
+		//	*jobResp.TaskGroups[i].Count++
+		//	state.ScaleOutRequests++
+		//}
+		//
+		//if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionIn {
+		//	*jobResp.TaskGroups[i].Count--
+		//	state.ScaleInRequests++
+		//}
+
+		*jobInfo.TaskGroups[i].Count++
+	}
+
+	// Submit the job to the Register API endpoint with the altered count number
+	// and check that no error is returned.
+	_, _, err = nc.nomad.Jobs().Register(jobInfo, &nomadApi.WriteOptions{})
+
+	if err != nil {
+		nc.log.Error().Err(err).Msg("Unable to scale")
+		return err
+	}
+
 	//// Track the scaling submission time.
 	//state.LastScalingEvent = time.Now()
 	//if err != nil {
@@ -63,8 +69,8 @@ func (nc *connectorImpl) ScaleBy(amount int) error {
 	//// Setup our metric scaling direction namespace.
 	//m := fmt.Sprintf("scale_%s", strings.ToLower(group.ScaleDirection))
 	//
-	//success := c.scaleConfirmation(resp.EvalID)
-	//
+	//success := nc.scaleConfirmation(resp.EvalID)
+
 	//if !success {
 	//	metrics.IncrCounter([]string{"job", jobName, group.GroupName, m, "failure"}, 1)
 	//	state.FailureCount++
