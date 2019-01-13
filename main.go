@@ -23,7 +23,7 @@ func main() {
 	log := lCfg.New()
 
 	nomadConnectorConfig := nomadConnector.Config{
-		JobName:            "ping-service",
+		JobName:            "fabio",
 		NomadServerAddress: parsedArgs.NomadServerAddr,
 	}
 	nomadConnector, err := nomadConnectorConfig.New(log)
