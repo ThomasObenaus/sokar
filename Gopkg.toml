@@ -32,3 +32,11 @@
 [[constraint]]
   name = "github.com/rs/zerolog"
   version = "1.11.0"
+
+[[constraint]]
+  name = "github.com/mitchellh/cli"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/namsral/flag"
+  version = "1.7.4-pre"
