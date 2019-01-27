@@ -13,9 +13,9 @@ const (
 	evaluationTimeOut = 30 * time.Second
 )
 
-// queryOptions sets sokars default QueryOptions for making GET calls to
+// defaultQueryOptions sets sokars default QueryOptions for making GET calls to
 // the nomad API.
-func (nc *connectorImpl) queryOptions() (queryOptions *nomadApi.QueryOptions) {
+func (nc *connectorImpl) defaultQueryOptions() (queryOptions *nomadApi.QueryOptions) {
 	return &nomadApi.QueryOptions{AllowStale: true}
 }
 
@@ -24,8 +24,7 @@ func (nc *connectorImpl) ScaleBy(amount int) error {
 
 	// In order to scale the job, we need information on the current status of the
 	// running job from Nomad.
-	jobInfo, queryMeta, err := nc.nomad.Jobs().Info(nc.jobName, nc.queryOptions())
-	nc.log.Debug().Uint64("LastIndex", queryMeta.LastIndex).Msg("QueryMeta: ")
+	jobInfo, _, err := nc.nomad.Jobs().Info(nc.jobName, nc.defaultQueryOptions())
 
 	if err != nil {
 		nc.log.Error().Err(err).Msg("Unable to determine job info")
@@ -34,8 +33,8 @@ func (nc *connectorImpl) ScaleBy(amount int) error {
 
 	// Use the current task count in order to determine whether or not a scaling
 	// event will violate the min/max job policy.
-	for i, _ := range jobInfo.TaskGroups {
-		count := *jobInfo.TaskGroups[i].Count
+	for _, taskGroup := range jobInfo.TaskGroups {
+		count := *taskGroup.Count
 
 		//if group.ScaleDirection == ScalingDirectionOut && *taskGroup.Count >= group.Max ||
 		//	group.ScaleDirection == ScalingDirectionIn && *taskGroup.Count <= group.Min {
@@ -59,16 +58,15 @@ func (nc *connectorImpl) ScaleBy(amount int) error {
 		//	state.ScaleInRequests++
 		//}
 
-		*jobInfo.TaskGroups[i].Count = count + amount
+		*taskGroup.Count = count + amount
 	}
 
 	// Submit the job to the Register API endpoint with the altered count number
 	// and check that no error is returned.
-	jobRegisterResponse, writeMeta, err := nc.nomad.Jobs().Register(jobInfo, &nomadApi.WriteOptions{})
-	nc.log.Debug().Uint64("LastIndex", writeMeta.LastIndex).Msg("WriteMeta: ")
+	jobRegisterResponse, _, err := nc.nomad.Jobs().Register(jobInfo, &nomadApi.WriteOptions{})
 
 	if err != nil {
-		nc.log.Error().Err(err).Msg("Unable to scale")
+		nc.log.Error().Err(err).Str("Job", nc.jobName).Msg("Unable to scale")
 		return err
 	}
 
