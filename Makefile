@@ -13,7 +13,7 @@ test:
 cover: 
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests + coverage"
-	#@go test ./drawyed -v -covermode=count -coverprofile=coverage.out
+	@go test ./nomadConnector -v -covermode=count -coverprofile=coverage.out
 
 cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
