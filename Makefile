@@ -17,8 +17,8 @@ cover:
 
 cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
-	# i.e. export INFRA_VIZ_COVERALLS_REPO_TOKEN=<your token>
-	#@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${INFRA_VIZ_COVERALLS_REPO_TOKEN}
+	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
+	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
 	
 
 

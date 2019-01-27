@@ -7,3 +7,4 @@ jobs:
     steps:
       - checkout
       - run: make all
+      - run: make cover.upload
