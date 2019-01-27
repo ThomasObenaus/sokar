@@ -47,8 +47,8 @@ depend.install:
 #-- Tools
 #------------------
 tools:
-	#@go get golang.org/x/tools/cmd/cover
-	#@go get github.com/mattn/goveralls	
+	@go get golang.org/x/tools/cmd/cover
+	@go get github.com/mattn/goveralls	
 
 vendor: depend.install depend.update
 
