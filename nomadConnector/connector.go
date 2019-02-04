@@ -38,17 +38,11 @@ func (cfg *Config) New() (Connector, error) {
 		return nil, err
 	}
 
-	// issue test query to find out if the connection to nomad works
-	peers, err := client.Status().Peers()
-	if err != nil {
-		return nil, err
-	}
-
 	nc := &connectorImpl{
 		log:   cfg.Logger,
 		nomad: client,
 	}
 
-	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")
+	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ... done")
 	return nc, nil
 }
