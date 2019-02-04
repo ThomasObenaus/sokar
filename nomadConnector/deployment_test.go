@@ -3,6 +3,7 @@ package nomadConnector
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -10,35 +11,75 @@ import (
 	"github.com/thomasobenaus/sokar/test/nomadConnector"
 )
 
-func TestDeployment(t *testing.T) {
+func TestGetDeploymentID_NoIF(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	// interface missing test
 	conn := connectorImpl{}
 
-	jobInfo, err := conn.getJobInfo("unknown")
+	deplID, err := conn.getDeploymentID("ABCDEF", time.Millisecond*600)
 	assert.Error(t, err)
-	assert.Nil(t, jobInfo)
+	assert.Empty(t, deplID)
+}
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	conn = connectorImpl{
-		jobsIF: jobsIF,
+func TestGetDeploymentID_Success(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	conn := connectorImpl{
+		evalIF: evalIF,
 	}
 
-	// job not found test
-	jobsIF.EXPECT().Info("unknown", &nomadApi.QueryOptions{AllowStale: true}).Return(nil, nil, fmt.Errorf("Job not found"))
+	// success
+	deplIDWanted := "DEPL1234"
+	eval := nomadApi.Evaluation{DeploymentID: deplIDWanted}
+	evalID := "ABCDEFG"
+	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil)
 
-	jobInfo, err = conn.getJobInfo("unknown")
-	assert.Error(t, err)
-	assert.Nil(t, jobInfo)
-
-	// job found test
-	job := &nomadApi.Job{}
-	jobsIF.EXPECT().Info("test", &nomadApi.QueryOptions{AllowStale: true}).Return(job, nil, nil)
-
-	jobInfo, err = conn.getJobInfo("test")
+	deplID, err := conn.getDeploymentID(evalID, time.Millisecond*600)
 	assert.NoError(t, err)
-	assert.NotNil(t, jobInfo)
+	assert.Equal(t, deplIDWanted, deplID)
+}
+
+func TestGetDeploymentID_Timeout(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	conn := connectorImpl{
+		evalIF: evalIF,
+	}
+
+	// timeout
+	evalID := "ABCDEFG"
+	eval := nomadApi.Evaluation{}
+	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil).AnyTimes()
+
+	deplID, err := conn.getDeploymentID(evalID, time.Millisecond*600)
+	assert.Error(t, err)
+	assert.Empty(t, deplID)
+}
+
+func TestGetDeploymentID_InternalErr(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	conn := connectorImpl{
+		evalIF: evalIF,
+	}
+
+	// timeout
+	evalID := "ABCDEFG"
+	eval := nomadApi.Evaluation{}
+	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, fmt.Errorf("Internal error")).AnyTimes()
+
+	deplID, err := conn.getDeploymentID(evalID, time.Millisecond*600)
+	assert.Error(t, err)
+	assert.Empty(t, deplID)
 }

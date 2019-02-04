@@ -63,6 +63,11 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 // the given timeout was reached.s
 func (nc *connectorImpl) getDeploymentID(evalID string, timeout time.Duration) (depID string, err error) {
 
+	evalIf := nc.evalIF
+	if evalIf == nil {
+		return "", fmt.Errorf("Nomad Evaluations() interface is missing")
+	}
+
 	// retry polling the nomad api until the deployment id was obtained successfully
 	// or the evaluationTimeout was reached.
 	pollTicker := time.NewTicker(time.Millisecond * 500)
