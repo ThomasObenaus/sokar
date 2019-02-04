@@ -4,7 +4,7 @@ name 								:= "sokar-bin"
 all: build test tools cover finish
 
 .PHONY: test
-test:
+test: generate.mocks
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests"
 	@go test ./logging ./nomadConnector -v
