@@ -1,6 +1,8 @@
 package nomadConnector
 
 import (
+	"fmt"
+
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/rs/zerolog"
 )
@@ -8,6 +10,7 @@ import (
 type Config struct {
 	JobName            string
 	NomadServerAddress string
+	Logger             zerolog.Logger
 }
 
 // Connector defines the interface of the component being able to communicate with nomad
@@ -16,8 +19,13 @@ type Connector interface {
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New(logger zerolog.Logger) (Connector, error) {
-	logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ...")
+func (cfg *Config) New() (Connector, error) {
+
+	if len(cfg.NomadServerAddress) == 0 {
+		return nil, fmt.Errorf("Required configuration 'NomadServerAddress' is missing.")
+	}
+
+	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ...")
 
 	// config needed to set up a nomad api client
 	config := nomadApi.DefaultConfig()
@@ -38,10 +46,10 @@ func (cfg *Config) New(logger zerolog.Logger) (Connector, error) {
 
 	nc := &connectorImpl{
 		jobName: cfg.JobName,
-		log:     logger,
+		log:     cfg.Logger,
 		nomad:   client,
 	}
 
-	logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")
+	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")
 	return nc, nil
 }

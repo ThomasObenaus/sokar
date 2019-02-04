@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
 )
 
@@ -15,7 +16,7 @@ func main() {
 	}
 
 	// set up logging
-	lCfg := LoggingCfg{
+	lCfg := logging.LoggingCfg{
 		LoggerName:                 "sokar",
 		UseStructuredLogging:       parsedArgs.StructuredLogging,
 		UseUnixTimestampForLogging: parsedArgs.UseUnixTimestampForLogging,
@@ -26,7 +27,7 @@ func main() {
 		JobName:            "fail-service",
 		NomadServerAddress: parsedArgs.NomadServerAddr,
 	}
-	nomadConnector, err := nomadConnectorConfig.New(log)
+	nomadConnector, err := nomadConnectorConfig.New()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed setting up nomad connector")
 	}
