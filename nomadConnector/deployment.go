@@ -11,7 +11,7 @@ import (
 // waitForDeploymentConfirmation checks if the deployment forced by the scale-event was successful or not.
 func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
 
-	deplID, err := nc.getDeploymentID(evalID, 30*time.Second)
+	deplID, err := nc.getDeploymentID(evalID, timeout)
 	if err != nil {
 		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s.", evalID)
 	}
@@ -33,7 +33,7 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 
 		// Poll
 		case <-pollTicker.C:
-			deployment, queryMeta, err := nc.nomad.Deployments().Info(deplID, queryOpt)
+			deployment, queryMeta, err := nc.deploymentIF.Info(deplID, queryOpt)
 			if err != nil {
 				return err
 			}
@@ -80,7 +80,7 @@ func (nc *connectorImpl) getDeploymentID(evalID string, timeout time.Duration) (
 
 		// Retry
 		case <-pollTicker.C:
-			evaluation, _, err := nc.nomad.Evaluations().Info(evalID, nil)
+			evaluation, _, err := nc.evalIF.Info(evalID, nil)
 
 			if err != nil {
 				nc.log.Error().Str("EvalID", evalID).Err(err).Msg("Error while retrieving the deployment ID")

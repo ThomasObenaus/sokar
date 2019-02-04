@@ -10,7 +10,7 @@ import (
 	"github.com/thomasobenaus/sokar/test/nomadConnector"
 )
 
-func TestGetJobInfo(t *testing.T) {
+func TestDeployment(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -41,34 +41,4 @@ func TestGetJobInfo(t *testing.T) {
 	jobInfo, err = conn.getJobInfo("test")
 	assert.NoError(t, err)
 	assert.NotNil(t, jobInfo)
-}
-
-func TestGetJobCount(t *testing.T) {
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	conn := connectorImpl{
-		jobsIF: jobsIF,
-	}
-
-	// count 0
-	job := &nomadApi.Job{}
-	jobsIF.EXPECT().Info("test", &nomadApi.QueryOptions{AllowStale: true}).Return(job, nil, nil)
-
-	count, err := conn.GetJobCount("test")
-	assert.NoError(t, err)
-	assert.Equal(t, uint(0), count)
-
-	// count 10
-	count10 := 10
-	count5 := 5
-	job = &nomadApi.Job{
-		TaskGroups: []*nomadApi.TaskGroup{{Count: &count10}, {Count: &count5}},
-	}
-	jobsIF.EXPECT().Info("test", &nomadApi.QueryOptions{AllowStale: true}).Return(job, nil, nil)
-
-	count, err = conn.GetJobCount("test")
-	assert.NoError(t, err)
-	assert.Equal(t, uint(10), count)
 }
