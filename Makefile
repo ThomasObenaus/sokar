@@ -1,19 +1,19 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
-all: build tools cover finish
+all: build test tools cover finish
 
 .PHONY: test
 test:
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests"
-	#@go test ./drawyed -v
+	@go test ./logging ./nomadConnector -v
 
 .PHONY: cover
 cover: 
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests + coverage"
-	@go test ./nomadConnector -v -covermode=count -coverprofile=coverage.out
+	@go test ./nomadConnector ./logging -v -covermode=count -coverprofile=coverage.out
 
 cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
