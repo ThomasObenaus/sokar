@@ -16,12 +16,14 @@ func main() {
 	}
 
 	// set up logging
-	lcfg := logging.Config{
+	lCfg := logging.Config{
 		UseStructuredLogging:       parsedArgs.StructuredLogging,
 		UseUnixTimestampForLogging: parsedArgs.UseUnixTimestampForLogging,
 	}
-	loggingFactory := lcfg.New()
+	loggingFactory := lCfg.New()
 	logger := loggingFactory.NewNamedLogger("sokar")
+
+	logger.Info().Msg("Set up the scaler ...")
 
 	// Set up the nomad connector
 	nomadConnectorConfig := nomadConnector.Config{
@@ -34,6 +36,8 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up nomad connector")
 	}
+
+	logger.Info().Msg("Set up the scaler ... done")
 
 	nomadConnector.ScaleBy(2)
 
