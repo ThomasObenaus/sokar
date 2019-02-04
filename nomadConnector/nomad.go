@@ -11,7 +11,7 @@ type connectorImpl struct {
 	log zerolog.Logger
 
 	// This is the object for interacting with nomad
-	nomad *nomadApi.Client
+	nomad NomadClient
 }
 
 const (
