@@ -9,5 +9,9 @@ import (
 type NomadClient interface {
 	Deployments() *nomadApi.Deployments
 	Evaluations() *nomadApi.Evaluations
-	Jobs() *nomadApi.Jobs
+}
+
+type NomadJobs interface {
+	Info(jobID string, q *nomadApi.QueryOptions) (*nomadApi.Job, *nomadApi.QueryMeta, error)
+	Register(job *nomadApi.Job, q *nomadApi.WriteOptions) (*nomadApi.JobRegisterResponse, *nomadApi.WriteMeta, error)
 }

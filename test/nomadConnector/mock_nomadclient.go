@@ -57,14 +57,53 @@ func (mr *MockNomadClientMockRecorder) Evaluations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Evaluations", reflect.TypeOf((*MockNomadClient)(nil).Evaluations))
 }
 
-// Jobs mocks base method
-func (m *MockNomadClient) Jobs() *api.Jobs {
-	ret := m.ctrl.Call(m, "Jobs")
-	ret0, _ := ret[0].(*api.Jobs)
-	return ret0
+// MockNomadJobs is a mock of NomadJobs interface
+type MockNomadJobs struct {
+	ctrl     *gomock.Controller
+	recorder *MockNomadJobsMockRecorder
 }
 
-// Jobs indicates an expected call of Jobs
-func (mr *MockNomadClientMockRecorder) Jobs() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Jobs", reflect.TypeOf((*MockNomadClient)(nil).Jobs))
+// MockNomadJobsMockRecorder is the mock recorder for MockNomadJobs
+type MockNomadJobsMockRecorder struct {
+	mock *MockNomadJobs
+}
+
+// NewMockNomadJobs creates a new mock instance
+func NewMockNomadJobs(ctrl *gomock.Controller) *MockNomadJobs {
+	mock := &MockNomadJobs{ctrl: ctrl}
+	mock.recorder = &MockNomadJobsMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockNomadJobs) EXPECT() *MockNomadJobsMockRecorder {
+	return m.recorder
+}
+
+// Info mocks base method
+func (m *MockNomadJobs) Info(jobID string, q *api.QueryOptions) (*api.Job, *api.QueryMeta, error) {
+	ret := m.ctrl.Call(m, "Info", jobID, q)
+	ret0, _ := ret[0].(*api.Job)
+	ret1, _ := ret[1].(*api.QueryMeta)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Info indicates an expected call of Info
+func (mr *MockNomadJobsMockRecorder) Info(jobID, q interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockNomadJobs)(nil).Info), jobID, q)
+}
+
+// Register mocks base method
+func (m *MockNomadJobs) Register(job *api.Job, q *api.WriteOptions) (*api.JobRegisterResponse, *api.WriteMeta, error) {
+	ret := m.ctrl.Call(m, "Register", job, q)
+	ret0, _ := ret[0].(*api.JobRegisterResponse)
+	ret1, _ := ret[1].(*api.WriteMeta)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Register indicates an expected call of Register
+func (mr *MockNomadJobsMockRecorder) Register(job, q interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockNomadJobs)(nil).Register), job, q)
 }

@@ -11,7 +11,8 @@ type connectorImpl struct {
 	log zerolog.Logger
 
 	// This is the object for interacting with nomad
-	nomad NomadClient
+	nomad  NomadClient
+	jobsIF NomadJobs
 }
 
 const (
@@ -63,7 +64,7 @@ func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
 
 	// Submit the job to the Register API endpoint with the altered count number
 	// and check that no error is returned.
-	jobRegisterResponse, _, err := nc.nomad.Jobs().Register(jobInfo, &nomadApi.WriteOptions{})
+	jobRegisterResponse, _, err := nc.jobsIF.Register(jobInfo, &nomadApi.WriteOptions{})
 
 	if err != nil {
 		nc.log.Error().Err(err).Str("Job", jobname).Msg("Unable to scale")
