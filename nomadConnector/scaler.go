@@ -19,7 +19,7 @@ func (nc *connectorImpl) defaultQueryOptions() (queryOptions *nomadApi.QueryOpti
 	return &nomadApi.QueryOptions{AllowStale: true}
 }
 
-func (nc *connectorImpl) ScaleBy(amount int) error {
+func (nc *connectorImpl) SetJobCount(jobname, count int) error {
 	nc.log.Info().Str("job", nc.jobName).Int("amount", amount).Msg("Scaling ...")
 
 	// In order to scale the job, we need information on the current status of the

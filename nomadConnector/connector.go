@@ -8,14 +8,13 @@ import (
 )
 
 type Config struct {
-	JobName            string
 	NomadServerAddress string
 	Logger             zerolog.Logger
 }
 
 // Connector defines the interface of the component being able to communicate with nomad
 type Connector interface {
-	ScaleBy(amount int) error
+	SetJobCount(jobname string, count int) error
 }
 
 // New creates a new nomad connector
