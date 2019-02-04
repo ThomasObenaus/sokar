@@ -44,9 +44,8 @@ func (cfg *Config) New() (Connector, error) {
 	}
 
 	nc := &connectorImpl{
-		jobName: cfg.JobName,
-		log:     cfg.Logger,
-		nomad:   client,
+		log:   cfg.Logger,
+		nomad: client,
 	}
 
 	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")

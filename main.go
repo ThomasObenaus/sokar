@@ -27,7 +27,6 @@ func main() {
 
 	// Set up the nomad connector
 	nomadConnectorConfig := nomadConnector.Config{
-		JobName:            "fail-service",
 		NomadServerAddress: parsedArgs.NomadServerAddr,
 		Logger:             loggingFactory.NewNamedLogger("sokar.nomad"),
 	}
@@ -39,6 +38,6 @@ func main() {
 
 	logger.Info().Msg("Set up the scaler ... done")
 
-	nomadConnector.ScaleBy(2)
+	nomadConnector.SetJobCount("fail-service", 2)
 
 }
