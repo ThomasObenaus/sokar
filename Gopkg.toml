@@ -37,5 +37,9 @@
   version = "1.7.4-pre"
 
 [[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.2"
+
+[[constraint]]
   name = "github.com/hashicorp/nomad"
   version = "0.8.7"
