@@ -26,7 +26,7 @@ func (nc *connectorImpl) defaultQueryOptions() (queryOptions *nomadApi.QueryOpti
 }
 
 func (nc *connectorImpl) SetJobCount(jobname string, count int) error {
-	nc.log.Info().Str("job", jobname).Int("count", count).Msg("Adjusting job count ...")
+	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
 
 	// In order to scale the job, we need information on the current status of the
 	// running job from Nomad.
@@ -40,29 +40,7 @@ func (nc *connectorImpl) SetJobCount(jobname string, count int) error {
 	// Use the current task count in order to determine whether or not a scaling
 	// event will violate the min/max job policy.
 	for _, taskGroup := range jobInfo.TaskGroups {
-
-		//if group.ScaleDirection == ScalingDirectionOut && *taskGroup.Count >= group.Max ||
-		//	group.ScaleDirection == ScalingDirectionIn && *taskGroup.Count <= group.Min {
-		//	logging.Debug("client/job_scaling: scale %v not permitted due to constraints on job \"%v\" and group \"%v\"",
-		//		group.ScaleDirection, *jobInfo.ID, group.GroupName)
-		//	return
-		//}
-
-		//logging.Info("client/job_scaling: scale %v will now be initiated against job \"%v\" and group \"%v\"",
-		//	group.ScaleDirection, jobName, group.GroupName)
-
-		// Depending on the scaling direction decrement/incrament the count;
-		// currently replicator only supports addition/subtraction of 1.
-		//if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionOut {
-		//	*jobResp.TaskGroups[i].Count++
-		//	state.ScaleOutRequests++
-		//}
-		//
-		//if *taskGroup.Name == group.GroupName && group.ScaleDirection == ScalingDirectionIn {
-		//	*jobResp.TaskGroups[i].Count--
-		//	state.ScaleInRequests++
-		//}
-
+		nc.log.Info().Str("job", jobname).Str("grp", *taskGroup.Name).Msgf("Adjust count of group from %d to %d.", *taskGroup.Count, count)
 		*taskGroup.Count = count
 	}
 
@@ -75,32 +53,15 @@ func (nc *connectorImpl) SetJobCount(jobname string, count int) error {
 		return err
 	}
 
-	//// Track the scaling submission time.
-	//state.LastScalingEvent = time.Now()
-	//if err != nil {
-	//	logging.Error("client/job_scaling: issue submitting job %s for scaling action: %v", jobName, err)
-	//	return
-	//}
-	//
-	//// Setup our metric scaling direction namespace.
-	//m := fmt.Sprintf("scale_%s", strings.ToLower(group.ScaleDirection))
-	//
+	nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... ")
+
 	err = nc.waitForDeploymentConfirmation(jobRegisterResponse.EvalID, 15*time.Minute)
+
 	if err != nil {
-		nc.log.Error().Err(err).Msg("Failed scaling")
+		nc.log.Error().Err(err).Msg("Deployment failed")
 	}
 
-	//if !success {
-	//	metrics.IncrCounter([]string{"job", jobName, group.GroupName, m, "failure"}, 1)
-	//	state.FailureCount++
-	//
-	//	return
-	//}
-	//
-	//metrics.IncrCounter([]string{"job", jobName, group.GroupName, m, "success"}, 1)
-	//logging.Info("client/job_scaling: scaling of job \"%v\" and group \"%v\" successfully completed",
-	//	jobName, group.GroupName)
+	nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... done")
 
-	nc.log.Info().Str("job", jobname).Int("count", count).Msg("Adjusting job count ... done")
 	return nil
 }
