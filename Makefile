@@ -4,7 +4,7 @@ name 								:= "sokar-bin"
 all: build test tools cover finish
 
 .PHONY: test
-test:
+test: generate.mocks
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests"
 	@go test ./logging ./nomadConnector -v
@@ -48,7 +48,14 @@ depend.install:
 #------------------
 tools:
 	@go get golang.org/x/tools/cmd/cover
-	@go get github.com/mattn/goveralls	
+	@go get github.com/mattn/goveralls
+
+generate.mocks:
+	@echo "----------------------------------------------------------------------------------"
+	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
+	@go get github.com/golang/mock/gomock
+	@go install github.com/golang/mock/mockgen
+	@mockgen -source=nomadConnector/nomadclient.go -destination test/nomadConnector/mock_nomadclient.go 
 
 vendor: depend.install depend.update
 

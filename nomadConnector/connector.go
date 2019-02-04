@@ -8,14 +8,14 @@ import (
 )
 
 type Config struct {
-	JobName            string
 	NomadServerAddress string
 	Logger             zerolog.Logger
 }
 
 // Connector defines the interface of the component being able to communicate with nomad
 type Connector interface {
-	ScaleBy(amount int) error
+	SetJobCount(jobname string, count uint) error
+	GetJobCount(jobname string) (uint, error)
 }
 
 // New creates a new nomad connector
@@ -38,18 +38,13 @@ func (cfg *Config) New() (Connector, error) {
 		return nil, err
 	}
 
-	// issue test query to find out if the connection to nomad works
-	peers, err := client.Status().Peers()
-	if err != nil {
-		return nil, err
-	}
-
 	nc := &connectorImpl{
-		jobName: cfg.JobName,
-		log:     cfg.Logger,
-		nomad:   client,
+		log:          cfg.Logger,
+		jobsIF:       client.Jobs(),
+		deploymentIF: client.Deployments(),
+		evalIF:       client.Evaluations(),
 	}
 
-	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Int("#peers", len(peers)).Msg("Setting up nomad connector ... done")
+	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ... done")
 	return nc, nil
 }
