@@ -25,15 +25,32 @@ func (nc *connectorImpl) defaultQueryOptions() (queryOptions *nomadApi.QueryOpti
 	return &nomadApi.QueryOptions{AllowStale: true}
 }
 
-func (nc *connectorImpl) SetJobCount(jobname string, count int) error {
-	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
-
-	// In order to scale the job, we need information on the current status of the
-	// running job from Nomad.
-	jobInfo, _, err := nc.nomad.Jobs().Info(jobname, nc.defaultQueryOptions())
+func (nc *connectorImpl) GetJobCount(jobname string) (uint, error) {
+	jobInfo, err := nc.getJobInfo(jobname)
 
 	if err != nil {
-		nc.log.Error().Err(err).Msg("Unable to determine job info")
+		return 0, err
+	}
+
+	// HACK: To unify the multiple groups with we take the job with max count.
+
+	var count int
+	for _, taskGroup := range jobInfo.TaskGroups {
+		if *taskGroup.Count > count {
+			count = *taskGroup.Count
+		}
+	}
+
+	return uint(count), nil
+}
+
+func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
+	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
+
+	// obtain current status about the job
+	jobInfo, err := nc.getJobInfo(jobname)
+
+	if err != nil {
 		return err
 	}
 
@@ -41,7 +58,7 @@ func (nc *connectorImpl) SetJobCount(jobname string, count int) error {
 	// event will violate the min/max job policy.
 	for _, taskGroup := range jobInfo.TaskGroups {
 		nc.log.Info().Str("job", jobname).Str("grp", *taskGroup.Name).Msgf("Adjust count of group from %d to %d.", *taskGroup.Count, count)
-		*taskGroup.Count = count
+		*taskGroup.Count = int(count)
 	}
 
 	// Submit the job to the Register API endpoint with the altered count number

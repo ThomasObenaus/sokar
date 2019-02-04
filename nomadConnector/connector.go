@@ -14,7 +14,8 @@ type Config struct {
 
 // Connector defines the interface of the component being able to communicate with nomad
 type Connector interface {
-	SetJobCount(jobname string, count int) error
+	SetJobCount(jobname string, count uint) error
+	GetJobCount(jobname string) (uint, error)
 }
 
 // New creates a new nomad connector
