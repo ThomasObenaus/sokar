@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/thomasobenaus/sokar/logging"
@@ -16,7 +17,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	jobname := "fail-service"
+	jobname := parsedArgs.JobName
+	scaleBy := parsedArgs.ScaleBy
 
 	// set up logging
 	lCfg := logging.Config{
@@ -27,31 +29,39 @@ func main() {
 	logger := loggingFactory.NewNamedLogger("sokar")
 
 	logger.Info().Msg("Set up the scaler ...")
+	scaler, err := setupScaler(jobname, 1, 10, parsedArgs.NomadServerAddr, loggingFactory)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
+	}
+	logger.Info().Msg("Set up the scaler ... done")
+
+	err = scaler.ScaleBy(scaleBy)
+	if err != nil {
+		logger.Error().Err(err).Msg("Failed to scale.")
+	}
+}
+
+func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (scaler.Scaler, error) {
 
 	// Set up the nomad connector
-	nomadConnectorConfig := nomadConnector.NewDefaultConfig(parsedArgs.NomadServerAddr)
-	nomadConnectorConfig.Logger = loggingFactory.NewNamedLogger("sokar.nomad")
+	nomadConnectorConfig := nomadConnector.NewDefaultConfig(nomadSrvAddr)
+	nomadConnectorConfig.Logger = logF.NewNamedLogger("sokar.nomad")
 	nomadConnector, err := nomadConnectorConfig.New()
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed setting up nomad connector")
+		return nil, fmt.Errorf("Failed setting up nomad connector: %s.", err)
 	}
 
 	scaCfg := scaler.Config{
-		JobName:  jobname,
-		MinCount: 1,
-		MaxCount: 10,
-		Logger:   loggingFactory.NewNamedLogger("sokar.scaler"),
+		JobName:  jobName,
+		MinCount: min,
+		MaxCount: max,
+		Logger:   logF.NewNamedLogger("sokar.scaler"),
 	}
 
 	scaler, err := scaCfg.New(nomadConnector)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed setting up scaler")
+		return nil, fmt.Errorf("Failed setting up scaler: %s.", err)
 	}
 
-	logger.Info().Msg("Set up the scaler ... done")
-
-	err = scaler.ScaleBy(-5)
-	if err != nil {
-		logger.Error().Err(err).Msg("Failed to scale.")
-	}
+	return scaler, nil
 }

@@ -62,7 +62,7 @@ vendor: depend.install depend.update
 run: build
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run ${name}"
-	@./${name} --nomad-server-address="http://192.168.0.236:4646"
+	@./${name} --nomad-server-address="http://192.168.0.236:4646" --job-name="fail-service" --scale-by=1
 
 finish:
 	@echo "=================================================================================="

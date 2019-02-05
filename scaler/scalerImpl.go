@@ -38,17 +38,18 @@ func (s *scalerImpl) ScaleBy(amount int) error {
 	if newCountTmp < 0 {
 		newCount = 0
 	}
+	countWanted := newCount
 
 	// check if count exceeds minimum
 	if newCount < s.job.minCount {
 		newCount = s.job.minCount
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated. Scale %s limited to %d.", s.job.minCount, scaleTypeStr, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", s.job.minCount, countWanted, count, scaleTypeStr, newCount)
 	}
 
 	// check if count exceeds maximum
 	if newCount > s.job.maxCount {
 		newCount = s.job.maxCount
-		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated. Scale %s limited to %d.", s.job.maxCount, scaleTypeStr, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", s.job.maxCount, countWanted, count, scaleTypeStr, newCount)
 	}
 
 	diff := int(math.Abs(float64(newCount) - float64(count)))
