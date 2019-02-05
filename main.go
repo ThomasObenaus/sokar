@@ -5,6 +5,7 @@ import (
 
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
+	"github.com/thomasobenaus/sokar/scaler"
 )
 
 func main() {
@@ -14,6 +15,8 @@ func main() {
 	if !parsedArgs.validateArgs() {
 		os.Exit(1)
 	}
+
+	jobname := "fail-service"
 
 	// set up logging
 	lCfg := logging.Config{
@@ -33,15 +36,22 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed setting up nomad connector")
 	}
 
+	scaCfg := scaler.Config{
+		JobName:  jobname,
+		MinCount: 1,
+		MaxCount: 10,
+		Logger:   loggingFactory.NewNamedLogger("sokar.scaler"),
+	}
+
+	scaler, err := scaCfg.New(nomadConnector)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed setting up scaler")
+	}
+
 	logger.Info().Msg("Set up the scaler ... done")
 
-	jobname := "fail-service"
-	count, err := nomadConnector.GetJobCount(jobname)
+	err = scaler.ScaleBy(-5)
 	if err != nil {
-		logger.Error().Err(err)
-	}
-	err = nomadConnector.SetJobCount(jobname, count+20)
-	if err != nil {
-		logger.Error().Err(err)
+		logger.Error().Err(err).Msg("Failed to scale.")
 	}
 }
