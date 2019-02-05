@@ -31,10 +31,9 @@ func TestWaitForDeploymentConfirmation_Success(t *testing.T) {
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
 
 	deplID := "DEPL1234"
 	eval := nomadApi.Evaluation{DeploymentID: deplID}
@@ -56,10 +55,9 @@ func TestWaitForDeploymentConfirmation_Timeout(t *testing.T) {
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
 
 	deplID := "DEPL1234"
 	eval := nomadApi.Evaluation{DeploymentID: deplID}
@@ -81,10 +79,9 @@ func TestWaitForDeploymentConfirmation_Failed(t *testing.T) {
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
 
 	deplID := "DEPL1234"
 	eval := nomadApi.Evaluation{DeploymentID: deplID}
@@ -106,10 +103,9 @@ func TestWaitForDeploymentConfirmation_Nil(t *testing.T) {
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
 
 	deplID := "DEPL1234"
 	eval := nomadApi.Evaluation{DeploymentID: deplID}
@@ -129,9 +125,8 @@ func TestGetDeploymentID_Success(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	conn := connectorImpl{
-		evalIF: evalIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
 
 	// success
 	deplIDWanted := "DEPL1234"
@@ -150,9 +145,8 @@ func TestGetDeploymentID_Timeout(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	conn := connectorImpl{
-		evalIF: evalIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
 
 	// timeout
 	evalID := "ABCDEFG"
@@ -170,9 +164,8 @@ func TestGetDeploymentID_InternalErr(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	conn := connectorImpl{
-		evalIF: evalIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
 
 	// timeout
 	evalID := "ABCDEFG"

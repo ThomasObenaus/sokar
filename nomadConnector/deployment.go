@@ -20,7 +20,7 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 
 	deplID, err := nc.getDeploymentID(evalID, nc.evaluationTimeOut)
 	if err != nil {
-		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s.", evalID)
+		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s: %s", evalID, err.Error())
 	}
 
 	// Retry/ poll nomad each 500ms

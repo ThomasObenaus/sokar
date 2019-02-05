@@ -3,6 +3,7 @@ package nomadConnector
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -11,22 +12,28 @@ import (
 	"github.com/thomasobenaus/sokar/test/nomadConnector"
 )
 
+func minimalConnectorImpl() connectorImpl {
+	conn := connectorImpl{
+		deploymentTimeOut: time.Second * 20,
+		evaluationTimeOut: time.Second * 10,
+	}
+	return conn
+}
+
 func TestGetJobInfo(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	// interface missing test
-	conn := connectorImpl{}
+	conn := minimalConnectorImpl()
 
 	jobInfo, err := conn.getJobInfo("unknown")
 	assert.Error(t, err)
 	assert.Nil(t, jobInfo)
 
 	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	conn = connectorImpl{
-		jobsIF: jobsIF,
-	}
+	conn.jobsIF = jobsIF
 
 	// job not found test
 	jobsIF.EXPECT().Info("unknown", &nomadApi.QueryOptions{AllowStale: true}).Return(nil, nil, fmt.Errorf("Job not found"))
@@ -52,11 +59,11 @@ func TestSetJobInfo_Success(t *testing.T) {
 	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-		jobsIF:       jobsIF,
-	}
+
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
+	conn.jobsIF = jobsIF
 
 	// GetJobInfo
 	count10 := 10
@@ -95,11 +102,11 @@ func TestSetJobInfo_InternalError(t *testing.T) {
 	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-		jobsIF:       jobsIF,
-	}
+
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
+	conn.jobsIF = jobsIF
 
 	// GetJobInfo
 	count10 := 10
@@ -126,11 +133,11 @@ func TestSetJobInfo_DeploymentError(t *testing.T) {
 	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
 	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
 	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
-	conn := connectorImpl{
-		evalIF:       evalIF,
-		deploymentIF: deplIF,
-		jobsIF:       jobsIF,
-	}
+
+	conn := minimalConnectorImpl()
+	conn.evalIF = evalIF
+	conn.deploymentIF = deplIF
+	conn.jobsIF = jobsIF
 
 	// GetJobInfo
 	count10 := 10
@@ -166,9 +173,8 @@ func TestGetJobCount(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	conn := connectorImpl{
-		jobsIF: jobsIF,
-	}
+	conn := minimalConnectorImpl()
+	conn.jobsIF = jobsIF
 
 	// count 0
 	job := &nomadApi.Job{}
