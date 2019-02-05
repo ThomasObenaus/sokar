@@ -13,12 +13,10 @@ type connectorImpl struct {
 	jobsIF       NomadJobs
 	deploymentIF NomadDeployments
 	evalIF       NomadEvaluations
-}
 
-const (
-	deploymentTimeOut = 15 * time.Minute
-	evaluationTimeOut = 30 * time.Second
-)
+	deploymentTimeOut time.Duration
+	evaluationTimeOut time.Duration
+}
 
 // defaultQueryOptions sets sokars default QueryOptions for making GET calls to
 // the nomad API.

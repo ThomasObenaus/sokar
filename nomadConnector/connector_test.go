@@ -20,3 +20,7 @@ func TestNewConnector(t *testing.T) {
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 }
+
+func ExampleConfig_New() {
+
+}

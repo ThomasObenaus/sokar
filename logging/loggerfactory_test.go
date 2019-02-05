@@ -46,7 +46,7 @@ func TestNewNamedLogger(t *testing.T) {
 	assert.Contains(t, strout.String(), "MyTestLogger2")
 }
 
-func Example() {
+func ExampleConfig_New() {
 	cfg := Config{UseStructuredLogging: true}
 
 	// create the factory

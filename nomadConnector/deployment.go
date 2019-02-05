@@ -8,10 +8,17 @@ import (
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 )
 
+func (nc *connectorImpl) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
+	nc.log.Debug().Str("DeplID", deplID).Msgf("Deployment still in progress (%s).", deployment.StatusDescription)
+	for tgName, deplState := range deployment.TaskGroups {
+		nc.log.Debug().Str("DeplID", deplID).Msgf("taskGroup=%s, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d", tgName, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
+	}
+}
+
 // waitForDeploymentConfirmation checks if the deployment forced by the scale-event was successful or not.
 func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
 
-	deplID, err := nc.getDeploymentID(evalID, timeout)
+	deplID, err := nc.getDeploymentID(evalID, nc.evaluationTimeOut)
 	if err != nil {
 		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s.", evalID)
 	}
@@ -22,7 +29,7 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 
 	deploymentTimeOut := time.After(timeout)
 
-	queryOpt := &nomadApi.QueryOptions{WaitIndex: 1, AllowStale: true}
+	queryOpt := &nomadApi.QueryOptions{WaitIndex: 1, AllowStale: true, WaitTime: time.Second * 15}
 
 	for {
 		select {
@@ -45,18 +52,21 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 			// Wait/ redo until the waitIndex was transcended
 			// It makes no sense to evaluate results earlier
 			if queryMeta.LastIndex <= queryOpt.WaitIndex {
+				nc.log.Warn().Str("DeplID", deplID).Msgf("Waitindex not exceeded yet (lastIdx=%d, waitIdx=%d). Probably resources are exhausted.", queryMeta.LastIndex, queryOpt.WaitIndex)
+				nc.printDeploymentProgress(deplID, deployment)
 				continue
 			}
+
 			queryOpt.WaitIndex = queryMeta.LastIndex
 
 			// Check the deployment status.
 			if deployment.Status == nomadstructs.DeploymentStatusSuccessful {
 				return nil
 			} else if deployment.Status == nomadstructs.DeploymentStatusRunning {
-				nc.log.Debug().Str("DeplID", deplID).Msg("Deployment still in progress.")
+				nc.printDeploymentProgress(deplID, deployment)
 				continue
 			} else {
-				return fmt.Errorf("Deployment (%s) failed with status %s", deplID, deployment.Status)
+				return fmt.Errorf("Deployment (%s) failed with status %s (%s).", deplID, deployment.Status, deployment.StatusDescription)
 			}
 		}
 	}

@@ -26,11 +26,8 @@ func main() {
 	logger.Info().Msg("Set up the scaler ...")
 
 	// Set up the nomad connector
-	nomadConnectorConfig := nomadConnector.Config{
-		NomadServerAddress: parsedArgs.NomadServerAddr,
-		Logger:             loggingFactory.NewNamedLogger("sokar.nomad"),
-	}
-
+	nomadConnectorConfig := nomadConnector.NewDefaultConfig(parsedArgs.NomadServerAddr)
+	nomadConnectorConfig.Logger = loggingFactory.NewNamedLogger("sokar.nomad")
 	nomadConnector, err := nomadConnectorConfig.New()
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up nomad connector")
@@ -43,7 +40,7 @@ func main() {
 	if err != nil {
 		logger.Error().Err(err)
 	}
-	err = nomadConnector.SetJobCount(jobname, count+2)
+	err = nomadConnector.SetJobCount(jobname, count+20)
 	if err != nil {
 		logger.Error().Err(err)
 	}

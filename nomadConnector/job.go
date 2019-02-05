@@ -2,7 +2,6 @@ package nomadConnector
 
 import (
 	"fmt"
-	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 )
@@ -73,7 +72,7 @@ func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
 
 	nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... ")
 
-	err = nc.waitForDeploymentConfirmation(jobRegisterResponse.EvalID, 15*time.Minute)
+	err = nc.waitForDeploymentConfirmation(jobRegisterResponse.EvalID, nc.deploymentTimeOut)
 
 	if err != nil {
 		nc.log.Error().Err(err).Msg("Deployment failed")

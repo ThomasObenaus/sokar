@@ -2,20 +2,39 @@ package nomadConnector
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
-
-type Config struct {
-	NomadServerAddress string
-	Logger             zerolog.Logger
-}
 
 // Connector defines the interface of the component being able to communicate with nomad
 type Connector interface {
 	SetJobCount(jobname string, count uint) error
 	GetJobCount(jobname string) (uint, error)
+}
+
+// Config contains the main configuration for the nomad connector
+type Config struct {
+	NomadServerAddress string
+	Logger             zerolog.Logger
+
+	// DeploymentTimeOut reflects the timeout sokar will wait (at max) for a deployment to be applied.
+	DeploymentTimeOut time.Duration
+	// EvaluationTimeOut reflects the timeout sokar will wait (at max) for gathering information about evaluations.
+	EvaluationTimeOut time.Duration
+}
+
+// NewDefaultConfig returns a good default configuration for the nomad connector
+func NewDefaultConfig(nomadServerAddress string) Config {
+	return Config{
+		NomadServerAddress: nomadServerAddress,
+		Logger:             log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str("logger", "sokar").Logger(),
+		DeploymentTimeOut:  1 * time.Minute,
+		EvaluationTimeOut:  30 * time.Second,
+	}
 }
 
 // New creates a new nomad connector
@@ -39,10 +58,12 @@ func (cfg *Config) New() (Connector, error) {
 	}
 
 	nc := &connectorImpl{
-		log:          cfg.Logger,
-		jobsIF:       client.Jobs(),
-		deploymentIF: client.Deployments(),
-		evalIF:       client.Evaluations(),
+		log:               cfg.Logger,
+		jobsIF:            client.Jobs(),
+		deploymentIF:      client.Deployments(),
+		evalIF:            client.Evaluations(),
+		deploymentTimeOut: cfg.DeploymentTimeOut,
+		evaluationTimeOut: cfg.EvaluationTimeOut,
 	}
 
 	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ... done")
