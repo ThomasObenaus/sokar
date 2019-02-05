@@ -55,7 +55,7 @@ generate.mocks:
 	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
-	@mockgen -source=nomadConnector/nomadclient.go -destination test/nomadConnector/mock_nomadclient.go 
+	@mockgen -source=nomadConnector/nomadclient_IF.go -destination test/nomadConnector/mock_nomadclient_IF.go 
 
 vendor: depend.install depend.update
 
