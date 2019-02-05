@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	nomadApi "github.com/hashicorp/nomad/api"
+	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 )
 
 func (nc *connectorImpl) getJobInfo(jobname string) (*nomadApi.Job, error) {
@@ -30,6 +31,12 @@ func (nc *connectorImpl) GetJobCount(jobname string) (uint, error) {
 
 	if err != nil {
 		return 0, err
+	}
+
+	if *jobInfo.Status == nomadstructs.JobStatusDead {
+		return 0, fmt.Errorf("Job is dead (%s)", *jobInfo.StatusDescription)
+	} else if *jobInfo.Status != nomadstructs.JobStatusRunning {
+		nc.log.Warn().Str("job", jobname).Msgf("Job is in status %s (%s)", *jobInfo.Status, *jobInfo.StatusDescription)
 	}
 
 	// HACK: To unify the multiple groups with we take the job with max count.
