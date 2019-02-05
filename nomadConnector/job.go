@@ -77,6 +77,7 @@ func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
 
 	if err != nil {
 		nc.log.Error().Err(err).Msg("Deployment failed")
+		return err
 	}
 
 	nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... done")

@@ -38,6 +38,10 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 				return err
 			}
 
+			if deployment == nil || queryMeta == nil {
+				return fmt.Errorf("Got nil while querying for deployment %s", deplID)
+			}
+
 			// Wait/ redo until the waitIndex was transcended
 			// It makes no sense to evaluate results earlier
 			if queryMeta.LastIndex <= queryOpt.WaitIndex {
