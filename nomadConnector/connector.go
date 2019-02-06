@@ -10,10 +10,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Connector defines the interface of the component being able to communicate with nomad
-type Connector interface {
-	SetJobCount(jobname string, count uint) error
-	GetJobCount(jobname string) (uint, error)
+// Connector is a object that allows to interact with nomad
+type Connector struct {
+	log zerolog.Logger
+
+	// Interfaces needed to interact with nomad
+	jobsIF       NomadJobs
+	deploymentIF NomadDeployments
+	evalIF       NomadEvaluations
+
+	deploymentTimeOut time.Duration
+	evaluationTimeOut time.Duration
 }
 
 // Config contains the main configuration for the nomad connector
@@ -38,7 +45,7 @@ func NewDefaultConfig(nomadServerAddress string) Config {
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New() (Connector, error) {
+func (cfg *Config) New() (*Connector, error) {
 
 	if len(cfg.NomadServerAddress) == 0 {
 		return nil, fmt.Errorf("Required configuration 'NomadServerAddress' is missing.")
@@ -57,7 +64,7 @@ func (cfg *Config) New() (Connector, error) {
 		return nil, err
 	}
 
-	nc := &connectorImpl{
+	nc := &Connector{
 		log:               cfg.Logger,
 		jobsIF:            client.Jobs(),
 		deploymentIF:      client.Deployments(),

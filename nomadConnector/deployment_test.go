@@ -17,7 +17,7 @@ func TestGetDeploymentID_NoIF(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	conn := connectorImpl{}
+	conn := Connector{}
 
 	deplID, err := conn.getDeploymentID("ABCDEF", time.Millisecond*600)
 	assert.Error(t, err)

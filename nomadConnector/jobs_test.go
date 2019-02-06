@@ -12,8 +12,8 @@ import (
 	"github.com/thomasobenaus/sokar/test/nomadConnector"
 )
 
-func minimalConnectorImpl() connectorImpl {
-	conn := connectorImpl{
+func minimalConnectorImpl() Connector {
+	conn := Connector{
 		deploymentTimeOut: time.Second * 20,
 		evaluationTimeOut: time.Second * 10,
 	}

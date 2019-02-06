@@ -8,7 +8,7 @@ import (
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 )
 
-func (nc *connectorImpl) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
+func (nc *Connector) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
 	nc.log.Debug().Str("DeplID", deplID).Msgf("Deployment still in progress (%s).", deployment.StatusDescription)
 	for tgName, deplState := range deployment.TaskGroups {
 		nc.log.Debug().Str("DeplID", deplID).Msgf("taskGroup=%s, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d", tgName, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
@@ -16,7 +16,7 @@ func (nc *connectorImpl) printDeploymentProgress(deplID string, deployment *noma
 }
 
 // waitForDeploymentConfirmation checks if the deployment forced by the scale-event was successful or not.
-func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
+func (nc *Connector) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
 
 	deplID, err := nc.getDeploymentID(evalID, nc.evaluationTimeOut)
 	if err != nil {
@@ -75,7 +75,7 @@ func (nc *connectorImpl) waitForDeploymentConfirmation(evalID string, timeout ti
 // getDeploymentID obtains the deployment ID of the given evaluation denoted by the evalID.
 // Internally nomad is polled as long as the deployment ID was obtained successfully or
 // the given timeout was reached.s
-func (nc *connectorImpl) getDeploymentID(evalID string, timeout time.Duration) (depID string, err error) {
+func (nc *Connector) getDeploymentID(evalID string, timeout time.Duration) (depID string, err error) {
 
 	evalIf := nc.evalIF
 	if evalIf == nil {
