@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
@@ -42,37 +43,41 @@ func main() {
 	}
 	logger.Info().Msg("Set up the scaler ... done")
 
+	// OneShot mode
 	if parsedArgs.OneShot {
 		err = scaler.ScaleBy(scaleBy)
 		if err != nil {
 			logger.Error().Err(err).Msg("Failed to scale.")
 		}
-	} else {
+		os.Exit(0)
+	}
 
-		logger.Info().Msg("Connecting components and setting up sokar ...")
-		if err := setupSokar(scaler, logger); err != nil {
-			logger.Fatal().Err(err).Msg("Failed creating sokar.")
-		}
-		logger.Info().Msg("Connecting components and setting up sokar ... done")
+	logger.Info().Msg("Connecting components and setting up sokar ...")
+	sokarInst, err := setupSokar(scaler, logger)
 
-		// Set up the web server
-		logger.Info().Msgf("Start listening at %d.", localPort)
-		if err := http.ListenAndServe(":"+strconv.Itoa(localPort), nil); err != nil {
-			logger.Fatal().Err(err).Msg("Failed serving.")
-		}
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed creating sokar.")
+	}
+	logger.Info().Msg("Connecting components and setting up sokar ... done")
+
+	logger.Info().Msg("Registering http handlers ...")
+	router := httprouter.New()
+	router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
+
+	logger.Info().Msg("Registering http handlers ... done")
+
+	// Set up the web server
+	logger.Info().Msgf("Start listening at %d.", localPort)
+	if err := http.ListenAndServe(":"+strconv.Itoa(localPort), router); err != nil {
+		logger.Fatal().Err(err).Msg("Failed serving.")
 	}
 }
 
-func setupSokar(scaler sokar.Scaler, logger zerolog.Logger) error {
+func setupSokar(scaler sokar.Scaler, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	sokar, err := cfg.New(scaler)
-
-	// Register the handlers provided by sokar
-	http.HandleFunc("/scaler", sokar.HandleScaler)
-
-	return err
+	return cfg.New(scaler)
 }
 
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
