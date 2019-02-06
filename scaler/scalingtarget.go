@@ -5,4 +5,19 @@ package scaler
 type ScalingTarget interface {
 	SetJobCount(jobname string, count uint) error
 	GetJobCount(jobname string) (uint, error)
+	GetJobState(jobname string) (JobState, error)
 }
+
+// JobState represents border types
+type JobState uint
+
+const (
+	// JobStateUnknown if state couldn't be determined
+	JobStateUnknown JobState = iota
+	// JobStateRunning Job is running
+	JobStateRunning
+	// JobStatePending Job is pending
+	JobStatePending
+	// JobStateDead Job is dead
+	JobStateDead
+)

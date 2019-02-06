@@ -5,6 +5,7 @@ import (
 
 	nomadApi "github.com/hashicorp/nomad/api"
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
+	"github.com/thomasobenaus/sokar/scaler"
 )
 
 func (nc *connectorImpl) getJobInfo(jobname string) (*nomadApi.Job, error) {
@@ -26,17 +27,37 @@ func (nc *connectorImpl) getJobInfo(jobname string) (*nomadApi.Job, error) {
 	return jobInfo, nil
 }
 
+func (nc *connectorImpl) GetJobState(jobname string) (scaler.JobState, error) {
+
+	jobInfo, err := nc.getJobInfo(jobname)
+
+	if err != nil {
+		return scaler.JobStateUnknown, err
+	}
+
+	if jobInfo.Status == nil {
+		return scaler.JobStateUnknown, fmt.Errorf("Given state information is nil.")
+	}
+
+	result := scaler.JobStateUnknown
+
+	switch *jobInfo.Status {
+	case nomadstructs.JobStatusRunning:
+		result = scaler.JobStateRunning
+	case nomadstructs.JobStatusPending:
+		result = scaler.JobStatePending
+	case nomadstructs.JobStatusDead:
+		result = scaler.JobStateDead
+	}
+
+	return result, nil
+}
+
 func (nc *connectorImpl) GetJobCount(jobname string) (uint, error) {
 	jobInfo, err := nc.getJobInfo(jobname)
 
 	if err != nil {
 		return 0, err
-	}
-
-	if *jobInfo.Status == nomadstructs.JobStatusDead {
-		return 0, fmt.Errorf("Job is dead (%s)", *jobInfo.StatusDescription)
-	} else if *jobInfo.Status != nomadstructs.JobStatusRunning {
-		nc.log.Warn().Str("job", jobname).Msgf("Job is in status %s (%s)", *jobInfo.Status, *jobInfo.StatusDescription)
 	}
 
 	// HACK: To unify the multiple groups with we take the job with max count.
