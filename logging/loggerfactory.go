@@ -2,6 +2,7 @@ package logging
 
 import (
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -22,6 +23,8 @@ func (cfg Config) New() LoggerFactory {
 		// If you set zerolog.TimeFieldFormat to an empty string,
 		// logs will write with UNIX time
 		zerolog.TimeFieldFormat = ""
+	} else {
+		zerolog.TimeFieldFormat = time.StampMilli //time.RFC3339
 	}
 
 	return &loggerFactoryImpl{UseStructuredLogging: cfg.UseStructuredLogging}
