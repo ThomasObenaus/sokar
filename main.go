@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
 	"github.com/thomasobenaus/sokar/scaler"
+	"github.com/thomasobenaus/sokar/sokar"
 )
 
 func main() {
@@ -18,7 +22,10 @@ func main() {
 	}
 
 	jobname := parsedArgs.JobName
+	jobMinCount := parsedArgs.JobMinCount
+	jobMaxCount := parsedArgs.JobMaxCount
 	scaleBy := parsedArgs.ScaleBy
+	localPort := 11000
 
 	// set up logging
 	lCfg := logging.Config{
@@ -29,16 +36,43 @@ func main() {
 	logger := loggingFactory.NewNamedLogger("sokar")
 
 	logger.Info().Msg("Set up the scaler ...")
-	scaler, err := setupScaler(jobname, parsedArgs.JobMinCount, parsedArgs.JobMaxCount, parsedArgs.NomadServerAddr, loggingFactory)
+	scaler, err := setupScaler(jobname, jobMinCount, jobMaxCount, parsedArgs.NomadServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
 	logger.Info().Msg("Set up the scaler ... done")
 
-	err = scaler.ScaleBy(scaleBy)
-	if err != nil {
-		logger.Error().Err(err).Msg("Failed to scale.")
+	if parsedArgs.OneShot {
+		err = scaler.ScaleBy(scaleBy)
+		if err != nil {
+			logger.Error().Err(err).Msg("Failed to scale.")
+		}
+	} else {
+
+		logger.Info().Msg("Connecting components and setting up sokar ...")
+		if err := setupSokar(scaler, logger); err != nil {
+			logger.Fatal().Err(err).Msg("Failed creating sokar.")
+		}
+		logger.Info().Msg("Connecting components and setting up sokar ... done")
+
+		// Set up the web server
+		logger.Info().Msgf("Start listening at %d.", localPort)
+		if err := http.ListenAndServe(":"+strconv.Itoa(localPort), nil); err != nil {
+			logger.Fatal().Err(err).Msg("Failed serving.")
+		}
 	}
+}
+
+func setupSokar(scaler sokar.Scaler, logger zerolog.Logger) error {
+	cfg := sokar.Config{
+		Logger: logger,
+	}
+	sokar, err := cfg.New(scaler)
+
+	// Register the handlers provided by sokar
+	http.HandleFunc("/scaler", sokar.HandleScaler)
+
+	return err
 }
 
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {

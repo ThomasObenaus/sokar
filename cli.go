@@ -12,6 +12,9 @@ const pJobName = "job-name"
 const pMinCount = "job-min-count"
 const pMaxCount = "job-max-count"
 const pScaleBy = "scale-by"
+const pLogStructured = "logging-structured"
+const pLogUXTS = "logging-ux-ts"
+const pOneShot = "oneshot"
 
 type cliArgs struct {
 	StructuredLogging          bool
@@ -21,6 +24,7 @@ type cliArgs struct {
 	JobMinCount                uint
 	JobMaxCount                uint
 	ScaleBy                    int
+	OneShot                    bool
 }
 
 func (ca *cliArgs) validateArgs() bool {
@@ -46,8 +50,9 @@ func (ca *cliArgs) validateArgs() bool {
 }
 
 func parseArgs() cliArgs {
-	var structuredLogging = flag.Bool("logging-structured", false, "Enables/ disables structured logging (using json). Defaults to false.")
-	var useUnixTimestampForLogging = flag.Bool("logging-ux-ts", false, "Enables/ disables the usage of unix timestamp in log messages. Defaults to false.")
+	var oneShot = flag.Bool(pOneShot, false, "Runs sokar in oneshot mode if true.")
+	var structuredLogging = flag.Bool(pLogStructured, false, "Enables/ disables structured logging (using json). Defaults to false.")
+	var useUnixTimestampForLogging = flag.Bool(pLogUXTS, false, "Enables/ disables the usage of unix timestamp in log messages. Defaults to false.")
 	var nomadServerAddr = flag.String(pNomadServerAddress, "", "Specifies the address of the nomad server.")
 	var jobName = flag.String(pJobName, "", "The name of the job to be scaled.")
 	var minCount = flag.Uint(pMinCount, 1, "Specifies the minimum number of instances this job shall have (default 1).")
@@ -63,5 +68,6 @@ func parseArgs() cliArgs {
 		JobMinCount:                *minCount,
 		JobMaxCount:                *maxCount,
 		ScaleBy:                    *scaleBy,
+		OneShot:                    *oneShot,
 	}
 }

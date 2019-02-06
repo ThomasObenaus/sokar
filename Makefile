@@ -56,14 +56,15 @@ generate.mocks:
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
 	@mockgen -source=nomadConnector/nomadclient_IF.go -destination test/nomadConnector/mock_nomadclient_IF.go 
-	@mockgen -source=scaler/scalingtarget.go -destination test/scaler/mock_scalingtarget.go 
+	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
 
 vendor: depend.install depend.update
 
 run: build
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run ${name}"
-	@./${name} --nomad-server-address="http://192.168.0.236:4646" --job-name="fail-service" --job-min-count=1 --job-max-count=10 --scale-by=1
+	./${name} --nomad-server-address="http://192.168.0.236:4646" --job-name="fail-service" --job-min-count=1 --job-max-count=10 --scale-by=1
+	# --oneshot
 
 finish:
 	@echo "=================================================================================="
