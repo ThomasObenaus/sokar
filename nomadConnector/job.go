@@ -5,62 +5,32 @@ import (
 
 	nomadApi "github.com/hashicorp/nomad/api"
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
-	"github.com/thomasobenaus/sokar/scaler"
 )
 
-func (nc *connectorImpl) getJobInfo(jobname string) (*nomadApi.Job, error) {
-	jobs := nc.jobsIF
-
-	if jobs == nil {
-		return nil, fmt.Errorf("Nomad Jobs() interface is missing")
-	}
-
-	// In order to scale the job, we need information on the current status of the
-	// running job from Nomad.
-	jobInfo, _, err := jobs.Info(jobname, nc.defaultQueryOptions())
-
-	if err != nil {
-		nc.log.Error().Err(err).Msg("Unable to determine job info")
-		return nil, err
-	}
-
-	return jobInfo, nil
-}
-
-func (nc *connectorImpl) GetJobState(jobname string) (scaler.JobState, error) {
+// IsJobDead returns true if the mentioned job is in state nomad./structs/JobStatusDead, false otherwise.
+func (nc *Connector) IsJobDead(jobname string) (bool, error) {
 
 	jobInfo, err := nc.getJobInfo(jobname)
 
 	if err != nil {
-		return scaler.JobStateUnknown, err
+		return false, err
 	}
 
 	if jobInfo.Status == nil {
-		return scaler.JobStateUnknown, fmt.Errorf("Given state information is nil.")
+		return false, fmt.Errorf("Given state information is nil.")
 	}
 
-	result := scaler.JobStateUnknown
-
-	switch *jobInfo.Status {
-	case nomadstructs.JobStatusRunning:
-		result = scaler.JobStateRunning
-	case nomadstructs.JobStatusPending:
-		result = scaler.JobStatePending
-	case nomadstructs.JobStatusDead:
-		result = scaler.JobStateDead
-	}
-
-	return result, nil
+	return (*jobInfo.Status == nomadstructs.JobStatusDead), nil
 }
 
-func (nc *connectorImpl) GetJobCount(jobname string) (uint, error) {
+// GetJobCount retunrs the actual count of the given nomad job.
+// HACK: To unify the multiple groups with we take the job with max count.
+func (nc *Connector) GetJobCount(jobname string) (uint, error) {
 	jobInfo, err := nc.getJobInfo(jobname)
 
 	if err != nil {
 		return 0, err
 	}
-
-	// HACK: To unify the multiple groups with we take the job with max count.
 
 	var count int
 	for _, taskGroup := range jobInfo.TaskGroups {
@@ -72,7 +42,9 @@ func (nc *connectorImpl) GetJobCount(jobname string) (uint, error) {
 	return uint(count), nil
 }
 
-func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
+// SetJobCount sets the given count for the given nomad job.
+// HACK: The count is set to the same value for all groups inside the job.
+func (nc *Connector) SetJobCount(jobname string, count uint) error {
 	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
 
 	// obtain current status about the job
@@ -110,4 +82,29 @@ func (nc *connectorImpl) SetJobCount(jobname string, count uint) error {
 	nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... done")
 
 	return nil
+}
+
+// defaultQueryOptions sets sokars default QueryOptions for making GET calls to
+// the nomad API.
+func (nc *Connector) defaultQueryOptions() (queryOptions *nomadApi.QueryOptions) {
+	return &nomadApi.QueryOptions{AllowStale: true}
+}
+
+func (nc *Connector) getJobInfo(jobname string) (*nomadApi.Job, error) {
+	jobs := nc.jobsIF
+
+	if jobs == nil {
+		return nil, fmt.Errorf("Nomad Jobs() interface is missing")
+	}
+
+	// In order to scale the job, we need information on the current status of the
+	// running job from Nomad.
+	jobInfo, _, err := jobs.Info(jobname, nc.defaultQueryOptions())
+
+	if err != nil {
+		nc.log.Error().Err(err).Msg("Unable to determine job info")
+		return nil, err
+	}
+
+	return jobInfo, nil
 }
