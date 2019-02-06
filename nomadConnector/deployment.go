@@ -9,9 +9,10 @@ import (
 )
 
 func (nc *Connector) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
-	nc.log.Debug().Str("DeplID", deplID).Msgf("Deployment still in progress (%s).", deployment.StatusDescription)
+	nc.log.Info().Str("DeplID", deplID).Msgf("Deployment still in progress (%s).", deployment.StatusDescription)
 	for tgName, deplState := range deployment.TaskGroups {
-		nc.log.Debug().Str("DeplID", deplID).Msgf("taskGroup=%s, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d", tgName, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
+		perc := (float32(deplState.HealthyAllocs) / float32(deplState.DesiredTotal)) * 100.0
+		nc.log.Info().Str("DeplID", deplID).Msgf("taskGroup=%s, depl=%.2f%%, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d", tgName, perc, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
 	}
 }
 

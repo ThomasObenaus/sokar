@@ -28,6 +28,16 @@ func (s *scalerImpl) ScaleBy(amount int) error {
 	}
 	s.logger.Info().Str("job", jobName).Msgf("Request to scale job %s by %d.", scaleTypeStr, amount)
 
+	dead, err := s.scalingTarget.IsJobDead(jobName)
+	if err != nil {
+		return fmt.Errorf("Error obtaining if job is dead: %s.", err.Error())
+	}
+
+	if dead {
+		s.logger.Info().Str("job", jobName).Msg("Job is dead. Makes no sense to scale.")
+		return nil
+	}
+
 	count, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
 		return fmt.Errorf("Error obtaining job count: %s.", err.Error())
