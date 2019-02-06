@@ -9,6 +9,8 @@ import (
 
 const pNomadServerAddress = "nomad-server-address"
 const pJobName = "job-name"
+const pMinCount = "job-min-count"
+const pMaxCount = "job-max-count"
 const pScaleBy = "scale-by"
 
 type cliArgs struct {
@@ -16,6 +18,8 @@ type cliArgs struct {
 	UseUnixTimestampForLogging bool
 	NomadServerAddr            string
 	JobName                    string
+	JobMinCount                uint
+	JobMaxCount                uint
 	ScaleBy                    int
 }
 
@@ -46,6 +50,8 @@ func parseArgs() cliArgs {
 	var useUnixTimestampForLogging = flag.Bool("logging-ux-ts", false, "Enables/ disables the usage of unix timestamp in log messages. Defaults to false.")
 	var nomadServerAddr = flag.String(pNomadServerAddress, "", "Specifies the address of the nomad server.")
 	var jobName = flag.String(pJobName, "", "The name of the job to be scaled.")
+	var minCount = flag.Uint(pMinCount, 1, "Specifies the minimum number of instances this job shall have (default 1).")
+	var maxCount = flag.Uint(pMaxCount, 2, "Specifies the minimum number of instances this job shall have (default 2).")
 	var scaleBy = flag.Int(pScaleBy, 0, "Specifies the amount the job shall be scaled. A positive number means scale up and a negative means scale down by the specified amount.")
 	flag.Parse()
 
@@ -54,6 +60,8 @@ func parseArgs() cliArgs {
 		UseUnixTimestampForLogging: *useUnixTimestampForLogging,
 		NomadServerAddr:            *nomadServerAddr,
 		JobName:                    *jobName,
+		JobMinCount:                *minCount,
+		JobMaxCount:                *maxCount,
 		ScaleBy:                    *scaleBy,
 	}
 }

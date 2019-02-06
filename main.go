@@ -29,7 +29,7 @@ func main() {
 	logger := loggingFactory.NewNamedLogger("sokar")
 
 	logger.Info().Msg("Set up the scaler ...")
-	scaler, err := setupScaler(jobname, 1, 10, parsedArgs.NomadServerAddr, loggingFactory)
+	scaler, err := setupScaler(jobname, parsedArgs.JobMinCount, parsedArgs.JobMaxCount, parsedArgs.NomadServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
