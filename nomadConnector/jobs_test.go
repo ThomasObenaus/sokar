@@ -196,3 +196,29 @@ func TestGetJobCount(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint(10), count)
 }
+
+func TestIsJobDead(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
+	conn := minimalConnectorImpl()
+	conn.jobsIF = jobsIF
+
+	// fail
+	job := &nomadApi.Job{}
+	jobsIF.EXPECT().Info("test", gomock.Any()).Return(job, nil, nil)
+
+	dead, err := conn.IsJobDead("test")
+	assert.Error(t, err)
+	assert.Equal(t, false, dead)
+
+	// success
+	status := nomadstructs.JobStatusDead
+	job = &nomadApi.Job{Status: &status}
+	jobsIF.EXPECT().Info("test", gomock.Any()).Return(job, nil, nil)
+
+	dead, err = conn.IsJobDead("test")
+	assert.NoError(t, err)
+	assert.Equal(t, true, dead)
+}
