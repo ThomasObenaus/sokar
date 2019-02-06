@@ -41,7 +41,7 @@ func main() {
 	}
 }
 
-func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (scaler.Scaler, error) {
+func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	// Set up the nomad connector
 	nomadConnectorConfig := nomadConnector.NewDefaultConfig(nomadSrvAddr)

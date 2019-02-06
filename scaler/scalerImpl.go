@@ -3,8 +3,6 @@ package scaler
 import (
 	"fmt"
 	"math"
-
-	"github.com/rs/zerolog"
 )
 
 type jobConfig struct {
@@ -13,13 +11,8 @@ type jobConfig struct {
 	maxCount uint
 }
 
-type scalerImpl struct {
-	logger        zerolog.Logger
-	scalingTarget ScalingTarget
-	job           jobConfig
-}
-
-func (s *scalerImpl) ScaleBy(amount int) error {
+// ScaleBy Scales the target component by the given amount of instances
+func (s *Scaler) ScaleBy(amount int) error {
 	jobName := s.job.jobName
 
 	scaleTypeStr := "UP"
