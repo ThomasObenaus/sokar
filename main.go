@@ -45,10 +45,8 @@ func main() {
 
 	// OneShot mode
 	if parsedArgs.OneShot {
-		err = scaler.ScaleBy(scaleBy)
-		if err != nil {
-			logger.Error().Err(err).Msg("Failed to scale.")
-		}
+		scaResult := scaler.ScaleBy(scaleBy)
+		logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
 		os.Exit(0)
 	}
 

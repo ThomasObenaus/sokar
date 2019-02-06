@@ -1,6 +1,7 @@
 package sokar
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -47,11 +48,14 @@ func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		sk.logger.Error().Msg(errMsg)
 		return
 	}
-	err = sk.scaler.ScaleBy(int(by))
+	scaResult := sk.scaler.ScaleBy(int(by))
 
-	if err != nil {
-		errMsg := fmt.Sprintf("Failed to scale: %s.", err.Error())
-		http.Error(w, errMsg, http.StatusInternalServerError)
-		sk.logger.Error().Msg(errMsg)
+	code := http.StatusOK
+	if scaResult.State == ScaleFailed {
+		code = http.StatusInternalServerError
 	}
+	sk.logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
+
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(scaResult)
 }

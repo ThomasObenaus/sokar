@@ -3,6 +3,8 @@ package scaler
 import (
 	"fmt"
 	"math"
+
+	"github.com/thomasobenaus/sokar/sokar"
 )
 
 type jobConfig struct {
@@ -56,7 +58,7 @@ func checkScalingPolicy(count uint, amount int, min uint, max uint) policyCheckR
 }
 
 // ScaleBy Scales the target component by the given amount of instances
-func (s *Scaler) ScaleBy(amount int) error {
+func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 	jobName := s.job.jobName
 	min := s.job.minCount
 	max := s.job.maxCount
@@ -66,16 +68,25 @@ func (s *Scaler) ScaleBy(amount int) error {
 
 	dead, err := s.scalingTarget.IsJobDead(jobName)
 	if err != nil {
-		return fmt.Errorf("Error obtaining if job is dead: %s.", err.Error())
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error obtaining if job is dead: %s.", err.Error()),
+		}
 	}
 
 	if dead {
-		return fmt.Errorf("Job '%s' is dead. Can't scale", jobName)
+		return sokar.ScaleResult{
+			State:            sokar.ScaleIgnored,
+			StateDescription: fmt.Sprintf("Job '%s' is dead. Can't scale", jobName),
+		}
 	}
 
 	count, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
-		return fmt.Errorf("Error obtaining job count: %s.", err.Error())
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+		}
 	}
 
 	chkResult := checkScalingPolicy(count, amount, min, max)
@@ -92,7 +103,11 @@ func (s *Scaler) ScaleBy(amount int) error {
 
 	if !scaleNeeded {
 		s.logger.Info().Str("job", jobName).Msg("No scaling needed/ possible.")
-		return nil
+		return sokar.ScaleResult{
+			State:            sokar.ScaleIgnored,
+			StateDescription: "No scaling needed/ possible.",
+			NewCount:         newCount,
+		}
 	}
 
 	s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
@@ -100,8 +115,15 @@ func (s *Scaler) ScaleBy(amount int) error {
 	// Set the new job count
 	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
 	if err != nil {
-		return fmt.Errorf("Error adjusting job count from %d to %d: %s.", count, newCount, err.Error())
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error adjusting job count from %d to %d: %s.", count, newCount, err.Error()),
+		}
 	}
 
-	return nil
+	return sokar.ScaleResult{
+		State:            sokar.ScaleDone,
+		StateDescription: "Scaling successfully done.",
+		NewCount:         newCount,
+	}
 }
