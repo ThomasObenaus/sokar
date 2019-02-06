@@ -27,8 +27,7 @@ func (s *Scaler) ScaleBy(amount int) error {
 	}
 
 	if dead {
-		s.logger.Info().Str("job", jobName).Msg("Job is dead. Makes no sense to scale.")
-		return nil
+		return fmt.Errorf("Job '%s' is dead. Can't scale", jobName)
 	}
 
 	count, err := s.scalingTarget.GetJobCount(jobName)

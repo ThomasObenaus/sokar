@@ -3,3 +3,5 @@ sokar-bin
 debug
 coverage.out
 nomadConnector/debug\.test
+
+scaler/debug\.test

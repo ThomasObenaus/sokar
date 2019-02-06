@@ -7,13 +7,13 @@ all: build test tools cover finish
 test: generate.mocks
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests"
-	@go test ./logging ./nomadConnector -v
+	@go test ./logging ./nomadConnector ./scaler -v
 
 .PHONY: cover
 cover: 
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests + coverage"
-	@go test ./nomadConnector ./logging -v -covermode=count -coverprofile=coverage.out
+	@go test ./nomadConnector ./logging ./scaler -v -covermode=count -coverprofile=coverage.out
 
 cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
@@ -56,6 +56,7 @@ generate.mocks:
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
 	@mockgen -source=nomadConnector/nomadclient_IF.go -destination test/nomadConnector/mock_nomadclient_IF.go 
+	@mockgen -source=scaler/scalingtarget.go -destination test/scaler/mock_scalingtarget.go 
 
 vendor: depend.install depend.update
 
