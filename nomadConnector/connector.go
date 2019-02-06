@@ -48,7 +48,7 @@ func NewDefaultConfig(nomadServerAddress string) Config {
 func (cfg *Config) New() (*Connector, error) {
 
 	if len(cfg.NomadServerAddress) == 0 {
-		return nil, fmt.Errorf("Required configuration 'NomadServerAddress' is missing.")
+		return nil, fmt.Errorf("Required configuration 'NomadServerAddress' is missing")
 	}
 
 	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ...")

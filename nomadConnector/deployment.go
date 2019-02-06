@@ -67,7 +67,7 @@ func (nc *Connector) waitForDeploymentConfirmation(evalID string, timeout time.D
 				nc.printDeploymentProgress(deplID, deployment)
 				continue
 			} else {
-				return fmt.Errorf("Deployment (%s) failed with status %s (%s).", deplID, deployment.Status, deployment.StatusDescription)
+				return fmt.Errorf("Deployment (%s) failed with status %s (%s)", deplID, deployment.Status, deployment.StatusDescription)
 			}
 		}
 	}

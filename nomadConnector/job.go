@@ -17,7 +17,7 @@ func (nc *Connector) IsJobDead(jobname string) (bool, error) {
 	}
 
 	if jobInfo.Status == nil {
-		return false, fmt.Errorf("Given state information is nil.")
+		return false, fmt.Errorf("Given state information is nil")
 	}
 
 	return (*jobInfo.Status == nomadstructs.JobStatusDead), nil
