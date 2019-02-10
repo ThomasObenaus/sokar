@@ -16,7 +16,8 @@ const (
 )
 
 type Sokar struct {
-	scaler Scaler
+	scaler          Scaler
+	capacityPlanner CapacityPlanner
 
 	logger zerolog.Logger
 }
@@ -25,13 +26,19 @@ type Config struct {
 	Logger zerolog.Logger
 }
 
-func (cfg *Config) New(scaler Scaler) (*Sokar, error) {
+func (cfg *Config) New(scaler Scaler, capacityPlanner CapacityPlanner) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
 
+	if capacityPlanner == nil {
+		return nil, fmt.Errorf("Given CapacityPlanner is nil")
+	}
+
 	return &Sokar{
-		scaler: scaler,
+		scaler:          scaler,
+		capacityPlanner: capacityPlanner,
+
 		logger: cfg.Logger,
 	}, nil
 }

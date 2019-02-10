@@ -8,6 +8,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
+	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
 	"github.com/thomasobenaus/sokar/scaler"
@@ -51,7 +52,12 @@ func main() {
 	}
 
 	logger.Info().Msg("Connecting components and setting up sokar ...")
-	sokarInst, err := setupSokar(scaler, logger)
+	capaCfg := capacityPlanner.Config{
+		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
+	}
+	capaPlanner := capaCfg.New()
+
+	sokarInst, err := setupSokar(scaler, capaPlanner, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating sokar.")
@@ -71,11 +77,11 @@ func main() {
 	}
 }
 
-func setupSokar(scaler sokar.Scaler, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaler sokar.Scaler, capacityPlanner sokar.CapacityPlanner, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	return cfg.New(scaler)
+	return cfg.New(scaler, capacityPlanner)
 }
 
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
