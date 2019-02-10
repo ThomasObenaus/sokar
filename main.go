@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
-	"strconv"
+	"os/signal"
+	"syscall"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
+	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomadConnector"
+	"github.com/thomasobenaus/sokar/scaleEventAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
 )
@@ -52,36 +53,53 @@ func main() {
 	}
 
 	logger.Info().Msg("Connecting components and setting up sokar ...")
+	scaEvtAggCfg := scaleEventAggregator.Config{
+		Logger: loggingFactory.NewNamedLogger("sokar.scaEvtAggr"),
+	}
+	scaEvtAggr := scaEvtAggCfg.New()
+
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
 
-	sokarInst, err := setupSokar(scaler, capaPlanner, logger)
+	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating sokar.")
 	}
+
+	// Run sokar in background
+	sokarInst.Run()
 	logger.Info().Msg("Connecting components and setting up sokar ... done")
 
 	logger.Info().Msg("Registering http handlers ...")
-	router := httprouter.New()
-	router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
-
+	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
+	api.Router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
 	logger.Info().Msg("Registering http handlers ... done")
 
-	// Set up the web server
-	logger.Info().Msgf("Start listening at %d.", localPort)
-	if err := http.ListenAndServe(":"+strconv.Itoa(localPort), router); err != nil {
-		logger.Fatal().Err(err).Msg("Failed serving.")
-	}
+	api.Run()
+
+	// Install signal handler for shutdown
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		s := <-signalChan
+		logger.Info().Msgf("Received %v. Shutting down...", s)
+		api.Stop()
+		sokarInst.Stop()
+	}()
+
+	// Wait till completion
+	api.Join()
+	sokarInst.Join()
 }
 
-func setupSokar(scaler sokar.Scaler, capacityPlanner sokar.CapacityPlanner, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleEventAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	return cfg.New(scaler, capacityPlanner)
+	return cfg.New(scaleEventAggregator, capacityPlanner, scaler)
 }
 
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {

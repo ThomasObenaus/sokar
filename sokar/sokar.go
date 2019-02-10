@@ -16,8 +16,12 @@ const (
 )
 
 type Sokar struct {
-	scaler          Scaler
-	capacityPlanner CapacityPlanner
+	scaler               Scaler
+	capacityPlanner      CapacityPlanner
+	scaleEventAggregator ScaleEventAggregator
+
+	// channel used to signal teardown/ stop
+	stopChan chan struct{}
 
 	logger zerolog.Logger
 }
@@ -26,7 +30,7 @@ type Config struct {
 	Logger zerolog.Logger
 }
 
-func (cfg *Config) New(scaler Scaler, capacityPlanner CapacityPlanner) (*Sokar, error) {
+func (cfg *Config) New(scaleEventAggregator ScaleEventAggregator, capacityPlanner CapacityPlanner, scaler Scaler) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
@@ -35,9 +39,15 @@ func (cfg *Config) New(scaler Scaler, capacityPlanner CapacityPlanner) (*Sokar, 
 		return nil, fmt.Errorf("Given CapacityPlanner is nil")
 	}
 
+	if scaleEventAggregator == nil {
+		return nil, fmt.Errorf("Given ScaleEventAggregator is nil")
+	}
+
 	return &Sokar{
-		scaler:          scaler,
-		capacityPlanner: capacityPlanner,
+		scaleEventAggregator: scaleEventAggregator,
+		capacityPlanner:      capacityPlanner,
+		scaler:               scaler,
+		stopChan:             make(chan struct{}, 1),
 
 		logger: cfg.Logger,
 	}, nil
