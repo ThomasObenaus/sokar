@@ -53,31 +53,29 @@ func main() {
 	}
 
 	logger.Info().Msg("Connecting components and setting up sokar ...")
+	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
+
 	scaEvtAggCfg := scaleEventAggregator.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.scaEvtAggr"),
 	}
 	scaEvtAggr := scaEvtAggCfg.New()
+	api.Router.POST("/alert", scaEvtAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
 
-	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, logger)
+	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, api, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating sokar.")
 	}
 
-	// Run sokar in background
-	sokarInst.Run()
 	logger.Info().Msg("Connecting components and setting up sokar ... done")
 
-	logger.Info().Msg("Registering http handlers ...")
-	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
-	api.Router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
-	logger.Info().Msg("Registering http handlers ... done")
-
+	// Run all components
+	sokarInst.Run()
 	api.Run()
 
 	// Install signal handler for shutdown
@@ -86,6 +84,8 @@ func main() {
 	go func() {
 		s := <-signalChan
 		logger.Info().Msgf("Received %v. Shutting down...", s)
+
+		// Stop all components
 		api.Stop()
 		sokarInst.Stop()
 	}()
@@ -93,13 +93,24 @@ func main() {
 	// Wait till completion
 	api.Join()
 	sokarInst.Join()
+
+	os.Exit(0)
 }
 
-func setupSokar(scaleEventAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleEventAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.Api, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	return cfg.New(scaleEventAggregator, capacityPlanner, scaler)
+	sokarInst, err := cfg.New(scaleEventAggregator, capacityPlanner, scaler)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info().Msg("Registering http handlers ...")
+	api.Router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
+	logger.Info().Msg("Registering http handlers ... done")
+
+	return sokarInst, err
 }
 
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {

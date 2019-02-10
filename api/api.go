@@ -41,7 +41,7 @@ func (api *Api) Stop() {
 }
 
 func (api *Api) Run() {
-	api.srv = &http.Server{Addr: ":" + strconv.Itoa(api.port)}
+	api.srv = &http.Server{Addr: ":" + strconv.Itoa(api.port), Handler: api.Router}
 
 	// Run listening for messages in background
 	go func() {
