@@ -32,3 +32,19 @@ func IncUint(value uint, by int) uint {
 
 	return value - byUint
 }
+
+// SubUint substracts two uint's and returns the signed difference
+// Avoids over-/underflow.
+func SubUint(a uint, by uint) int {
+	r := float64(a) - float64(by)
+
+	if r >= float64(maxInt) {
+		return maxInt
+	}
+
+	if r <= float64(minInt) {
+		return minInt
+	}
+
+	return int(r)
+}

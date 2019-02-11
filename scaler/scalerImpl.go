@@ -2,7 +2,6 @@ package scaler
 
 import (
 	"fmt"
-	"math"
 
 	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -103,7 +102,7 @@ func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d). Scale limited to %d.", min, chkResult.desiredCount, count, newCount)
 	}
 
-	diff := int(math.Abs(float64(newCount) - float64(count)))
+	diff := helper.SubUint(newCount, count)
 	scaleNeeded := (diff != 0)
 
 	if !scaleNeeded {
@@ -180,7 +179,7 @@ func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", max, chkResult.desiredCount, count, scaleTypeStr, newCount)
 	}
 
-	diff := int(math.Abs(float64(newCount) - float64(count)))
+	diff := helper.SubUint(newCount, count)
 	scaleNeeded := (diff != 0)
 
 	if !scaleNeeded {

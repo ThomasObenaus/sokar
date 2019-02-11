@@ -6,6 +6,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_SubUint(t *testing.T) {
+	r := SubUint(1, 1)
+	assert.Equal(t, 0, r)
+
+	r = SubUint(0, 1)
+	assert.Equal(t, -1, r)
+
+	r = SubUint(0, maxUint)
+	assert.Equal(t, minInt, r)
+
+	r = SubUint(uint(maxInt), 0)
+	assert.Equal(t, maxInt, r)
+}
+
 func Test_IncUint(t *testing.T) {
 
 	r := IncUint(0, 1)
