@@ -67,7 +67,9 @@ func trueIfNil(s *Scaler) (result sokar.ScaleResult, ok bool) {
 	return result, ok
 }
 
-func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
+// scale scales the job from currentCount to desiredCount.
+// Internally it is checked if a scaling is needed and if the scaling policy is valid.
+func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 	if r, ok := trueIfNil(s); ok {
 		return r
 	}
@@ -76,7 +78,7 @@ func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
 	min := s.job.minCount
 	max := s.job.maxCount
 
-	s.logger.Info().Str("job", jobName).Msgf("Request to scale job to %d.", count)
+	s.logger.Info().Str("job", jobName).Msgf("Request to scale job from %d to %d.", currentCount, desiredCount)
 
 	dead, err := s.scalingTarget.IsJobDead(jobName)
 	if err != nil {
@@ -93,16 +95,16 @@ func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
 		}
 	}
 
-	chkResult := checkScalingPolicy(count, min, max)
+	chkResult := checkScalingPolicy(desiredCount, min, max)
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d). Scale limited to %d.", min, chkResult.desiredCount, count, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, desiredCount, currentCount, newCount)
 	}
 	if chkResult.maxPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d). Scale limited to %d.", min, chkResult.desiredCount, count, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, desiredCount, currentCount, newCount)
 	}
 
-	diff := helper.SubUint(newCount, count)
+	diff := helper.SubUint(newCount, currentCount)
 	scaleNeeded := (diff != 0)
 
 	if !scaleNeeded {
@@ -133,6 +135,24 @@ func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
 	}
 }
 
+// ScaleTo scales the job to the given count
+func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
+	if r, ok := trueIfNil(s); ok {
+		return r
+	}
+
+	jobName := s.job.jobName
+	currentCount, err := s.scalingTarget.GetJobCount(jobName)
+	if err != nil {
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+		}
+	}
+
+	return s.scale(desiredCount, currentCount)
+}
+
 // ScaleBy Scales the target component by the given amount of instances
 func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 	if r, ok := trueIfNil(s); ok {
@@ -140,27 +160,6 @@ func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 	}
 
 	jobName := s.job.jobName
-	min := s.job.minCount
-	max := s.job.maxCount
-	scaleTypeStr := amountToScaleType(amount)
-
-	s.logger.Info().Str("job", jobName).Msgf("Request to scale job %s by %d.", scaleTypeStr, amount)
-
-	dead, err := s.scalingTarget.IsJobDead(jobName)
-	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining if job is dead: %s.", err.Error()),
-		}
-	}
-
-	if dead {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleIgnored,
-			StateDescription: fmt.Sprintf("Job '%s' is dead. Can't scale", jobName),
-		}
-	}
-
 	count, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
 		return sokar.ScaleResult{
@@ -170,41 +169,6 @@ func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 	}
 
 	desiredCount := helper.IncUint(count, amount)
-	chkResult := checkScalingPolicy(desiredCount, min, max)
-	newCount := chkResult.validCount
-	if chkResult.minPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", min, chkResult.desiredCount, count, scaleTypeStr, newCount)
-	}
-	if chkResult.maxPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", max, chkResult.desiredCount, count, scaleTypeStr, newCount)
-	}
 
-	diff := helper.SubUint(newCount, count)
-	scaleNeeded := (diff != 0)
-
-	if !scaleNeeded {
-		s.logger.Info().Str("job", jobName).Msg("No scaling needed/ possible.")
-		return sokar.ScaleResult{
-			State:            sokar.ScaleIgnored,
-			StateDescription: "No scaling needed/ possible.",
-			NewCount:         newCount,
-		}
-	}
-
-	s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
-
-	// Set the new job count
-	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
-	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error adjusting job count from %d to %d: %s.", count, newCount, err.Error()),
-		}
-	}
-
-	return sokar.ScaleResult{
-		State:            sokar.ScaleDone,
-		StateDescription: "Scaling successfully done.",
-		NewCount:         newCount,
-	}
+	return s.scale(desiredCount, count)
 }

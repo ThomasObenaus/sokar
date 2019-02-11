@@ -29,7 +29,7 @@ func TestNew(t *testing.T) {
 	assert.NotNil(t, scaler)
 }
 
-func TestScaleBy_JobDead(t *testing.T) {
+func TestScale_JobDead(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -43,16 +43,84 @@ func TestScaleBy_JobDead(t *testing.T) {
 
 	// dead job - error
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, fmt.Errorf("internal error"))
-	result := scaler.ScaleBy(2)
+	result := scaler.scale(2, 0)
 	assert.Equal(t, sokar.ScaleFailed, result.State)
 
 	// dead job
 	scaTgt.EXPECT().IsJobDead(jobname).Return(true, nil)
-	result = scaler.ScaleBy(2)
+	result = scaler.scale(2, 0)
 	assert.Equal(t, sokar.ScaleIgnored, result.State)
 }
 
-func TestScaleBy_Up(t *testing.T) {
+func TestScale_Up(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	jobname := "any"
+	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+
+	// scale up
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
+	result := scaler.scale(2, 0)
+	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+
+	// scale up - max hit
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
+	result = scaler.scale(6, 0)
+	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+}
+
+func TestScale_Down(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	jobname := "any"
+	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+
+	// scale down
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
+	result := scaler.scale(1, 4)
+	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+
+	// scale up - min hit
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
+	result = scaler.scale(0, 2)
+	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+}
+
+func TestScale_NoScale(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	jobname := "any"
+	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+
+	// scale down
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	result := scaler.scale(2, 2)
+	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+}
+
+func TestScaleBy(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -72,24 +140,13 @@ func TestScaleBy_Up(t *testing.T) {
 	result := scaler.ScaleBy(2)
 	assert.NotEqual(t, sokar.ScaleFailed, result.State)
 
-	// scale up - relative
-	currentJobCount = uint(1)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(3)).Return(nil)
+	// scale err
+	scaTgt.EXPECT().GetJobCount(jobname).Return(uint(0), fmt.Errorf("internal err"))
 	result = scaler.ScaleBy(2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
-
-	// scale up - max hit
-	currentJobCount = uint(4)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
-	result = scaler.ScaleBy(2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.Equal(t, sokar.ScaleFailed, result.State)
 }
 
-func TestScaleBy_Down(t *testing.T) {
+func TestScaleTo(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -101,41 +158,18 @@ func TestScaleBy_Down(t *testing.T) {
 	scaler, err := cfg.New(scaTgt)
 	require.NoError(t, err)
 
-	// scale down
-	currentJobCount := uint(3)
+	// scale up
+	currentJobCount := uint(0)
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
-	result := scaler.ScaleBy(-2)
+	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
+	result := scaler.ScaleTo(2)
 	assert.NotEqual(t, sokar.ScaleFailed, result.State)
 
-	// scale up - min hit
-	currentJobCount = uint(2)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
-	result = scaler.ScaleBy(-5)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
-}
-
-func TestScaleBy_NoScale(t *testing.T) {
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
-	scaler, err := cfg.New(scaTgt)
-	require.NoError(t, err)
-
-	// scale down
-	currentJobCount := uint(5)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	result := scaler.ScaleBy(2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	// scale err
+	scaTgt.EXPECT().GetJobCount(jobname).Return(uint(0), fmt.Errorf("internal err"))
+	result = scaler.ScaleTo(2)
+	assert.Equal(t, sokar.ScaleFailed, result.State)
 }
 
 func TestScaleBy_CheckScalingPolicy(t *testing.T) {
