@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/sokar"
 )
 
@@ -28,54 +29,25 @@ func amountToScaleType(amount int) string {
 	return scaleTypeStr
 }
 
-func checkScalingPolicyNew(count uint, min uint, max uint) policyCheckResult {
+// checkScalingPolicy verifies if the desired
+func checkScalingPolicy(desiredCount uint, min uint, max uint) policyCheckResult {
 
 	result := policyCheckResult{minPolicyViolated: false, maxPolicyViolated: false}
 
-	result.desiredCount = count
+	result.desiredCount = desiredCount
+	result.validCount = desiredCount
 
-	// check if count exceeds minimum
-	if count < min {
-		count = min
+	// check if desiredCount exceeds minimum
+	if desiredCount < min {
+		result.validCount = min
 		result.minPolicyViolated = true
 	}
 
-	// check if count exceeds maximum
-	if count > max {
-		count = max
+	// check if desiredCount exceeds maximum
+	if desiredCount > max {
+		result.validCount = max
 		result.maxPolicyViolated = true
 	}
-
-	result.validCount = count
-
-	return result
-}
-
-func checkScalingPolicy(count uint, amount int, min uint, max uint) policyCheckResult {
-
-	result := policyCheckResult{minPolicyViolated: false, maxPolicyViolated: false}
-
-	newCountTmp := int(count) + amount
-	newCount := uint(newCountTmp)
-	if newCountTmp < 0 {
-		newCount = 0
-	}
-
-	result.desiredCount = newCount
-
-	// check if count exceeds minimum
-	if newCount < min {
-		newCount = min
-		result.minPolicyViolated = true
-	}
-
-	// check if count exceeds maximum
-	if newCount > max {
-		newCount = max
-		result.maxPolicyViolated = true
-	}
-
-	result.validCount = newCount
 
 	return result
 }
@@ -122,7 +94,7 @@ func (s *Scaler) ScaleTo(count uint) sokar.ScaleResult {
 		}
 	}
 
-	chkResult := checkScalingPolicyNew(count, min, max)
+	chkResult := checkScalingPolicy(count, min, max)
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d). Scale limited to %d.", min, chkResult.desiredCount, count, newCount)
@@ -198,7 +170,8 @@ func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 		}
 	}
 
-	chkResult := checkScalingPolicy(count, amount, min, max)
+	desiredCount := helper.IncUint(count, amount)
+	chkResult := checkScalingPolicy(desiredCount, min, max)
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale %s limited to %d.", min, chkResult.desiredCount, count, scaleTypeStr, newCount)
