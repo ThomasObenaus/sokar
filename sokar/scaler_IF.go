@@ -4,6 +4,8 @@ package sokar
 type ScaleState string
 
 const (
+	// ScaleUnknown means the scale process was completed successfully
+	ScaleUnknown ScaleState = "unknown"
 	// ScaleDone means the scale process was completed successfully
 	ScaleDone ScaleState = "done"
 	// ScaleRunning means the scale process is in progress
@@ -22,4 +24,5 @@ type ScaleResult struct {
 
 type Scaler interface {
 	ScaleBy(amount int) ScaleResult
+	ScaleTo(count uint) ScaleResult
 }
