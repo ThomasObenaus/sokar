@@ -24,6 +24,39 @@ export LOCAL_IP=<ip of your host pc>
 
 ```
 
+### Nomad
+
+Start nomad locally
+
+```bash
+cd $COS/examples/devmode/ && ./devmode.sh $LOCAL_IP "public-services"
+export NOMAD_ADDR=http://$LOCAL_IP:4646 && export CONSUL_HTTP_ADDR=http://LOCAL_IP:8500 && export IGRESS_ADDR=http://LOCAL_IP:9999
+
+#Open ui
+xdg-open $NOMAD_ADDR
+```
+
+Deploy sample job
+
+```bash
+nomad run $SK/examples/multi-group.nomad
+```
+
+### Sokar
+
+Build
+
+```bash
+cd $SK
+make build
+```
+
+One Shot
+
+```bash
+$SK/sokar-bin -oneshot -nomad-server-address=$NOMAD_ADDR -job-name="fail-service" -scale-by=1
+```
+
 ### Alertmanager
 
 Run it locally
@@ -42,23 +75,6 @@ Fire alert
 $AM/amtool alert --alertmanager.url=http://localhost:9093 add alertname=foo node=bar test=bla
 ```
 
-### Nomad
-
-Start nomad locally
-
-```bash
-cd $COS/examples/devmode/ && ./devmode.sh $LOCAL_IP "public-services"
-export NOMAD_ADDR=http://$LOCAL_IP:4646 && export CONSUL_HTTP_ADDR=http://LOCAL_IP:8500 && export IGRESS_ADDR=http://LOCAL_IP:9999
-
-#Open ui
-xdg-open $NOMAD_ADDR
-```
-
-Deploy sample job
-
-```bash
-nomad run $SK/examples/multi-group.nomad
-```
 
 Close all
 
