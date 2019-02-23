@@ -98,10 +98,10 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 	chkResult := checkScalingPolicy(desiredCount, min, max)
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, desiredCount, currentCount, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, currentCount, newCount)
 	}
 	if chkResult.maxPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, desiredCount, currentCount, newCount)
+		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", max, chkResult.desiredCount, currentCount, newCount)
 	}
 
 	diff := helper.SubUint(newCount, currentCount)
