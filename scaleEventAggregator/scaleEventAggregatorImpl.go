@@ -22,7 +22,47 @@ func (sc *ScaleEventAggregator) ScaleEvent(w http.ResponseWriter, r *http.Reques
 
 func (sc *ScaleEventAggregator) emitScaleEvent() {
 
-	for _, subscribor := range sc.subscriptions {
-		subscribor <- sokar.ScaleEvent{ScaleFactor: 1}
+	for _, subscriber := range sc.subscriptions {
+		subscriber <- sokar.ScaleEvent{ScaleFactor: 1}
 	}
+}
+
+// Run starts the ScaleEventAggregator
+func (sc *ScaleEventAggregator) Run() {
+
+	sc.logger.Info().Msg("Subscribe at scale alert receivers")
+	scaleAlertChannel := make(chan ScaleAlertList)
+	for _, receiver := range sc.receivers {
+		receiver.Subscribe(scaleAlertChannel)
+	}
+
+	// main loop
+	go func() {
+		sc.logger.Info().Msg("Main process loop started")
+
+	loop:
+		for {
+			select {
+			case <-sc.stopChan:
+				close(sc.stopChan)
+				break loop
+			case scaleAlert := <-scaleAlertChannel:
+				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlert)
+			}
+		}
+		sc.logger.Info().Msg("Main process loop left")
+	}()
+
+}
+
+// Stop tears down ScaleEventAggregator
+func (sc *ScaleEventAggregator) Stop() {
+	sc.logger.Info().Msg("Teardown requested")
+	// send the stop message
+	sc.stopChan <- struct{}{}
+}
+
+// Join blocks/ waits until ScaleEventAggregator has been stopped
+func (sc *ScaleEventAggregator) Join() {
+	<-sc.stopChan
 }
