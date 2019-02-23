@@ -16,12 +16,14 @@ const (
 	ScaleIgnored ScaleState = "ignored"
 )
 
+// ScaleResult is created after scaling was done and contains the result
 type ScaleResult struct {
 	State            ScaleState
 	StateDescription string
 	NewCount         uint
 }
 
+// Scaler is a component that is able to scale a job/instance
 type Scaler interface {
 	ScaleBy(amount int) ScaleResult
 	ScaleTo(count uint) ScaleResult
