@@ -1,6 +1,8 @@
 package alertmanager
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -38,5 +40,23 @@ func (c *Connector) fireScaleAlert(scaleAlert scaleEventAggregator.ScaleAlert) {
 }
 
 func (c *Connector) HandleScaleAlert(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.logger.Info().Msg("SSSSSSSSSSSSSSSSSSS")
+	c.logger.Info().Msg("Receiving scaling alerts")
+
+	defer r.Body.Close()
+
+	alerts := response{}
+	err := json.NewDecoder(r.Body).Decode(&alerts)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to parse data received from alertmanager: %s.", err)
+		c.logger.Error().Msg(msg)
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
+
+	c.logger.Info().Msgf("%d Scaling Alerts received.", len(alerts.Alerts))
+	for _, alert := range alerts.Alerts {
+		c.logger.Info().Str("status", alert.Status).Msgf("Labels: %+v", alert.Labels)
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
