@@ -1,7 +1,9 @@
 package scaleEventAggregator
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -27,6 +29,24 @@ func (sc *ScaleEventAggregator) emitScaleEvent() {
 	}
 }
 
+func (sc *ScaleEventAggregator) evaluate() {
+	sc.logger.Info().Msg("Evaluate")
+
+	for alertName := range sc.alertMap {
+
+		sf, ok := sc.scaleFactorMap[alertName]
+		if !ok {
+			log.Fatal("Alert not in map")
+		}
+
+		sc.logger.Info().Msgf("Alert %s, SF %f", alertName, sf)
+
+		// HACK: BLOCKS UNTIL DEPLOYMENT IS DONE!!!!
+		sc.emitScaleEvent()
+	}
+
+}
+
 // Run starts the ScaleEventAggregator
 func (sc *ScaleEventAggregator) Run() {
 
@@ -36,6 +56,8 @@ func (sc *ScaleEventAggregator) Run() {
 		receiver.Subscribe(scaleAlertChannel)
 	}
 
+	ticker := time.NewTicker(1000 * time.Millisecond)
+
 	// main loop
 	go func() {
 		sc.logger.Info().Msg("Main process loop started")
@@ -44,13 +66,28 @@ func (sc *ScaleEventAggregator) Run() {
 		for {
 			select {
 			case <-sc.stopChan:
+				ticker.Stop()
 				close(sc.stopChan)
 				break loop
+
+			case <-ticker.C:
+				sc.evaluate()
 			case scaleAlerts := <-scaleAlertChannel:
 				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlerts)
+
+				for _, alert := range scaleAlerts {
+					if !alert.Firing {
+						delete(sc.alertMap, alert.Name)
+					} else {
+						sc.alertMap[alert.Name] = alert
+					}
+
+				}
+
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")
+
 	}()
 
 }
