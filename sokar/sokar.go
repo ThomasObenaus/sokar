@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	ParamBy     = "by"
-	PathScaleBy = "/scaler/scale/:" + ParamBy
+	paramBy     = "by"
+	pathScaleBy = "/scaler/scale/:" + paramBy
 )
 
+// Sokar component that can be used to scale jobs/instances
 type Sokar struct {
 	scaler               Scaler
 	capacityPlanner      CapacityPlanner
@@ -26,10 +27,12 @@ type Sokar struct {
 	logger zerolog.Logger
 }
 
+// Config cfg for sokar
 type Config struct {
 	Logger zerolog.Logger
 }
 
+// New creates a new instance of sokar
 func (cfg *Config) New(scaleEventAggregator ScaleEventAggregator, capacityPlanner CapacityPlanner, scaler Scaler) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
@@ -55,8 +58,8 @@ func (cfg *Config) New(scaleEventAggregator ScaleEventAggregator, capacityPlanne
 
 // ScaleBy is the http end-point for scale actions
 func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	byStr := ps.ByName(ParamBy)
-	sk.logger.Debug().Msgf("%s called with param='%s'.", PathScaleBy, byStr)
+	byStr := ps.ByName(paramBy)
+	sk.logger.Debug().Msgf("%s called with param='%s'.", pathScaleBy, byStr)
 
 	by, err := strconv.ParseInt(byStr, 10, 64)
 	if err != nil {
