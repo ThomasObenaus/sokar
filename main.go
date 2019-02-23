@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/rs/zerolog"
+	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/logging"
@@ -65,6 +66,12 @@ func main() {
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
+
+	amCfg := alertmanager.Config{
+		Logger: loggingFactory.NewNamedLogger("sokar.amlertmanager"),
+	}
+	amConnector := amCfg.New()
+	api.Router.POST("/alerting-target", amConnector.HandleScaleAlert)
 
 	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, api, logger)
 
