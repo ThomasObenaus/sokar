@@ -11,8 +11,10 @@ import (
 )
 
 const (
-	paramBy     = "by"
-	pathScaleBy = "/scaler/scale/:" + paramBy
+	// ParamBy part of the path specifying the amount to be scaled
+	ParamBy = "by"
+	// PathScaleBy is the url path to the scale-by end-point
+	PathScaleBy = "/scaler/scale/:" + ParamBy
 )
 
 // Sokar component that can be used to scale jobs/instances
@@ -58,8 +60,8 @@ func (cfg *Config) New(scaleEventAggregator ScaleEventAggregator, capacityPlanne
 
 // ScaleBy is the http end-point for scale actions
 func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	byStr := ps.ByName(paramBy)
-	sk.logger.Debug().Msgf("%s called with param='%s'.", pathScaleBy, byStr)
+	byStr := ps.ByName(ParamBy)
+	sk.logger.Debug().Msgf("%s called with param='%s'.", PathScaleBy, byStr)
 
 	by, err := strconv.ParseInt(byStr, 10, 64)
 	if err != nil {
