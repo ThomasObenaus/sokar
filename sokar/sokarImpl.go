@@ -1,9 +1,10 @@
 package sokar
 
+// Run starts sokar
 func (sk *Sokar) Run() {
 
 	scaleEventChannel := make(chan ScaleEvent, 10)
-	sk.scaleEventAggregator.Substribe(scaleEventChannel)
+	sk.scaleEventAggregator.Subscribe(scaleEventChannel)
 
 	// main loop
 	go func() {
@@ -27,12 +28,14 @@ func (sk *Sokar) Run() {
 
 }
 
+// Stop tears down sokar
 func (sk *Sokar) Stop() {
 	sk.logger.Info().Msg("Teardown requested")
 	// send the stop message
 	sk.stopChan <- struct{}{}
 }
 
+// Join blocks/ waits until sokar has been stopped
 func (sk *Sokar) Join() {
 	<-sk.stopChan
 }

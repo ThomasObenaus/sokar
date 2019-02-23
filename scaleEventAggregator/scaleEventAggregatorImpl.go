@@ -7,10 +7,12 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 )
 
-func (sc *ScaleEventAggregator) Substribe(subscriber chan sokar.ScaleEvent) {
+// Subscribe is used to register for receiving ScaleEvents
+func (sc *ScaleEventAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
 	sc.subscriptions = append(sc.subscriptions, subscriber)
 }
 
+// ScaleEvent implements the http end-point for emitting a scaling event
 func (sc *ScaleEventAggregator) ScaleEvent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	sc.logger.Info().Msg("ScaleEvent Received")
