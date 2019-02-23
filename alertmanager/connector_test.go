@@ -12,4 +12,5 @@ func TestNewConnector(t *testing.T) {
 	connector := cfg.New()
 
 	assert.NotNil(t, connector)
+
 }

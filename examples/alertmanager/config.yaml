@@ -3,6 +3,10 @@ global:
 # The root route on which each incoming alert enters.
 route:
   group_by: [Alertname]
+
+  # specifies how long the alertmanager will wait
+  # until he flushes the alerts to the alerting-targets
+  group_interval: 10s
   # Send all notifications to me.
   receiver: sokar
 
