@@ -2,6 +2,7 @@ package alertmanager
 
 import "time"
 
+// response from the alertmanager
 type response struct {
 	Receiver          string  `json:"receiver,omitempty"`
 	Status            string  `json:"status,omitempty"`
@@ -14,6 +15,7 @@ type response struct {
 	GroupKey          string  `json:"groupKey,omitempty"`
 }
 
+// alert data from alertmanager
 type alert struct {
 	Status       string    `json:"status,omitempty"`
 	Labels       kvp       `json:"labels,omitempty"`
@@ -23,4 +25,5 @@ type alert struct {
 	GeneratorURL string    `json:"generatorURL,omitempty"`
 }
 
+// kvp a key value pair
 type kvp map[string]string

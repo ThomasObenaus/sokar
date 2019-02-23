@@ -71,7 +71,7 @@ func main() {
 		Logger: loggingFactory.NewNamedLogger("sokar.amlertmanager"),
 	}
 	amConnector := amCfg.New()
-	api.Router.POST("/alerts", amConnector.HandleScaleAlert)
+	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
 
 	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, api, logger)
 
