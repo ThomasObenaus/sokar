@@ -56,22 +56,24 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
 
+	var scaleAlertReceivers []scaleEventAggregator.ScaleAlertReceiver
+	amCfg := alertmanager.Config{
+		Logger: loggingFactory.NewNamedLogger("sokar.amlertmanager"),
+	}
+	amConnector := amCfg.New()
+	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
+	scaleAlertReceivers = append(scaleAlertReceivers, amConnector)
+
 	scaEvtAggCfg := scaleEventAggregator.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.scaEvtAggr"),
 	}
-	scaEvtAggr := scaEvtAggCfg.New()
+	scaEvtAggr := scaEvtAggCfg.New(scaleAlertReceivers)
 	api.Router.POST("/alert", scaEvtAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
-
-	amCfg := alertmanager.Config{
-		Logger: loggingFactory.NewNamedLogger("sokar.amlertmanager"),
-	}
-	amConnector := amCfg.New()
-	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
 
 	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, api, logger)
 
@@ -83,6 +85,7 @@ func main() {
 
 	// Run all components
 	sokarInst.Run()
+	scaEvtAggr.Run()
 	api.Run()
 
 	// Install signal handler for shutdown
@@ -94,11 +97,13 @@ func main() {
 
 		// Stop all components
 		api.Stop()
+		scaEvtAggr.Stop()
 		sokarInst.Stop()
 	}()
 
 	// Wait till completion
 	api.Join()
+	scaEvtAggr.Join()
 	sokarInst.Join()
 
 	os.Exit(0)

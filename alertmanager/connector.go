@@ -23,8 +23,8 @@ type Config struct {
 }
 
 // New creates a new instance of the prometheus/alertmanager Connector
-func (cfg Config) New() Connector {
-	return Connector{
+func (cfg Config) New() *Connector {
+	return &Connector{
 		logger: cfg.Logger,
 	}
 }
