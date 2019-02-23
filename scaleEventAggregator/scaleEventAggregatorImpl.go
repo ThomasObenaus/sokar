@@ -46,8 +46,8 @@ func (sc *ScaleEventAggregator) Run() {
 			case <-sc.stopChan:
 				close(sc.stopChan)
 				break loop
-			case scaleAlert := <-scaleAlertChannel:
-				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlert)
+			case scaleAlerts := <-scaleAlertChannel:
+				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlerts)
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")
