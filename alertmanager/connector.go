@@ -34,9 +34,9 @@ func (c *Connector) Subscribe(subscriber chan scaleEventAggregator.ScaleAlertLis
 	c.subscriptions = append(c.subscriptions, subscriber)
 }
 
-func (c *Connector) fireScaleAlert(scaleAlertList scaleEventAggregator.ScaleAlertList) {
+func (c *Connector) fireScaleAlert(scalingAlerts scaleEventAggregator.ScaleAlertList) {
 	for _, subscriber := range c.subscriptions {
-		subscriber <- scaleAlertList
+		subscriber <- scalingAlerts
 	}
 }
 
@@ -55,10 +55,9 @@ func (c *Connector) HandleScaleAlerts(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 
-	c.logger.Info().Msgf("%d Scaling Alerts received.", len(alertmanagerResponse.Alerts))
-	for _, alert := range alertmanagerResponse.Alerts {
-		c.logger.Info().Str("status", alert.Status).Msgf("Labels: %+v", alert.Labels)
-	}
+	c.logger.Info().Msgf("%d Scaling Alerts received. Will send them to the subscriber.", len(alertmanagerResponse.Alerts))
+	scalingAlerts := amResponseToScalingAlerts(alertmanagerResponse)
+	c.fireScaleAlert(scalingAlerts)
 
 	w.WriteHeader(http.StatusOK)
 }
