@@ -46,5 +46,9 @@ func (sk *Sokar) handleScaleEvent(scaleEvent ScaleEvent) {
 
 	// plan
 	plannedCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, 1)
-	sk.scaler.ScaleBy(int(plannedCount))
+	scaleBy := 1
+	if plannedCount == 0 {
+		scaleBy = -1
+	}
+	sk.scaler.ScaleBy(scaleBy)
 }

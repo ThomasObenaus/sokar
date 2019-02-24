@@ -10,6 +10,7 @@ import (
 // ScaleAlertPool is a structure for organizing ScaleAlerts.
 // Adding, removing, updating and obtaining them.
 // Based on the configured TTL the ScaleAlerts will be removed automatically if they were not updated.
+// Access is thread-safe.
 type ScaleAlertPool struct {
 	// entries is a map that provides fast access to a ScaleAlertPoolEntry using it's name
 	// key: ScaleAlertPoolEntry.scaleAlert.Name, value: ScaleAlertPoolEntry
@@ -17,7 +18,7 @@ type ScaleAlertPool struct {
 	ttl     time.Duration
 
 	// ensures thread safety for the entries of the pool
-	lock sync.Mutex
+	lock sync.RWMutex
 }
 
 // ScaleAlertPoolEntry represents a ScaleAlert with an expiration time.
@@ -49,6 +50,7 @@ func (sp *ScaleAlertPool) cleanup() {
 	}
 }
 
+// update adds firing and non expired ScaleAlerts to the pool
 func (sp *ScaleAlertPool) update(scaleAlerts ScaleAlertList) {
 
 	expiresAt := time.Now().Add(sp.ttl)
@@ -77,12 +79,29 @@ func (sp *ScaleAlertPool) update(scaleAlerts ScaleAlertList) {
 func (sp *ScaleAlertPool) String() string {
 	var buf bytes.Buffer
 
-	sp.lock.Lock()
-	defer sp.lock.Unlock()
+	sp.lock.RLock()
+	defer sp.lock.RUnlock()
 
 	buf.WriteString(fmt.Sprintf("%d entries (ttl: %s)\n", len(sp.entries), sp.ttl))
 	for key, entry := range sp.entries {
 		buf.WriteString(fmt.Sprintf("\t%s %t %s\n", key, entry.scaleAlert.Firing, entry.expiresAt))
 	}
 	return buf.String()
+}
+
+// iterate ensures thread-safe iteration over the ScalingAlerts inside the pool
+func (sp *ScaleAlertPool) iterate(fn func(scaleAlert ScaleAlert)) {
+	sp.lock.RLock()
+	defer sp.lock.RUnlock()
+
+	for _, entry := range sp.entries {
+		fn(entry.scaleAlert)
+	}
+}
+
+// size returns the number of entries in the pool
+func (sp *ScaleAlertPool) size() int {
+	sp.lock.RLock()
+	defer sp.lock.RUnlock()
+	return len(sp.entries)
 }
