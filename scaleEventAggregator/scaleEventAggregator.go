@@ -37,4 +37,5 @@ func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleEventAggregator {
 	}
 }
 
+// AlertToScaleFactorMap maps an alert to a scaling factor
 type AlertToScaleFactorMap map[string]float32
