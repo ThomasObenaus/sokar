@@ -14,7 +14,7 @@ import (
 // Connector is the integration of prometheus/alertmanager
 type Connector struct {
 	logger        zerolog.Logger
-	subscriptions []chan scaleEventAggregator.ScaleAlertList
+	subscriptions []chan scaleEventAggregator.ScaleAlertPacket
 }
 
 // Config cfg for the connector
@@ -30,11 +30,11 @@ func (cfg Config) New() *Connector {
 }
 
 // Subscribe is used to register/ subscribe for the channel where scaling alerts are emitted
-func (c *Connector) Subscribe(subscriber chan scaleEventAggregator.ScaleAlertList) {
+func (c *Connector) Subscribe(subscriber chan scaleEventAggregator.ScaleAlertPacket) {
 	c.subscriptions = append(c.subscriptions, subscriber)
 }
 
-func (c *Connector) fireScaleAlert(scalingAlerts scaleEventAggregator.ScaleAlertList) {
+func (c *Connector) fireScaleAlertPacket(scalingAlerts scaleEventAggregator.ScaleAlertPacket) {
 	for _, subscriber := range c.subscriptions {
 		subscriber <- scalingAlerts
 	}
@@ -42,7 +42,7 @@ func (c *Connector) fireScaleAlert(scalingAlerts scaleEventAggregator.ScaleAlert
 
 // HandleScaleAlerts is the http end-point implementation for receiving alerts from alertmanager
 func (c *Connector) HandleScaleAlerts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	c.logger.Info().Msg("Receiving scaling alerts")
+	c.logger.Info().Msg("Received scaling alert packet.")
 
 	defer r.Body.Close()
 
@@ -55,9 +55,9 @@ func (c *Connector) HandleScaleAlerts(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 
-	c.logger.Info().Msgf("%d Scaling Alerts received. Will send them to the subscriber.", len(alertmanagerResponse.Alerts))
-	scalingAlerts := amResponseToScalingAlerts(alertmanagerResponse)
-	c.fireScaleAlert(scalingAlerts)
+	scalingAlertPacket := amResponseToScalingAlerts(alertmanagerResponse)
+	c.logger.Info().Msgf("%d Scaling Alerts received from '%s'. Will send them to the subscriber.", len(scalingAlertPacket.ScaleAlerts), scalingAlertPacket.Receiver)
+	c.fireScaleAlertPacket(scalingAlertPacket)
 
 	w.WriteHeader(http.StatusOK)
 }

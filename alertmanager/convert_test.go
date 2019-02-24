@@ -73,7 +73,8 @@ func Test_AlertsToScalingAlertList(t *testing.T) {
 
 	resp.Alerts = append(resp.Alerts, al2)
 
-	alerts := amResponseToScalingAlerts(resp)
+	pkg := amResponseToScalingAlerts(resp)
+	alerts := pkg.ScaleAlerts
 
 	assert.Equal(t, 2, len(alerts))
 	assert.Equal(t, name1, alerts[0].Name)
