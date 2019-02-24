@@ -1,7 +1,6 @@
 package scaleEventAggregator
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -32,18 +31,18 @@ func (sc *ScaleEventAggregator) emitScaleEvent() {
 func (sc *ScaleEventAggregator) evaluate() {
 	sc.logger.Info().Msg("Evaluate")
 
-	for alertName := range sc.alertMap {
-
-		sf, ok := sc.scaleFactorMap[alertName]
-		if !ok {
-			log.Fatal("Alert not in map")
-		}
-
-		sc.logger.Info().Msgf("Alert %s, SF %f", alertName, sf)
-
-		// HACK: BLOCKS UNTIL DEPLOYMENT IS DONE!!!!
-		sc.emitScaleEvent()
-	}
+	//for alertName := range sc.alertMap {
+	//
+	//	sf, ok := sc.scaleFactorMap[alertName]
+	//	if !ok {
+	//		log.Fatal("Alert not in map")
+	//	}
+	//
+	//	sc.logger.Info().Msgf("Alert %s, SF %f", alertName, sf)
+	//
+	//	// HACK: BLOCKS UNTIL DEPLOYMENT IS DONE!!!!
+	//	sc.emitScaleEvent()
+	//}
 
 }
 
@@ -75,14 +74,14 @@ func (sc *ScaleEventAggregator) Run() {
 			case scaleAlerts := <-scaleAlertChannel:
 				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlerts)
 
-				for _, alert := range scaleAlerts {
-					if !alert.Firing {
-						delete(sc.alertMap, alert.Name)
-					} else {
-						sc.alertMap[alert.Name] = alert
-					}
-
-				}
+				//for _, alert := range scaleAlerts {
+				//	if !alert.Firing {
+				//		delete(sc.alertMap, alert.Name)
+				//	} else {
+				//		sc.alertMap[alert.Name] = alert
+				//	}
+				//
+				//}
 
 			}
 		}

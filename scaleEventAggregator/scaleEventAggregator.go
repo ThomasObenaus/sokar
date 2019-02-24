@@ -15,7 +15,10 @@ type ScaleEventAggregator struct {
 	stopChan chan struct{}
 
 	scaleFactorMap AlertToScaleFactorMap
-	alertMap       map[string]ScaleAlert
+
+	// This map represents the ScaleAlerts which are currently known.
+	// They where obtained through the different ScaleAlertReceivers
+	scaleAlertPool ScaleAlertPool
 }
 
 // Config configuration for the ScaleEventAggregator
@@ -30,7 +33,7 @@ func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleEventAggregator {
 		receivers:      receivers,
 		stopChan:       make(chan struct{}, 1),
 		scaleFactorMap: map[string]float32{"AlertA": -1.0, "AlertB": 2},
-		alertMap:       make(map[string]ScaleAlert, 0),
+		scaleAlertPool: NewScaleAlertPool(),
 	}
 }
 
