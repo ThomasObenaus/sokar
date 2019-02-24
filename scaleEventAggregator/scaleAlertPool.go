@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/thomasobenaus/sokar/helper"
 )
 
 // ScaleAlertPool is a structure for organizing ScaleAlerts.
@@ -12,9 +14,9 @@ import (
 // Based on the configured TTL the ScaleAlerts will be removed automatically if they were not updated.
 // Access is thread-safe.
 type ScaleAlertPool struct {
-	// entries is a map that provides fast access to a ScaleAlertPoolEntry using it's name
-	// key: ScaleAlertPoolEntry.scaleAlert.Name, value: ScaleAlertPoolEntry
-	entries map[string]ScaleAlertPoolEntry
+	// entries is a map that provides fast access to a ScaleAlertPoolEntry using it's id
+	// key: ScaleAlertPoolEntry.id, value: ScaleAlertPoolEntry
+	entries map[uint32]ScaleAlertPoolEntry
 	ttl     time.Duration
 
 	// ensures thread safety for the entries of the pool
@@ -24,6 +26,8 @@ type ScaleAlertPool struct {
 // ScaleAlertPoolEntry represents a ScaleAlert with an expiration time.
 // This is needed in order to be able to clean up alerts which are not updated/ fired for a long time.
 type ScaleAlertPoolEntry struct {
+	id uint32
+
 	scaleAlert ScaleAlert
 	expiresAt  time.Time
 
@@ -36,7 +40,7 @@ type ScaleAlertPoolEntry struct {
 func NewScaleAlertPool() ScaleAlertPool {
 	return ScaleAlertPool{
 		ttl:     time.Second * 60,
-		entries: make(map[string]ScaleAlertPoolEntry),
+		entries: make(map[uint32]ScaleAlertPoolEntry),
 	}
 }
 
@@ -62,20 +66,24 @@ func (sp *ScaleAlertPool) update(receiver string, scaleAlerts []ScaleAlert) {
 	sp.lock.Lock()
 	defer sp.lock.Unlock()
 	for _, alert := range scaleAlerts {
+
 		// ignore alerts without name
 		if len(alert.Name) == 0 {
 			continue
 		}
 
+		// generate id
+		id := toID(receiver, alert.Name)
+
 		// remove resolved alert
 		if !alert.Firing {
-			delete(sp.entries, alert.Name)
+			delete(sp.entries, id)
 			continue
 		}
 
 		// add entry, even override it if it already exists
 		// for now there is no information to keep
-		sp.entries[alert.Name] = ScaleAlertPoolEntry{expiresAt: expiresAt, scaleAlert: alert, receiver: receiver}
+		sp.entries[id] = ScaleAlertPoolEntry{id: id, expiresAt: expiresAt, scaleAlert: alert, receiver: receiver}
 	}
 }
 
@@ -88,13 +96,13 @@ func (sp *ScaleAlertPool) String() string {
 
 	buf.WriteString(fmt.Sprintf("%d entries (ttl: %s)\n", len(sp.entries), sp.ttl))
 	for key, entry := range sp.entries {
-		buf.WriteString(fmt.Sprintf("\t%s %t %s\n", key, entry.scaleAlert.Firing, entry.expiresAt))
+		buf.WriteString(fmt.Sprintf("\t%d %t %s\n", key, entry.scaleAlert.Firing, entry.expiresAt))
 	}
 	return buf.String()
 }
 
 // iterate ensures thread-safe iteration over the ScaleAlertPoolEntry inside the pool
-func (sp *ScaleAlertPool) iterate(fn func(key string, entry ScaleAlertPoolEntry)) {
+func (sp *ScaleAlertPool) iterate(fn func(key uint32, entry ScaleAlertPoolEntry)) {
 	sp.lock.RLock()
 	defer sp.lock.RUnlock()
 
@@ -108,4 +116,11 @@ func (sp *ScaleAlertPool) size() int {
 	sp.lock.RLock()
 	defer sp.lock.RUnlock()
 	return len(sp.entries)
+}
+
+// toID creates a unique id based on the given receiver and alertname
+func toID(receiver string, alertName string) uint32 {
+	concat := receiver + alertName
+
+	return helper.Hash(concat)
 }
