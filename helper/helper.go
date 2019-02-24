@@ -1,5 +1,10 @@
 package helper
 
+import (
+	"hash/fnv"
+	"log"
+)
+
 const (
 	maxUint = ^uint(0)
 	minUint = 0
@@ -47,4 +52,15 @@ func SubUint(a uint, by uint) int {
 	}
 
 	return int(r)
+}
+
+// Hash creates a 32-bit FNV-1a hash out of the given string.
+func Hash(s string) uint32 {
+	h := fnv.New32a()
+	_, err := h.Write([]byte(s))
+	if err != nil {
+		log.Fatalf("Error creating hash: %s", err.Error())
+	}
+
+	return h.Sum32()
 }

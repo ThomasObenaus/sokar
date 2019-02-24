@@ -5,7 +5,7 @@ func (sc *ScaleEventAggregator) aggregate() {
 	sc.logPool()
 
 	scaleUp := 0
-	sc.scaleAlertPool.iterate(func(key string, entry ScaleAlertPoolEntry) {
+	sc.scaleAlertPool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
 		scaleUp++
 	})
 
@@ -22,7 +22,7 @@ func (sc *ScaleEventAggregator) aggregate() {
 func (sc *ScaleEventAggregator) logPool() {
 	sc.logger.Debug().Int("num-entries", sc.scaleAlertPool.size()).Msg("ScaleAlertPool:")
 
-	sc.scaleAlertPool.iterate(func(key string, entry ScaleAlertPoolEntry) {
-		sc.logger.Debug().Str("name", entry.scaleAlert.Name).Str("receiver", entry.receiver).Msgf("[%s] fire=%t,start=%s,exp=%s", key, entry.scaleAlert.Firing, entry.scaleAlert.StartedAt.String(), entry.expiresAt.String())
+	sc.scaleAlertPool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
+		sc.logger.Debug().Str("name", entry.scaleAlert.Name).Str("receiver", entry.receiver).Msgf("[%d] fire=%t,start=%s,exp=%s", key, entry.scaleAlert.Firing, entry.scaleAlert.StartedAt.String(), entry.expiresAt.String())
 	})
 }

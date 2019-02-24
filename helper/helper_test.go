@@ -43,3 +43,14 @@ func Test_IncUint(t *testing.T) {
 	r = IncUint(maxUint, -1)
 	assert.Equal(t, maxUint-1, r)
 }
+
+func Test_Hash(t *testing.T) {
+
+	hashed1 := Hash("HALLO")
+	hashed2 := Hash("HALLO")
+	assert.Equal(t, hashed1, hashed2)
+
+	hashed1 = Hash("HALLO")
+	hashed2 = Hash("HALLO.")
+	assert.NotEqual(t, hashed1, hashed2)
+}
