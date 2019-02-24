@@ -24,39 +24,49 @@ func TestNewConnector(t *testing.T) {
 
 }
 
+func Test_GenReceiver(t *testing.T) {
+	receiver := genReceiver("hello")
+	assert.Equal(t, "AM.hello", receiver)
+
+	receiver = genReceiver("")
+	assert.Equal(t, "AM", receiver)
+}
+
 func Test_FireScaleAlert(t *testing.T) {
 
 	cfg := Config{}
 	connector := cfg.New()
 	require.NotNil(t, connector)
 
-	subscriber := make(chan sea.ScaleAlertList)
+	subscriber := make(chan sea.ScaleAlertPacket)
 
 	connector.Subscribe(subscriber)
 
-	var alertsAll sea.ScaleAlertList
+	var alertsAll []sea.ScaleAlert
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
-		for alerts := range subscriber {
-			alertsAll = append(alertsAll, alerts...)
+		for pkg := range subscriber {
+			alertsAll = append(alertsAll, pkg.ScaleAlerts...)
 		}
 		defer wg.Done()
 	}()
 
-	sentAlerts := make(sea.ScaleAlertList, 0)
+	sentAlerts := make([]sea.ScaleAlert, 0)
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "A"})
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "B"})
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "C"})
-	connector.fireScaleAlert(sentAlerts)
+	pkg := sea.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	connector.fireScaleAlertPacket(pkg)
 
-	sentAlerts = make(sea.ScaleAlertList, 0)
+	sentAlerts = make([]sea.ScaleAlert, 0)
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "A"})
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "B"})
 	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "C"})
-	connector.fireScaleAlert(sentAlerts)
+	pkg = sea.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	connector.fireScaleAlertPacket(pkg)
 
 	close(subscriber)
 
@@ -109,14 +119,14 @@ func Test_HandleScaleAlert_Success(t *testing.T) {
 	req := httptest.NewRequest("POST", "http://example.com/foo", buf)
 	w := httptest.NewRecorder()
 
-	subscriber := make(chan sea.ScaleAlertList)
+	subscriber := make(chan sea.ScaleAlertPacket)
 	connector.Subscribe(subscriber)
-	var alertsAll sea.ScaleAlertList
+	var alertsAll []sea.ScaleAlert
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		for alerts := range subscriber {
-			alertsAll = append(alertsAll, alerts...)
+		for pkg := range subscriber {
+			alertsAll = append(alertsAll, pkg.ScaleAlerts...)
 		}
 		defer wg.Done()
 	}()

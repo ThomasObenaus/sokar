@@ -32,13 +32,13 @@ func (sc *ScaleEventAggregator) emitScaleEvent(scaleFactor float32) {
 func (sc *ScaleEventAggregator) Run() {
 
 	sc.logger.Info().Msg("Subscribe at scale alert receivers")
-	scaleAlertChannel := make(chan ScaleAlertList)
+	scaleAlertChannel := make(chan ScaleAlertPacket)
 	for _, receiver := range sc.receivers {
 		receiver.Subscribe(scaleAlertChannel)
 	}
 
-	aggregationTicker := time.NewTicker(5000 * time.Millisecond)
-	cleanupTicker := time.NewTicker(20000 * time.Millisecond)
+	aggregationTicker := time.NewTicker(sc.aggregationCycle)
+	cleanupTicker := time.NewTicker(sc.cleanupCycle)
 
 	// main loop
 	go func() {
@@ -69,9 +69,9 @@ func (sc *ScaleEventAggregator) Run() {
 
 }
 
-func (sc *ScaleEventAggregator) handleReceivedScaleAlerts(scaleAlerts ScaleAlertList) {
-	sc.logger.Info().Msgf("%d Alerts received.", len(scaleAlerts))
-	sc.scaleAlertPool.update(scaleAlerts)
+func (sc *ScaleEventAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {
+	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), scaPckg.Receiver)
+	sc.scaleAlertPool.update(scaPckg.Receiver, scaPckg.ScaleAlerts)
 }
 
 // Stop tears down ScaleEventAggregator

@@ -37,7 +37,7 @@ func Test_Cleanup(t *testing.T) {
 func Test_Update(t *testing.T) {
 	scap := NewScaleAlertPool()
 
-	var scaleAlerts ScaleAlertList
+	var scaleAlerts []ScaleAlert
 
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert1", Firing: true})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert2", Firing: true})
@@ -45,7 +45,7 @@ func Test_Update(t *testing.T) {
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert4", Firing: false})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
-	scap.update(scaleAlerts)
+	scap.update("AM", scaleAlerts)
 	scap.cleanup()
 
 	assert.Equal(t, 2, len(scap.entries))
@@ -63,7 +63,7 @@ func Test_Update(t *testing.T) {
 func Test_Sync(t *testing.T) {
 	scap := NewScaleAlertPool()
 
-	var scaleAlerts ScaleAlertList
+	var scaleAlerts []ScaleAlert
 
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert1", Firing: true})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert2", Firing: true})
@@ -77,7 +77,7 @@ func Test_Sync(t *testing.T) {
 		wg.Add(1)
 		defer wg.Done()
 		for {
-			scap.update(scaleAlerts)
+			scap.update("alertmanager", scaleAlerts)
 			assert.Equal(t, 2, len(scap.entries))
 
 			if stop {
@@ -91,7 +91,7 @@ func Test_Sync(t *testing.T) {
 		defer wg.Done()
 		for {
 			scap.cleanup()
-			scap.update(scaleAlerts)
+			scap.update("cloudwatch", scaleAlerts)
 			assert.Equal(t, 2, len(scap.entries))
 			if stop {
 				break

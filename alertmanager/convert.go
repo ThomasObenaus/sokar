@@ -6,12 +6,21 @@ import (
 	sea "github.com/thomasobenaus/sokar/scaleEventAggregator"
 )
 
-// amResponseToScalingAlerts extracts alerts from the response of the alertmanager
-func amResponseToScalingAlerts(resp response) sea.ScaleAlertList {
+func genReceiver(name string) string {
 
-	result := make(sea.ScaleAlertList, 0)
+	result := "AM"
+	if len(name) > 0 {
+		result += "." + name
+	}
+
+	return result
+}
+
+// amResponseToScalingAlerts extracts alerts from the response of the alertmanager
+func amResponseToScalingAlerts(resp response) sea.ScaleAlertPacket {
+	result := sea.ScaleAlertPacket{Receiver: genReceiver(resp.Receiver)}
 	for _, alert := range resp.Alerts {
-		result = append(result, amAlertToScalingAlert(alert))
+		result.ScaleAlerts = append(result.ScaleAlerts, amAlertToScalingAlert(alert))
 	}
 
 	return result

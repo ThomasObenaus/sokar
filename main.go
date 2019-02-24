@@ -58,7 +58,7 @@ func main() {
 
 	var scaleAlertReceivers []scaleEventAggregator.ScaleAlertReceiver
 	amCfg := alertmanager.Config{
-		Logger: loggingFactory.NewNamedLogger("sokar.amlertmanager"),
+		Logger: loggingFactory.NewNamedLogger("sokar.alertmanager"),
 	}
 	amConnector := amCfg.New()
 	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)

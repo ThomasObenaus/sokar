@@ -26,6 +26,10 @@ type ScaleAlertPool struct {
 type ScaleAlertPoolEntry struct {
 	scaleAlert ScaleAlert
 	expiresAt  time.Time
+
+	// Name of the receiver of the alert
+	// This shows where the alert actually came from.
+	receiver string
 }
 
 // NewScaleAlertPool creates a new empty pool
@@ -51,7 +55,7 @@ func (sp *ScaleAlertPool) cleanup() {
 }
 
 // update adds firing and non expired ScaleAlerts to the pool
-func (sp *ScaleAlertPool) update(scaleAlerts ScaleAlertList) {
+func (sp *ScaleAlertPool) update(receiver string, scaleAlerts []ScaleAlert) {
 
 	expiresAt := time.Now().Add(sp.ttl)
 
@@ -71,7 +75,7 @@ func (sp *ScaleAlertPool) update(scaleAlerts ScaleAlertList) {
 
 		// add entry, even override it if it already exists
 		// for now there is no information to keep
-		sp.entries[alert.Name] = ScaleAlertPoolEntry{expiresAt: expiresAt, scaleAlert: alert}
+		sp.entries[alert.Name] = ScaleAlertPoolEntry{expiresAt: expiresAt, scaleAlert: alert, receiver: receiver}
 	}
 }
 
@@ -89,13 +93,13 @@ func (sp *ScaleAlertPool) String() string {
 	return buf.String()
 }
 
-// iterate ensures thread-safe iteration over the ScalingAlerts inside the pool
-func (sp *ScaleAlertPool) iterate(fn func(scaleAlert ScaleAlert)) {
+// iterate ensures thread-safe iteration over the ScaleAlertPoolEntry inside the pool
+func (sp *ScaleAlertPool) iterate(fn func(key string, entry ScaleAlertPoolEntry)) {
 	sp.lock.RLock()
 	defer sp.lock.RUnlock()
 
-	for _, entry := range sp.entries {
-		fn(entry.scaleAlert)
+	for key, entry := range sp.entries {
+		fn(key, entry)
 	}
 }
 
