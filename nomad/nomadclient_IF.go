@@ -1,4 +1,4 @@
-package nomadConnector
+package nomad
 
 import (
 	nomadApi "github.com/hashicorp/nomad/api"

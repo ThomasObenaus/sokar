@@ -11,7 +11,7 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/logging"
-	"github.com/thomasobenaus/sokar/nomadConnector"
+	"github.com/thomasobenaus/sokar/nomad"
 	"github.com/thomasobenaus/sokar/scaleEventAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -128,9 +128,9 @@ func setupSokar(scaleEventAggregator sokar.ScaleEventAggregator, capacityPlanner
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	// Set up the nomad connector
-	nomadConnectorConfig := nomadConnector.NewDefaultConfig(nomadSrvAddr)
-	nomadConnectorConfig.Logger = logF.NewNamedLogger("sokar.nomad")
-	nomadConnector, err := nomadConnectorConfig.New()
+	nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)
+	nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
+	nomad, err := nomadConfig.New()
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up nomad connector: %s.", err)
 	}
@@ -142,7 +142,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 		Logger:   logF.NewNamedLogger("sokar.scaler"),
 	}
 
-	scaler, err := scaCfg.New(nomadConnector)
+	scaler, err := scaCfg.New(nomad)
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s.", err)
 	}

@@ -1,4 +1,4 @@
-package nomadConnector
+package nomad
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package nomadConnector
+package nomad
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 	"github.com/stretchr/testify/assert"
-	"github.com/thomasobenaus/sokar/test/nomadConnector"
+	"github.com/thomasobenaus/sokar/test/nomad"
 )
 
 func TestGetDeploymentID_NoIF(t *testing.T) {
@@ -29,8 +29,8 @@ func TestWaitForDeploymentConfirmation_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 	conn.deploymentIF = deplIF
@@ -53,8 +53,8 @@ func TestWaitForDeploymentConfirmation_Timeout(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 	conn.deploymentIF = deplIF
@@ -77,8 +77,8 @@ func TestWaitForDeploymentConfirmation_Failed(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 	conn.deploymentIF = deplIF
@@ -101,8 +101,8 @@ func TestWaitForDeploymentConfirmation_Nil(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 	conn.deploymentIF = deplIF
@@ -124,7 +124,7 @@ func TestGetDeploymentID_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 
@@ -144,7 +144,7 @@ func TestGetDeploymentID_Timeout(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 
@@ -163,7 +163,7 @@ func TestGetDeploymentID_InternalErr(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
 

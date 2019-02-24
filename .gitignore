@@ -2,6 +2,6 @@ Gopkg.lock
 sokar-bin
 debug
 coverage.out
-nomadConnector/debug\.test
+nomad/debug\.test
 
 scaler/debug\.test

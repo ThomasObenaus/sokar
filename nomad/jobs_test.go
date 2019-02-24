@@ -1,4 +1,4 @@
-package nomadConnector
+package nomad
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 	"github.com/stretchr/testify/assert"
-	"github.com/thomasobenaus/sokar/test/nomadConnector"
+	"github.com/thomasobenaus/sokar/test/nomad"
 )
 
 func minimalConnectorImpl() Connector {
@@ -32,7 +32,7 @@ func TestGetJobInfo(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, jobInfo)
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
 	conn.jobsIF = jobsIF
 
 	// job not found test
@@ -56,9 +56,9 @@ func TestSetJobInfo_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -99,9 +99,9 @@ func TestSetJobInfo_InternalError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -130,9 +130,9 @@ func TestSetJobInfo_DeploymentError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomadConnector.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomadConnector.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -172,7 +172,7 @@ func TestGetJobCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.jobsIF = jobsIF
 
@@ -201,7 +201,7 @@ func TestIsJobDead(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomadConnector.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.jobsIF = jobsIF
 
