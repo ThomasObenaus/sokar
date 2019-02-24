@@ -17,33 +17,15 @@ func (sc *ScaleEventAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
 func (sc *ScaleEventAggregator) ScaleEvent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	sc.logger.Info().Msg("ScaleEvent Received")
-	sc.emitScaleEvent()
+	sc.emitScaleEvent(1)
 	w.WriteHeader(http.StatusOK)
 }
 
-func (sc *ScaleEventAggregator) emitScaleEvent() {
+func (sc *ScaleEventAggregator) emitScaleEvent(scaleFactor float32) {
 
 	for _, subscriber := range sc.subscriptions {
-		subscriber <- sokar.ScaleEvent{ScaleFactor: 1}
+		subscriber <- sokar.ScaleEvent{ScaleFactor: scaleFactor}
 	}
-}
-
-func (sc *ScaleEventAggregator) evaluate() {
-	sc.logger.Info().Msg("Evaluate")
-
-	//for alertName := range sc.alertMap {
-	//
-	//	sf, ok := sc.scaleFactorMap[alertName]
-	//	if !ok {
-	//		log.Fatal("Alert not in map")
-	//	}
-	//
-	//	sc.logger.Info().Msgf("Alert %s, SF %f", alertName, sf)
-	//
-	//	// HACK: BLOCKS UNTIL DEPLOYMENT IS DONE!!!!
-	//	sc.emitScaleEvent()
-	//}
-
 }
 
 // Run starts the ScaleEventAggregator
@@ -55,7 +37,8 @@ func (sc *ScaleEventAggregator) Run() {
 		receiver.Subscribe(scaleAlertChannel)
 	}
 
-	ticker := time.NewTicker(1000 * time.Millisecond)
+	aggregationTicker := time.NewTicker(5000 * time.Millisecond)
+	cleanupTicker := time.NewTicker(20000 * time.Millisecond)
 
 	// main loop
 	go func() {
@@ -64,31 +47,31 @@ func (sc *ScaleEventAggregator) Run() {
 	loop:
 		for {
 			select {
+
 			case <-sc.stopChan:
-				ticker.Stop()
+				aggregationTicker.Stop()
+				cleanupTicker.Stop()
 				close(sc.stopChan)
 				break loop
 
-			case <-ticker.C:
-				sc.evaluate()
+			case <-cleanupTicker.C:
+				sc.scaleAlertPool.cleanup()
+
+			case <-aggregationTicker.C:
+				sc.aggregate()
+
 			case scaleAlerts := <-scaleAlertChannel:
-				sc.logger.Info().Msgf("SCCCCCCCCCCCCCALE %+v", scaleAlerts)
-
-				//for _, alert := range scaleAlerts {
-				//	if !alert.Firing {
-				//		delete(sc.alertMap, alert.Name)
-				//	} else {
-				//		sc.alertMap[alert.Name] = alert
-				//	}
-				//
-				//}
-
+				sc.handleReceivedScaleAlerts(scaleAlerts)
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")
-
 	}()
 
+}
+
+func (sc *ScaleEventAggregator) handleReceivedScaleAlerts(scaleAlerts ScaleAlertList) {
+	sc.logger.Info().Msgf("%d Alerts received.", len(scaleAlerts))
+	sc.scaleAlertPool.update(scaleAlerts)
 }
 
 // Stop tears down ScaleEventAggregator
