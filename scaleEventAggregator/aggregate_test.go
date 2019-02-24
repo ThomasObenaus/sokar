@@ -20,15 +20,15 @@ func Test_GetWeight(t *testing.T) {
 	assert.Equal(t, float32(0), w)
 }
 
-func Test_ComputeScaleValue(t *testing.T) {
+func Test_weightPerSecondToWeight(t *testing.T) {
 
-	assert.Equal(t, float32(1), computeScaleValue(1, time.Second))
-	assert.Equal(t, float32(2), computeScaleValue(1, time.Second*2))
-	assert.Equal(t, float32(0), computeScaleValue(1, time.Second*0))
-	assert.Equal(t, float32(10), computeScaleValue(5, time.Second*2))
-	assert.Equal(t, float32(-10), computeScaleValue(-5, time.Second*2))
-	assert.Equal(t, float32(0), computeScaleValue(0, time.Second*2))
-	assert.Equal(t, float32(0.5), computeScaleValue(1, time.Millisecond*500))
+	assert.Equal(t, float32(1), weightPerSecondToWeight(1, time.Second))
+	assert.Equal(t, float32(2), weightPerSecondToWeight(1, time.Second*2))
+	assert.Equal(t, float32(0), weightPerSecondToWeight(1, time.Second*0))
+	assert.Equal(t, float32(10), weightPerSecondToWeight(5, time.Second*2))
+	assert.Equal(t, float32(-10), weightPerSecondToWeight(-5, time.Second*2))
+	assert.Equal(t, float32(0), weightPerSecondToWeight(0, time.Second*2))
+	assert.Equal(t, float32(0.5), weightPerSecondToWeight(1, time.Millisecond*500))
 }
 
 func Test_ComputeScaleCounterDamping(t *testing.T) {
