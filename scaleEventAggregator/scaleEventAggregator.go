@@ -26,6 +26,11 @@ type ScaleEventAggregator struct {
 	// are the faster is the actual scale executed.
 	weightMap ScaleAlertWeightMap
 
+	// This value is applied each time no ScalingAlert is firing
+	// (neither down nor upscaling). The value is used to move the
+	// scaleCounter towards 0.
+	// I.e. scaleCounter = scaleCounter + (sign(scaleCounter) -1) * noAlertScaleDamping
+	noAlertScaleDamping  float32
 	scaleCounter         float32
 	upScalingThreshold   float32
 	downScalingThreshold float32
@@ -58,6 +63,7 @@ func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleEventAggregator {
 		aggregationCycle:     time.Millisecond * 2000,
 		cleanupCycle:         time.Second * 10,
 		weightMap:            map[string]float32{"AlertA": 2.0, "AlertB": -1},
+		noAlertScaleDamping:  1.0,
 		upScalingThreshold:   5.0,
 		downScalingThreshold: -5.0,
 		scaleCounter:         0,
