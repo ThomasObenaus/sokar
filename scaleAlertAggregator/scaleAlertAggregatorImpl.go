@@ -9,27 +9,27 @@ import (
 )
 
 // Subscribe is used to register for receiving ScaleEvents
-func (sc *ScaleEventAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
+func (sc *ScaleAlertAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
 	sc.subscriptions = append(sc.subscriptions, subscriber)
 }
 
 // ScaleEvent implements the http end-point for emitting a scaling event
-func (sc *ScaleEventAggregator) ScaleEvent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (sc *ScaleAlertAggregator) ScaleEvent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	sc.logger.Info().Msg("ScaleEvent Received")
 	sc.emitScaleEvent(1)
 	w.WriteHeader(http.StatusOK)
 }
 
-func (sc *ScaleEventAggregator) emitScaleEvent(scaleFactor float32) {
+func (sc *ScaleAlertAggregator) emitScaleEvent(scaleFactor float32) {
 
 	for _, subscriber := range sc.subscriptions {
 		subscriber <- sokar.ScaleEvent{ScaleFactor: scaleFactor}
 	}
 }
 
-// Run starts the ScaleEventAggregator
-func (sc *ScaleEventAggregator) Run() {
+// Run starts the ScaleAlertAggregator
+func (sc *ScaleAlertAggregator) Run() {
 
 	sc.logger.Info().Msg("Subscribe at scale alert receivers")
 	scaleAlertChannel := make(chan ScaleAlertPacket)
@@ -69,19 +69,19 @@ func (sc *ScaleEventAggregator) Run() {
 
 }
 
-func (sc *ScaleEventAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {
+func (sc *ScaleAlertAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {
 	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), scaPckg.Receiver)
 	sc.scaleAlertPool.update(scaPckg.Receiver, scaPckg.ScaleAlerts)
 }
 
-// Stop tears down ScaleEventAggregator
-func (sc *ScaleEventAggregator) Stop() {
+// Stop tears down ScaleAlertAggregator
+func (sc *ScaleAlertAggregator) Stop() {
 	sc.logger.Info().Msg("Teardown requested")
 	// send the stop message
 	sc.stopChan <- struct{}{}
 }
 
-// Join blocks/ waits until ScaleEventAggregator has been stopped
-func (sc *ScaleEventAggregator) Join() {
+// Join blocks/ waits until ScaleAlertAggregator has been stopped
+func (sc *ScaleAlertAggregator) Join() {
 	<-sc.stopChan
 }

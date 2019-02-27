@@ -7,8 +7,8 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 )
 
-// ScaleEventAggregator is a component that is responsible to gather and aggregate ScaleEvents
-type ScaleEventAggregator struct {
+// ScaleAlertAggregator is a component that is responsible to gather and aggregate ScaleEvents
+type ScaleAlertAggregator struct {
 	logger        zerolog.Logger
 	subscriptions []chan sokar.ScaleEvent
 
@@ -21,7 +21,7 @@ type ScaleEventAggregator struct {
 	// The weightMap contains a mapping of a ScalingAlert (specified by its name)
 	// to a weight. A weight is defined in value per second.
 	// This means the given weight is applied each second to the aggregated
-	// scale counter of the ScaleEventAggregator.
+	// scale counter of the ScaleAlertAggregator.
 	// As soon as the scale counter exceeds the up-scale threshold
 	// or underflows the down-scale threshold a scaling will be initiated.
 	// Thus the higher (for up-scaling) the lower (for down-scaling) the weights
@@ -37,7 +37,7 @@ type ScaleEventAggregator struct {
 	// scaleCounter is used to decide wether to scale up/ down or wait.
 	// The scaleCounter is a value representing the aggregated weighted scaling alerts.
 	// To calculate this value the active scaling alerts (represented by their weight) are aggregated
-	// by the ScaleEventAggregator.
+	// by the ScaleAlertAggregator.
 	scaleCounter float32
 
 	// upScalingThreshold is the threshold that is used to trigger an upscaling event.
@@ -52,23 +52,23 @@ type ScaleEventAggregator struct {
 	// They where obtained through the different ScaleAlertReceivers
 	scaleAlertPool ScaleAlertPool
 
-	// The frequency the ScaleEventAggregator will evaluate and aggregate the state
+	// The frequency the ScaleAlertAggregator will evaluate and aggregate the state
 	// of the received ScaleAlert's
 	aggregationCycle time.Duration
 
-	// The frequency the ScaleEventAggregator will cleanup/ remove
+	// The frequency the ScaleAlertAggregator will cleanup/ remove
 	// expired ScaleAlerts
 	cleanupCycle time.Duration
 }
 
-// Config configuration for the ScaleEventAggregator
+// Config configuration for the ScaleAlertAggregator
 type Config struct {
 	Logger zerolog.Logger
 }
 
-// New creates a instance of the ScaleEventAggregator
-func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleEventAggregator {
-	return &ScaleEventAggregator{
+// New creates a instance of the ScaleAlertAggregator
+func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleAlertAggregator {
+	return &ScaleAlertAggregator{
 		logger:               cfg.Logger,
 		receivers:            receivers,
 		stopChan:             make(chan struct{}, 1),
