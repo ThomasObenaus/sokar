@@ -6,7 +6,7 @@ import (
 	saa "github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
-func genReceiver(name string) string {
+func genEmitterName(name string) string {
 
 	result := "AM"
 	if len(name) > 0 {
@@ -18,7 +18,7 @@ func genReceiver(name string) string {
 
 // amResponseToScalingAlerts extracts alerts from the response of the alertmanager
 func amResponseToScalingAlerts(resp response) saa.ScaleAlertPacket {
-	result := saa.ScaleAlertPacket{Receiver: genReceiver(resp.Receiver)}
+	result := saa.ScaleAlertPacket{Emitter: genEmitterName(resp.Receiver)}
 	for _, alert := range resp.Alerts {
 		result.ScaleAlerts = append(result.ScaleAlerts, amAlertToScalingAlert(alert))
 	}
