@@ -48,6 +48,10 @@ func (sc *ScaleAlertAggregator) applyScaleCounterDamping(noAlertScaleDamping flo
 	}
 }
 
+func (sc *ScaleAlertAggregator) resetScaleCounter() {
+	sc.scaleCounter = 0
+}
+
 // computeScaleCounterDamping computes the value that has to be added to the scaleCounter
 // in order to move it more to 0. It is either a positive or negative version of the given dampingFactor.
 func computeScaleCounterDamping(scaleCounter float32, dampingFactor float32) float32 {
