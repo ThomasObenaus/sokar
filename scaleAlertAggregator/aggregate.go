@@ -8,7 +8,18 @@ func (sc *ScaleAlertAggregator) aggregate() {
 	sc.logger.Info().Msg("Aggregate")
 	sc.logPool()
 
+	currentScaleCounter := sc.scaleCounter
 	sc.scaleAlertPool.iterate(sc.updateScaleCounter)
+	alertsChangedScaleCounter := currentScaleCounter != sc.scaleCounter
+	if !alertsChangedScaleCounter {
+		weight := weightPerSecondToWeight(sc.noAlertScaleDamping, sc.aggregationCycle)
+		scaleIncrement := computeScaleCounterDamping(sc.scaleCounter, weight)
+		sc.scaleCounter += scaleIncrement
+
+		if scaleIncrement != 0 {
+			sc.logger.Debug().Msgf("ScaleCounter updated/damped by %f to %f because no scaling-alert changed the scale counter. Damping (per s): %f.", scaleIncrement, sc.scaleCounter, sc.noAlertScaleDamping)
+		}
+	}
 
 	// FIXME: This currently blocks until the deployment is done
 	if sc.scaleCounter > sc.upScalingThreshold {
@@ -21,9 +32,6 @@ func (sc *ScaleAlertAggregator) aggregate() {
 		sc.scaleCounter = 0
 	} else {
 		sc.logger.Info().Msgf("No scaling needed. ScaleCounter is currently %f [%f/%f/%f].", sc.scaleCounter, sc.downScalingThreshold, sc.upScalingThreshold, sc.noAlertScaleDamping)
-
-		weight := weightPerSecondToWeight(sc.noAlertScaleDamping, sc.aggregationCycle)
-		sc.scaleCounter += computeScaleCounterDamping(sc.scaleCounter, weight)
 	}
 }
 
