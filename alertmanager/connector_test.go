@@ -48,15 +48,15 @@ func Test_FireScaleAlert(t *testing.T) {
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "A"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "B"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "C"})
-	pkg := saa.ScaleAlertPacket{ScaleAlerts: sentAlerts, Emitter: emitter}
-	connector.fireScaleAlertPacket(pkg)
+	pkg := saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	connector.fireScaleAlertPacket(emitter, pkg)
 
 	sentAlerts = make([]saa.ScaleAlert, 0)
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "A"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "B"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "C"})
-	pkg = saa.ScaleAlertPacket{ScaleAlerts: sentAlerts, Emitter: emitter}
-	connector.fireScaleAlertPacket(pkg)
+	pkg = saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	connector.fireScaleAlertPacket(emitter, pkg)
 
 	assert.Equal(t, 6, len(alertsAll))
 }

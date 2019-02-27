@@ -32,7 +32,6 @@ func (sc *ScaleAlertAggregator) emitScaleEvent(scaleFactor float32) {
 func (sc *ScaleAlertAggregator) Run() {
 
 	sc.logger.Info().Msg("Register at scale alert emitters")
-	scaleAlertChannel := make(chan ScaleAlertPacket)
 	for _, emitter := range sc.emitters {
 		emitter.Register(sc.handleScaleAlerts)
 	}
@@ -59,9 +58,6 @@ func (sc *ScaleAlertAggregator) Run() {
 
 			case <-aggregationTicker.C:
 				sc.aggregate()
-
-			case scaleAlerts := <-scaleAlertChannel:
-				sc.handleReceivedScaleAlerts(scaleAlerts)
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")
@@ -70,12 +66,8 @@ func (sc *ScaleAlertAggregator) Run() {
 }
 
 func (sc *ScaleAlertAggregator) handleScaleAlerts(emitter string, scaPckg ScaleAlertPacket) {
-	sc.handleReceivedScaleAlerts(scaPckg)
-}
-
-func (sc *ScaleAlertAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {
-	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), scaPckg.Emitter)
-	sc.scaleAlertPool.update(scaPckg.Emitter, scaPckg.ScaleAlerts)
+	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), emitter)
+	sc.scaleAlertPool.update(emitter, scaPckg.ScaleAlerts)
 	sc.logPool()
 }
 

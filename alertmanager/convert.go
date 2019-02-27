@@ -17,13 +17,13 @@ func genEmitterName(name string) string {
 }
 
 // amResponseToScalingAlerts extracts alerts from the response of the alertmanager
-func amResponseToScalingAlerts(resp response) saa.ScaleAlertPacket {
-	result := saa.ScaleAlertPacket{Emitter: genEmitterName(resp.Receiver)}
+func amResponseToScalingAlerts(resp response) (emitter string, packet saa.ScaleAlertPacket) {
+	result := saa.ScaleAlertPacket{}
 	for _, alert := range resp.Alerts {
 		result.ScaleAlerts = append(result.ScaleAlerts, amAlertToScalingAlert(alert))
 	}
 
-	return result
+	return genEmitterName(resp.Receiver), result
 }
 
 func amAlertToScalingAlert(alert alert) saa.ScaleAlert {
