@@ -12,7 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	sea "github.com/thomasobenaus/sokar/scaleEventAggregator"
+	saa "github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
 func TestNewConnector(t *testing.T) {
@@ -21,7 +21,6 @@ func TestNewConnector(t *testing.T) {
 	connector := cfg.New()
 
 	assert.NotNil(t, connector)
-
 }
 
 func Test_GenReceiver(t *testing.T) {
@@ -38,11 +37,11 @@ func Test_FireScaleAlert(t *testing.T) {
 	connector := cfg.New()
 	require.NotNil(t, connector)
 
-	subscriber := make(chan sea.ScaleAlertPacket)
+	subscriber := make(chan saa.ScaleAlertPacket)
 
 	connector.Subscribe(subscriber)
 
-	var alertsAll []sea.ScaleAlert
+	var alertsAll []saa.ScaleAlert
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -54,18 +53,18 @@ func Test_FireScaleAlert(t *testing.T) {
 		defer wg.Done()
 	}()
 
-	sentAlerts := make([]sea.ScaleAlert, 0)
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "A"})
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "B"})
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: true, Name: "C"})
-	pkg := sea.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	sentAlerts := make([]saa.ScaleAlert, 0)
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "A"})
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "B"})
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "C"})
+	pkg := saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
 	connector.fireScaleAlertPacket(pkg)
 
-	sentAlerts = make([]sea.ScaleAlert, 0)
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "A"})
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "B"})
-	sentAlerts = append(sentAlerts, sea.ScaleAlert{Firing: false, Name: "C"})
-	pkg = sea.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	sentAlerts = make([]saa.ScaleAlert, 0)
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "A"})
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "B"})
+	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "C"})
+	pkg = saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
 	connector.fireScaleAlertPacket(pkg)
 
 	close(subscriber)
@@ -119,9 +118,9 @@ func Test_HandleScaleAlert_Success(t *testing.T) {
 	req := httptest.NewRequest("POST", "http://example.com/foo", buf)
 	w := httptest.NewRecorder()
 
-	subscriber := make(chan sea.ScaleAlertPacket)
+	subscriber := make(chan saa.ScaleAlertPacket)
 	connector.Subscribe(subscriber)
-	var alertsAll []sea.ScaleAlert
+	var alertsAll []saa.ScaleAlert
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {

@@ -12,7 +12,7 @@ import (
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
-	"github.com/thomasobenaus/sokar/scaleEventAggregator"
+	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
 )
