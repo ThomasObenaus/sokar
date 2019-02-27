@@ -14,7 +14,7 @@ import (
 // Connector is the integration of prometheus/alertmanager
 type Connector struct {
 	logger        zerolog.Logger
-	subscriptions []chan scaleEventAggregator.ScaleAlertPacket
+	subscriptions []chan scaleAlertAggregator.ScaleAlertPacket
 }
 
 // Config cfg for the connector
@@ -30,11 +30,11 @@ func (cfg Config) New() *Connector {
 }
 
 // Subscribe is used to register/ subscribe for the channel where scaling alerts are emitted
-func (c *Connector) Subscribe(subscriber chan scaleEventAggregator.ScaleAlertPacket) {
+func (c *Connector) Subscribe(subscriber chan scaleAlertAggregator.ScaleAlertPacket) {
 	c.subscriptions = append(c.subscriptions, subscriber)
 }
 
-func (c *Connector) fireScaleAlertPacket(scalingAlerts scaleEventAggregator.ScaleAlertPacket) {
+func (c *Connector) fireScaleAlertPacket(scalingAlerts scaleAlertAggregator.ScaleAlertPacket) {
 	for _, subscriber := range c.subscriptions {
 		subscriber <- scalingAlerts
 	}

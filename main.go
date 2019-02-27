@@ -56,7 +56,7 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
 
-	var scaleAlertReceivers []scaleEventAggregator.ScaleAlertReceiver
+	var scaleAlertReceivers []scaleAlertAggregator.ScaleAlertReceiver
 	amCfg := alertmanager.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.alertmanager"),
 	}
@@ -64,18 +64,18 @@ func main() {
 	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
 	scaleAlertReceivers = append(scaleAlertReceivers, amConnector)
 
-	scaEvtAggCfg := scaleEventAggregator.Config{
-		Logger: loggingFactory.NewNamedLogger("sokar.scaEvtAggr"),
+	scaEvtAggCfg := scaleAlertAggregator.Config{
+		Logger: loggingFactory.NewNamedLogger("sokar.scaAlertAggr"),
 	}
-	scaEvtAggr := scaEvtAggCfg.New(scaleAlertReceivers)
-	api.Router.POST("/alert", scaEvtAggr.ScaleEvent)
+	scaAlertAggr := scaEvtAggCfg.New(scaleAlertReceivers)
+	api.Router.POST("/alert", scaAlertAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
 
-	sokarInst, err := setupSokar(scaEvtAggr, capaPlanner, scaler, api, logger)
+	sokarInst, err := setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating sokar.")
@@ -85,7 +85,7 @@ func main() {
 
 	// Run all components
 	sokarInst.Run()
-	scaEvtAggr.Run()
+	scaAlertAggr.Run()
 	api.Run()
 
 	// Install signal handler for shutdown
@@ -97,23 +97,23 @@ func main() {
 
 		// Stop all components
 		api.Stop()
-		scaEvtAggr.Stop()
+		scaAlertAggr.Stop()
 		sokarInst.Stop()
 	}()
 
 	// Wait till completion
 	api.Join()
-	scaEvtAggr.Join()
+	scaAlertAggr.Join()
 	sokarInst.Join()
 
 	os.Exit(0)
 }
 
-func setupSokar(scaleEventAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleAlertAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	sokarInst, err := cfg.New(scaleEventAggregator, capacityPlanner, scaler)
+	sokarInst, err := cfg.New(scaleAlertAggregator, capacityPlanner, scaler)
 	if err != nil {
 		return nil, err
 	}
