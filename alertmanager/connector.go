@@ -38,9 +38,9 @@ func (c *Connector) Register(handleFunc saa.ScaleAlertHandleFunc) {
 }
 
 // fireScaleAlertPacket sends the given ScaleAlertPacket to all registered handler functions.
-func (c *Connector) fireScaleAlertPacket(scalingAlerts saa.ScaleAlertPacket) {
+func (c *Connector) fireScaleAlertPacket(emitter string, scalingAlerts saa.ScaleAlertPacket) {
 	for _, handleFunc := range c.handleFuncs {
-		handleFunc(scalingAlerts.Emitter, scalingAlerts)
+		handleFunc(emitter, scalingAlerts)
 	}
 }
 
@@ -59,9 +59,9 @@ func (c *Connector) HandleScaleAlerts(w http.ResponseWriter, r *http.Request, ps
 		return
 	}
 
-	scalingAlertPacket := amResponseToScalingAlerts(alertmanagerResponse)
-	c.logger.Info().Msgf("%d Scaling Alerts received from '%s'. Will send them to the subscriber.", len(scalingAlertPacket.ScaleAlerts), scalingAlertPacket.Emitter)
-	c.fireScaleAlertPacket(scalingAlertPacket)
+	emitter, scalingAlertPacket := amResponseToScalingAlerts(alertmanagerResponse)
+	c.logger.Info().Msgf("%d Scaling Alerts received from '%s'. Will send them to the subscriber.", len(scalingAlertPacket.ScaleAlerts), emitter)
+	c.fireScaleAlertPacket(emitter, scalingAlertPacket)
 
 	w.WriteHeader(http.StatusOK)
 }

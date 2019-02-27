@@ -49,7 +49,7 @@ func Test_AlertToScalingAlert(t *testing.T) {
 
 func Test_AlertsToScalingAlertList(t *testing.T) {
 
-	resp := response{}
+	resp := response{Receiver: "sokar"}
 
 	name1 := "ABC"
 	labels := map[string]string{"alertname": name1}
@@ -73,8 +73,10 @@ func Test_AlertsToScalingAlertList(t *testing.T) {
 
 	resp.Alerts = append(resp.Alerts, al2)
 
-	pkg := amResponseToScalingAlerts(resp)
+	emitter, pkg := amResponseToScalingAlerts(resp)
 	alerts := pkg.ScaleAlerts
+
+	assert.Equal(t, "AM.sokar", emitter)
 
 	assert.Equal(t, 2, len(alerts))
 	assert.Equal(t, name1, alerts[0].Name)

@@ -22,10 +22,6 @@ type ScaleAlert struct {
 
 // ScaleAlertPacket is a container for ScaleAlerts and meta information
 type ScaleAlertPacket struct {
-	// Name of the component that has emitted the ScaleAlert's
-	// of this packet.
-	Emitter string
-
 	ScaleAlerts []ScaleAlert
 }
 
