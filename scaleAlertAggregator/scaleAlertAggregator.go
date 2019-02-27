@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/sokar"
 )
 
@@ -34,11 +35,13 @@ type ScaleAlertAggregator struct {
 	// I.e. scaleCounter = scaleCounter + (sign(scaleCounter) -1) * noAlertScaleDamping
 	noAlertScaleDamping float32
 
+	scaleCounterGradient helper.LatestGradient
+
 	// scaleCounter is used to decide wether to scale up/ down or wait.
 	// The scaleCounter is a value representing the aggregated weighted scaling alerts.
 	// To calculate this value the active scaling alerts (represented by their weight) are aggregated
 	// by the ScaleAlertAggregator.
-	scaleCounter float32
+	scaleCounter scaleCounter
 
 	// upScalingThreshold is the threshold that is used to trigger an upscaling event.
 	// In case the scaleCounter is higher than this threshold, the upscaling event will be triggered.
@@ -56,6 +59,13 @@ type ScaleAlertAggregator struct {
 	// of the received ScaleAlert's
 	aggregationCycle time.Duration
 
+	// evaluationPeriodFactor is used to calculate the evaluation period.
+	// The evaluation period is the period that is regarded for calculating the scaleCounterGradient/ scaleFactor.
+	// Only the changes of the scaleCounter within this period/ window are regarded for scaleFactor calculation.
+	// The period is a multiple of the aggregationCycle thus it is calculated by:
+	// evaluationPeriod = aggregationCycle * evaluationPeriodFactor
+	evaluationPeriodFactor uint
+
 	// cleanupCycle is the frequency the ScaleAlertAggregator will cleanup/ remove
 	// expired ScaleAlerts
 	cleanupCycle time.Duration
@@ -69,17 +79,19 @@ type Config struct {
 // New creates a instance of the ScaleAlertAggregator
 func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 	return &ScaleAlertAggregator{
-		logger:               cfg.Logger,
-		emitters:             emitters,
-		stopChan:             make(chan struct{}, 1),
-		scaleAlertPool:       NewScaleAlertPool(),
-		aggregationCycle:     time.Millisecond * 2000,
-		cleanupCycle:         time.Second * 10,
-		weightMap:            map[string]float32{"AlertA": 2.0, "AlertB": -1},
-		noAlertScaleDamping:  1.0,
-		upScalingThreshold:   5.0,
-		downScalingThreshold: -5.0,
-		scaleCounter:         0,
+		logger:                 cfg.Logger,
+		emitters:               emitters,
+		stopChan:               make(chan struct{}, 1),
+		scaleAlertPool:         NewScaleAlertPool(),
+		aggregationCycle:       time.Millisecond * 2000,
+		evaluationPeriodFactor: 10,
+		cleanupCycle:           time.Second * 10,
+		weightMap:              map[string]float32{"AlertA": 2.0, "AlertB": -1},
+		noAlertScaleDamping:    1.0,
+		upScalingThreshold:     5.0,
+		downScalingThreshold:   -5.0,
+		scaleCounter:           newScaleCounter(),
+		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 	}
 }
 

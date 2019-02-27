@@ -43,6 +43,12 @@ func Test_IncBy(t *testing.T) {
 
 	assert.Equal(t, float32(20.3), sc.val)
 	assert.WithinDuration(t, changedAt, sc.firstTimeChanged, time.Millisecond*0)
+
+	sc.reset()
+	sc.incBy(0)
+	assert.Equal(t, float32(0), sc.val)
+	assert.WithinDuration(t, time.Unix(0, 0), sc.firstTimeChanged, time.Millisecond*0)
+	assert.False(t, sc.wasChangedAfterReset)
 }
 
 func Test_DurationSinceFirstChange(t *testing.T) {
