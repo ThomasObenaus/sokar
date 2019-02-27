@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 	"time"
 
@@ -37,39 +36,28 @@ func Test_FireScaleAlert(t *testing.T) {
 	connector := cfg.New()
 	require.NotNil(t, connector)
 
-	subscriber := make(chan saa.ScaleAlertPacket)
-
-	connector.Subscribe(subscriber)
-
+	emitter := "ALERTMANAGER"
 	var alertsAll []saa.ScaleAlert
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		for pkg := range subscriber {
-			alertsAll = append(alertsAll, pkg.ScaleAlerts...)
-		}
-		defer wg.Done()
-	}()
+	handleFunc := func(e string, pkg saa.ScaleAlertPacket) {
+		alertsAll = append(alertsAll, pkg.ScaleAlerts...)
+		require.Equal(t, emitter, e)
+	}
+	connector.Register(handleFunc)
 
 	sentAlerts := make([]saa.ScaleAlert, 0)
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "A"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "B"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: true, Name: "C"})
-	pkg := saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	pkg := saa.ScaleAlertPacket{ScaleAlerts: sentAlerts, Emitter: emitter}
 	connector.fireScaleAlertPacket(pkg)
 
 	sentAlerts = make([]saa.ScaleAlert, 0)
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "A"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "B"})
 	sentAlerts = append(sentAlerts, saa.ScaleAlert{Firing: false, Name: "C"})
-	pkg = saa.ScaleAlertPacket{ScaleAlerts: sentAlerts}
+	pkg = saa.ScaleAlertPacket{ScaleAlerts: sentAlerts, Emitter: emitter}
 	connector.fireScaleAlertPacket(pkg)
 
-	close(subscriber)
-
-	wg.Wait()
 	assert.Equal(t, 6, len(alertsAll))
 }
 func Test_HandleScaleAlert_Invalid(t *testing.T) {
@@ -110,7 +98,7 @@ func Test_HandleScaleAlert_Success(t *testing.T) {
 		StartsAt: startsAt,
 	})
 
-	data, err := json.Marshal(response{Alerts: alerts})
+	data, err := json.Marshal(response{Alerts: alerts, Receiver: "SOKAR"})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, data)
@@ -118,24 +106,18 @@ func Test_HandleScaleAlert_Success(t *testing.T) {
 	req := httptest.NewRequest("POST", "http://example.com/foo", buf)
 	w := httptest.NewRecorder()
 
-	subscriber := make(chan saa.ScaleAlertPacket)
-	connector.Subscribe(subscriber)
+	emitter := "AM.SOKAR"
 	var alertsAll []saa.ScaleAlert
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for pkg := range subscriber {
-			alertsAll = append(alertsAll, pkg.ScaleAlerts...)
-		}
-		defer wg.Done()
-	}()
+	handleFunc := func(e string, pkg saa.ScaleAlertPacket) {
+		alertsAll = append(alertsAll, pkg.ScaleAlerts...)
+		require.Equal(t, emitter, e)
+	}
+	connector.Register(handleFunc)
 
 	connector.HandleScaleAlerts(w, req, httprouter.Params{})
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	close(subscriber)
-	wg.Wait()
 	assert.Equal(t, 1, len(alertsAll))
 	assert.Equal(t, alertName, alertsAll[0].Name)
 	assert.True(t, alertsAll[0].Firing)

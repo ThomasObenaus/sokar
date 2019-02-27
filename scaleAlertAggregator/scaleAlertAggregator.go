@@ -12,13 +12,13 @@ type ScaleAlertAggregator struct {
 	logger        zerolog.Logger
 	subscriptions []chan sokar.ScaleEvent
 
-	// A list of components that are able to provide ScalAlerts.
-	receivers []ScaleAlertEmitter
+	// emitters is a list of components that are able to provide/ emit ScaleAlert's.
+	emitters []ScaleAlertEmitter
 
-	// channel used to signal teardown/ stop
+	// stopChan is a channel used to signal teardown/ stop
 	stopChan chan struct{}
 
-	// The weightMap contains a mapping of a ScalingAlert (specified by its name)
+	// weightMap contains a mapping of a ScalingAlert (specified by its name)
 	// to a weight. A weight is defined in value per second.
 	// This means the given weight is applied each second to the aggregated
 	// scale counter of the ScaleAlertAggregator.
@@ -28,7 +28,7 @@ type ScaleAlertAggregator struct {
 	// are the faster is the actual scale executed.
 	weightMap ScaleAlertWeightMap
 
-	// This value is applied each time no ScalingAlert is firing
+	// noAlertScaleDamping is a value that is applied each time no ScalingAlert is firing
 	// (neither down nor upscaling). The value is used to move the
 	// scaleCounter towards 0.
 	// I.e. scaleCounter = scaleCounter + (sign(scaleCounter) -1) * noAlertScaleDamping
@@ -52,11 +52,11 @@ type ScaleAlertAggregator struct {
 	// They where obtained through the different ScaleAlertEmitters
 	scaleAlertPool ScaleAlertPool
 
-	// The frequency the ScaleAlertAggregator will evaluate and aggregate the state
+	// aggregationCycle is the frequency the ScaleAlertAggregator will evaluate and aggregate the state
 	// of the received ScaleAlert's
 	aggregationCycle time.Duration
 
-	// The frequency the ScaleAlertAggregator will cleanup/ remove
+	// cleanupCycle is the frequency the ScaleAlertAggregator will cleanup/ remove
 	// expired ScaleAlerts
 	cleanupCycle time.Duration
 }
@@ -67,10 +67,10 @@ type Config struct {
 }
 
 // New creates a instance of the ScaleAlertAggregator
-func (cfg Config) New(receivers []ScaleAlertEmitter) *ScaleAlertAggregator {
+func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 	return &ScaleAlertAggregator{
 		logger:               cfg.Logger,
-		receivers:            receivers,
+		emitters:             emitters,
 		stopChan:             make(chan struct{}, 1),
 		scaleAlertPool:       NewScaleAlertPool(),
 		aggregationCycle:     time.Millisecond * 2000,
