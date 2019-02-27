@@ -4,7 +4,7 @@ package sokar
 func (sk *Sokar) Run() {
 
 	scaleEventChannel := make(chan ScaleEvent, 10)
-	sk.scaleEventAggregator.Subscribe(scaleEventChannel)
+	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 
 	// main loop
 	go func() {

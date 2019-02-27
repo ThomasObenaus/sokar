@@ -19,9 +19,9 @@ const (
 
 // Sokar component that can be used to scale jobs/instances
 type Sokar struct {
-	scaler               Scaler
-	capacityPlanner      CapacityPlanner
-	scaleEventAggregator ScaleAlertAggregator
+	scaler            Scaler
+	capacityPlanner   CapacityPlanner
+	scaleEventEmitter ScaleEventEmitter
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -35,7 +35,7 @@ type Config struct {
 }
 
 // New creates a new instance of sokar
-func (cfg *Config) New(scaleEventAggregator ScaleAlertAggregator, capacityPlanner CapacityPlanner, scaler Scaler) (*Sokar, error) {
+func (cfg *Config) New(scaleEventEmitter ScaleEventEmitter, capacityPlanner CapacityPlanner, scaler Scaler) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
@@ -44,15 +44,15 @@ func (cfg *Config) New(scaleEventAggregator ScaleAlertAggregator, capacityPlanne
 		return nil, fmt.Errorf("Given CapacityPlanner is nil")
 	}
 
-	if scaleEventAggregator == nil {
-		return nil, fmt.Errorf("Given ScaleAlertAggregator is nil")
+	if scaleEventEmitter == nil {
+		return nil, fmt.Errorf("Given ScaleEventEmitter is nil")
 	}
 
 	return &Sokar{
-		scaleEventAggregator: scaleEventAggregator,
-		capacityPlanner:      capacityPlanner,
-		scaler:               scaler,
-		stopChan:             make(chan struct{}, 1),
+		scaleEventEmitter: scaleEventEmitter,
+		capacityPlanner:   capacityPlanner,
+		scaler:            scaler,
+		stopChan:          make(chan struct{}, 1),
 
 		logger: cfg.Logger,
 	}, nil
