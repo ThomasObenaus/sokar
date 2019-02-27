@@ -13,8 +13,7 @@ import (
 
 // Connector is the integration of prometheus/alertmanager
 type Connector struct {
-	logger        zerolog.Logger
-	subscriptions []chan saa.ScaleAlertPacket
+	logger zerolog.Logger
 
 	// handleFuncs is a list of registered handlers for received ScaleAlerts
 	handleFuncs []saa.ScaleAlertHandleFunc
@@ -32,20 +31,14 @@ func (cfg Config) New() *Connector {
 	}
 }
 
+// Register is used to register the given handler func.
+// The ScaleAlertHandleFunc is called each time the alertmanager connector receives an alert.
 func (c *Connector) Register(handleFunc saa.ScaleAlertHandleFunc) {
 	c.handleFuncs = append(c.handleFuncs, handleFunc)
 }
 
-// Subscribe is used to register/ subscribe for the channel where scaling alerts are emitted
-func (c *Connector) Subscribe(subscriber chan saa.ScaleAlertPacket) {
-	c.subscriptions = append(c.subscriptions, subscriber)
-}
-
+// fireScaleAlertPacket sends the given ScaleAlertPacket to all registered handler functions.
 func (c *Connector) fireScaleAlertPacket(scalingAlerts saa.ScaleAlertPacket) {
-	for _, subscriber := range c.subscriptions {
-		subscriber <- scalingAlerts
-	}
-
 	for _, handleFunc := range c.handleFuncs {
 		handleFunc(scalingAlerts.Emitter, scalingAlerts)
 	}

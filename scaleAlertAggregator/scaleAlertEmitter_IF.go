@@ -4,8 +4,9 @@ import "time"
 
 // ScaleAlertEmitter is a component emits ScaleAlerts.
 type ScaleAlertEmitter interface {
-	Subscribe(alertChannel chan ScaleAlertPacket)
-
+	// Register is used to register the given handler func.
+	// The ScaleAlertHandleFunc is called each time the ScaleAlertEmitter wants to promote
+	// received alerts.
 	Register(handleFunc ScaleAlertHandleFunc)
 }
 
@@ -28,4 +29,5 @@ type ScaleAlertPacket struct {
 	ScaleAlerts []ScaleAlert
 }
 
+// ScaleAlertHandleFunc is a handler for received ScaleAlerts
 type ScaleAlertHandleFunc func(emitter string, scaleAlerts ScaleAlertPacket)
