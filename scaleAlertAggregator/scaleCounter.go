@@ -24,7 +24,7 @@ func (sc *scaleCounter) reset() {
 }
 
 func (sc *scaleCounter) incBy(val float32) {
-	if !sc.wasChangedAfterReset {
+	if !sc.wasChangedAfterReset && val != 0 {
 		sc.wasChangedAfterReset = true
 		sc.firstTimeChanged = time.Now()
 	}

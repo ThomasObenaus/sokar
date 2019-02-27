@@ -40,6 +40,16 @@ func Test_ComputeScaleCounterDamping(t *testing.T) {
 	assert.Equal(t, float32(-1), computeScaleCounterDamping(10, 1))
 }
 
+func Test_ComputeScaleFactor(t *testing.T) {
+	assert.Equal(t, float32(0), computeScaleFactor(0, time.Second*1))
+	assert.Equal(t, float32(10), computeScaleFactor(10, time.Second*1))
+	assert.Equal(t, float32(-10), computeScaleFactor(-10, time.Second*1))
+	assert.Equal(t, float32(-5), computeScaleFactor(-10, time.Second*2))
+	assert.Equal(t, float32(5), computeScaleFactor(10, time.Second*2))
+	assert.Equal(t, float32(0), computeScaleFactor(10, time.Second*0))
+	assert.Equal(t, float32(0), computeScaleFactor(0, time.Second*1))
+}
+
 func Test_ComputeScaleCounterIncrement(t *testing.T) {
 
 	wm := map[string]float32{"AlertA": 2.0, "AlertB": -1}
@@ -78,23 +88,23 @@ func Test_ApplyAlertsToScaleCounter(t *testing.T) {
 	entries = append(entries, ScaleAlertPoolEntry{scaleAlert: ScaleAlert{Name: "AlertB", Firing: true}})
 	entries = append(entries, ScaleAlertPoolEntry{scaleAlert: ScaleAlert{Name: "AlertC", Firing: false}})
 
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	wm := map[string]float32{"AlertA": 2.0, "AlertB": -1}
 	counterHasChanged := saa.applyAlertsToScaleCounter(entries, wm, time.Second*1)
 	assert.True(t, counterHasChanged)
-	assert.Equal(t, float32(1), saa.scaleCounter)
+	assert.Equal(t, float32(1), saa.scaleCounter.val)
 
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	wm = map[string]float32{"AlertA": 1.0, "AlertB": -1}
 	counterHasChanged = saa.applyAlertsToScaleCounter(entries, wm, time.Second*1)
 	assert.False(t, counterHasChanged)
-	assert.Equal(t, float32(0), saa.scaleCounter)
+	assert.Equal(t, float32(0), saa.scaleCounter.val)
 
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	wm = map[string]float32{"AlertA": 1.0, "AlertC": -1}
 	counterHasChanged = saa.applyAlertsToScaleCounter(entries, wm, time.Second*1)
 	assert.True(t, counterHasChanged)
-	assert.Equal(t, float32(1), saa.scaleCounter)
+	assert.Equal(t, float32(1), saa.scaleCounter.val)
 }
 
 func Test_ApplyScaleCounterDamping(t *testing.T) {
@@ -102,17 +112,17 @@ func Test_ApplyScaleCounterDamping(t *testing.T) {
 	var emitters []ScaleAlertEmitter
 	saa := cfg.New(emitters)
 
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	saa.applyScaleCounterDamping(1, time.Second*1)
-	assert.Equal(t, float32(0), saa.scaleCounter)
+	assert.Equal(t, float32(0), saa.scaleCounter.val)
 
-	saa.scaleCounter = 2
+	saa.scaleCounter.val = 2
 	saa.applyScaleCounterDamping(1, time.Second*1)
-	assert.Equal(t, float32(1), saa.scaleCounter)
+	assert.Equal(t, float32(1), saa.scaleCounter.val)
 
-	saa.scaleCounter = -2
+	saa.scaleCounter.val = -2
 	saa.applyScaleCounterDamping(1, time.Second*1)
-	assert.Equal(t, float32(-1), saa.scaleCounter)
+	assert.Equal(t, float32(-1), saa.scaleCounter.val)
 }
 
 func Test_Aggregate(t *testing.T) {
@@ -131,23 +141,23 @@ func Test_Aggregate(t *testing.T) {
 	saa.downScalingThreshold = -1
 
 	// No Scaling
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	saa.weightMap["AlertA"] = 1
 	saa.weightMap["AlertB"] = -1
-	assert.Equal(t, float32(0), saa.scaleCounter)
+	assert.Equal(t, float32(0), saa.scaleCounter.val)
 	assert.Equal(t, float32(0), saa.aggregate())
 
 	// Scaling Up
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	saa.weightMap["AlertA"] = 2
 	saa.weightMap["AlertB"] = -1
-	assert.Equal(t, float32(0), saa.scaleCounter)
+	assert.Equal(t, float32(0), saa.scaleCounter.val)
 	assert.Equal(t, float32(1), saa.aggregate())
 
 	// Scaling Down
-	saa.scaleCounter = 0
+	saa.scaleCounter.reset()
 	saa.weightMap["AlertA"] = 1
 	saa.weightMap["AlertB"] = -2
-	assert.Equal(t, float32(0), saa.scaleCounter)
+	assert.Equal(t, float32(0), saa.scaleCounter.val)
 	assert.Equal(t, float32(-1), saa.aggregate())
 }
