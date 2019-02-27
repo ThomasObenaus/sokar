@@ -11,7 +11,9 @@ import (
 type ScaleEventAggregator struct {
 	logger        zerolog.Logger
 	subscriptions []chan sokar.ScaleEvent
-	receivers     []ScaleAlertReceiver
+
+	// A list of components that are able to provide ScalAlerts.
+	receivers []ScaleAlertReceiver
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -30,9 +32,20 @@ type ScaleEventAggregator struct {
 	// (neither down nor upscaling). The value is used to move the
 	// scaleCounter towards 0.
 	// I.e. scaleCounter = scaleCounter + (sign(scaleCounter) -1) * noAlertScaleDamping
-	noAlertScaleDamping  float32
-	scaleCounter         float32
-	upScalingThreshold   float32
+	noAlertScaleDamping float32
+
+	// scaleCounter is used to decide wether to scale up/ down or wait.
+	// The scaleCounter is a value representing the aggregated weighted scaling alerts.
+	// To calculate this value the active scaling alerts (represented by their weight) are aggregated
+	// by the ScaleEventAggregator.
+	scaleCounter float32
+
+	// upScalingThreshold is the threshold that is used to trigger an upscaling event.
+	// In case the scaleCounter is higher than this threshold, the upscaling event will be triggered.
+	upScalingThreshold float32
+
+	// downScalingThreshold is the threshold that is used to trigger an downscaling event.
+	// In case the scaleCounter is lower than this threshold, the downscaling event will be triggered.
 	downScalingThreshold float32
 
 	// This map represents the ScaleAlerts which are currently known.
