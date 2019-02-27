@@ -1,4 +1,4 @@
-package scaleEventAggregator
+package scaleAlertAggregator
 
 import (
 	"sync"
