@@ -13,7 +13,7 @@ type ScaleAlertAggregator struct {
 	subscriptions []chan sokar.ScaleEvent
 
 	// A list of components that are able to provide ScalAlerts.
-	receivers []ScaleAlertReceiver
+	receivers []ScaleAlertEmitter
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -49,7 +49,7 @@ type ScaleAlertAggregator struct {
 	downScalingThreshold float32
 
 	// This map represents the ScaleAlerts which are currently known.
-	// They where obtained through the different ScaleAlertReceivers
+	// They where obtained through the different ScaleAlertEmitters
 	scaleAlertPool ScaleAlertPool
 
 	// The frequency the ScaleAlertAggregator will evaluate and aggregate the state
@@ -67,7 +67,7 @@ type Config struct {
 }
 
 // New creates a instance of the ScaleAlertAggregator
-func (cfg Config) New(receivers []ScaleAlertReceiver) *ScaleAlertAggregator {
+func (cfg Config) New(receivers []ScaleAlertEmitter) *ScaleAlertAggregator {
 	return &ScaleAlertAggregator{
 		logger:               cfg.Logger,
 		receivers:            receivers,
