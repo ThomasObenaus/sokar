@@ -70,8 +70,8 @@ func (sc *ScaleAlertAggregator) Run() {
 }
 
 func (sc *ScaleAlertAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {
-	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), scaPckg.Receiver)
-	sc.scaleAlertPool.update(scaPckg.Receiver, scaPckg.ScaleAlerts)
+	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), scaPckg.Emitter)
+	sc.scaleAlertPool.update(scaPckg.Emitter, scaPckg.ScaleAlerts)
 }
 
 // Stop tears down ScaleAlertAggregator

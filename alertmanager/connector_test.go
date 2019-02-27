@@ -24,11 +24,11 @@ func TestNewConnector(t *testing.T) {
 }
 
 func Test_GenReceiver(t *testing.T) {
-	receiver := genReceiver("hello")
-	assert.Equal(t, "AM.hello", receiver)
+	emitter := genEmitterName("hello")
+	assert.Equal(t, "AM.hello", emitter)
 
-	receiver = genReceiver("")
-	assert.Equal(t, "AM", receiver)
+	emitter = genEmitterName("")
+	assert.Equal(t, "AM", emitter)
 }
 
 func Test_FireScaleAlert(t *testing.T) {

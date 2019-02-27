@@ -56,7 +56,7 @@ func (c *Connector) HandleScaleAlerts(w http.ResponseWriter, r *http.Request, ps
 	}
 
 	scalingAlertPacket := amResponseToScalingAlerts(alertmanagerResponse)
-	c.logger.Info().Msgf("%d Scaling Alerts received from '%s'. Will send them to the subscriber.", len(scalingAlertPacket.ScaleAlerts), scalingAlertPacket.Receiver)
+	c.logger.Info().Msgf("%d Scaling Alerts received from '%s'. Will send them to the subscriber.", len(scalingAlertPacket.ScaleAlerts), scalingAlertPacket.Emitter)
 	c.fireScaleAlertPacket(scalingAlertPacket)
 
 	w.WriteHeader(http.StatusOK)
