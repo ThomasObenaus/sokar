@@ -2,8 +2,8 @@ package scaleAlertAggregator
 
 import "time"
 
-// ScaleAlertReceiver is a component that gathers scaling alerts and provides them on demand
-type ScaleAlertReceiver interface {
+// ScaleAlertEmitter is a component that gathers scaling alerts and provides them on demand
+type ScaleAlertEmitter interface {
 	Subscribe(alertChannel chan ScaleAlertPacket)
 }
 

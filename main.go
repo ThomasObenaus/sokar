@@ -56,7 +56,7 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
 
-	var scaleAlertReceivers []scaleAlertAggregator.ScaleAlertReceiver
+	var scaleAlertReceivers []scaleAlertAggregator.ScaleAlertEmitter
 	amCfg := alertmanager.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.alertmanager"),
 	}
