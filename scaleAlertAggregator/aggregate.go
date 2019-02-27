@@ -4,34 +4,47 @@ import (
 	"time"
 )
 
-func (sc *ScaleAlertAggregator) aggregate() {
-	sc.logger.Info().Msg("Aggregate")
+// aggregate all ScaleAlerts available and calculates a scaling factor out of it.
+func (sc *ScaleAlertAggregator) aggregate() float32 {
+	sc.logger.Info().Msg("Aggregation")
 	sc.logPool()
 
-	currentScaleCounter := sc.scaleCounter
-	sc.scaleAlertPool.iterate(sc.updateScaleCounter)
-	alertsChangedScaleCounter := currentScaleCounter != sc.scaleCounter
-	if !alertsChangedScaleCounter {
-		weight := weightPerSecondToWeight(sc.noAlertScaleDamping, sc.aggregationCycle)
-		scaleIncrement := computeScaleCounterDamping(sc.scaleCounter, weight)
-		sc.scaleCounter += scaleIncrement
+	// collect all alerts from ScaleAlertPool
+	var poolEntries []ScaleAlertPoolEntry
+	sc.scaleAlertPool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
+		poolEntries = append(poolEntries, entry)
+	})
 
-		if scaleIncrement != 0 {
-			sc.logger.Debug().Msgf("ScaleCounter updated/damped by %f to %f because no scaling-alert changed the scale counter. Damping (per s): %f.", scaleIncrement, sc.scaleCounter, sc.noAlertScaleDamping)
-		}
+	alertsChangedScaleCounter := sc.applyAlertsToScaleCounter(poolEntries, sc.weightMap, sc.aggregationCycle)
+
+	if !alertsChangedScaleCounter {
+		sc.applyScaleCounterDamping(sc.noAlertScaleDamping, sc.aggregationCycle)
 	}
 
-	// FIXME: This currently blocks until the deployment is done
+	scaleFactor := float32(0)
 	if sc.scaleCounter > sc.upScalingThreshold {
 		sc.logger.Info().Msgf("Scale UP by 1 because upscalingThreshold (%f) was violated. ScaleCounter is currently %f", sc.upScalingThreshold, sc.scaleCounter)
-		sc.emitScaleEvent(1)
+		scaleFactor = 1
 		sc.scaleCounter = 0
 	} else if sc.scaleCounter < sc.downScalingThreshold {
 		sc.logger.Info().Msgf("Scale DOWN by 1 because downScalingThreshold (%f) was violated. ScaleCounter is currently %f", sc.downScalingThreshold, sc.scaleCounter)
-		sc.emitScaleEvent(-1)
+		scaleFactor = -1
 		sc.scaleCounter = 0
 	} else {
 		sc.logger.Info().Msgf("No scaling needed. ScaleCounter is currently %f [%f/%f/%f].", sc.scaleCounter, sc.downScalingThreshold, sc.upScalingThreshold, sc.noAlertScaleDamping)
+		scaleFactor = 0
+	}
+	return scaleFactor
+}
+
+// applyScaleCounterDamping applies the given damping to the scaleCounter
+func (sc *ScaleAlertAggregator) applyScaleCounterDamping(noAlertScaleDamping float32, aggregationCycle time.Duration) {
+	weight := weightPerSecondToWeight(noAlertScaleDamping, aggregationCycle)
+	scaleIncrement := computeScaleCounterDamping(sc.scaleCounter, weight)
+	sc.scaleCounter += scaleIncrement
+
+	if scaleIncrement != 0 {
+		sc.logger.Debug().Msgf("ScaleCounter updated/damped by %f to %f because no scaling-alert changed the scale counter. Damping (per s): %f.", scaleIncrement, sc.scaleCounter, sc.noAlertScaleDamping)
 	}
 }
 
@@ -77,18 +90,34 @@ func getWeight(alertName string, weightMap ScaleAlertWeightMap) float32 {
 	return w
 }
 
-func (sc *ScaleAlertAggregator) updateScaleCounter(key uint32, entry ScaleAlertPoolEntry) {
-	// ignore resolved alerts
-	if !entry.scaleAlert.Firing {
-		return
+// computeScaleCounterIncrement determines how much the scaleCounter has to be changed for the given alert.
+func computeScaleCounterIncrement(alertName string, weightMap ScaleAlertWeightMap, aggregationCycle time.Duration) (scaleIncrement float32, weightPerSecond float32) {
+	weightPerSecond = getWeight(alertName, weightMap)
+	if weightPerSecond == 0 {
+		return 0, 0
+	}
+	scaleIncrement = weightPerSecondToWeight(weightPerSecond, aggregationCycle)
+	return scaleIncrement, weightPerSecond
+}
+
+// applyAlertsToScaleCounter applies the given alerts to the scaleCounter by incrementing/ decrementing the counter accordingly.
+func (sc *ScaleAlertAggregator) applyAlertsToScaleCounter(entries []ScaleAlertPoolEntry, weightMap ScaleAlertWeightMap, aggregationCycle time.Duration) (scaleCounterHasChanged bool) {
+	oldScaleCounter := sc.scaleCounter
+
+	for _, entry := range entries {
+		// ignore resolved alerts
+		if !entry.scaleAlert.Firing {
+			continue
+		}
+
+		alertName := entry.scaleAlert.Name
+		scaleIncrement, weightPerSecond := computeScaleCounterIncrement(alertName, weightMap, aggregationCycle)
+		sc.scaleCounter += scaleIncrement
+
+		sc.logger.Debug().Msgf("ScaleCounter updated by %f to %f. Scaling-Alert: '%s' (%f wps).", scaleIncrement, sc.scaleCounter, alertName, weightPerSecond)
 	}
 
-	alertName := entry.scaleAlert.Name
-	weightPerSecond := getWeight(alertName, sc.weightMap)
-	scaleIncrement := weightPerSecondToWeight(weightPerSecond, sc.aggregationCycle)
-	sc.scaleCounter += scaleIncrement
-
-	sc.logger.Debug().Msgf("ScaleCounter updated by %f to %f because of a scaling-alert (name=%s, weight=%f).", scaleIncrement, sc.scaleCounter, alertName, weightPerSecond)
+	return oldScaleCounter != sc.scaleCounter
 }
 
 //weightPerSecondToWeight converts the given weight (per second) into an absolute weight

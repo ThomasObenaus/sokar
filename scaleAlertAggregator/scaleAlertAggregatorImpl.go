@@ -57,7 +57,11 @@ func (sc *ScaleAlertAggregator) Run() {
 				sc.scaleAlertPool.cleanup()
 
 			case <-aggregationTicker.C:
-				sc.aggregate()
+				scaleFactor := sc.aggregate()
+				if scaleFactor > 0 {
+					// FIXME: This currently blocks until the deployment is done
+					sc.emitScaleEvent(scaleFactor)
+				}
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")
