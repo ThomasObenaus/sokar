@@ -8,13 +8,16 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
+	saa "github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
 // Connector is the integration of prometheus/alertmanager
 type Connector struct {
 	logger        zerolog.Logger
-	subscriptions []chan scaleAlertAggregator.ScaleAlertPacket
+	subscriptions []chan saa.ScaleAlertPacket
+
+	// handleFuncs is a list of registered handlers for received ScaleAlerts
+	handleFuncs []saa.ScaleAlertHandleFunc
 }
 
 // Config cfg for the connector
@@ -29,14 +32,22 @@ func (cfg Config) New() *Connector {
 	}
 }
 
+func (c *Connector) Register(handleFunc saa.ScaleAlertHandleFunc) {
+	c.handleFuncs = append(c.handleFuncs, handleFunc)
+}
+
 // Subscribe is used to register/ subscribe for the channel where scaling alerts are emitted
-func (c *Connector) Subscribe(subscriber chan scaleAlertAggregator.ScaleAlertPacket) {
+func (c *Connector) Subscribe(subscriber chan saa.ScaleAlertPacket) {
 	c.subscriptions = append(c.subscriptions, subscriber)
 }
 
-func (c *Connector) fireScaleAlertPacket(scalingAlerts scaleAlertAggregator.ScaleAlertPacket) {
+func (c *Connector) fireScaleAlertPacket(scalingAlerts saa.ScaleAlertPacket) {
 	for _, subscriber := range c.subscriptions {
 		subscriber <- scalingAlerts
+	}
+
+	for _, handleFunc := range c.handleFuncs {
+		handleFunc(scalingAlerts.Emitter, scalingAlerts)
 	}
 }
 

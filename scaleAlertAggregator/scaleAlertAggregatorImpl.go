@@ -35,6 +35,7 @@ func (sc *ScaleAlertAggregator) Run() {
 	scaleAlertChannel := make(chan ScaleAlertPacket)
 	for _, receiver := range sc.receivers {
 		receiver.Subscribe(scaleAlertChannel)
+		receiver.Register(sc.handleScaleAlerts)
 	}
 
 	aggregationTicker := time.NewTicker(sc.aggregationCycle)
@@ -67,6 +68,10 @@ func (sc *ScaleAlertAggregator) Run() {
 		sc.logger.Info().Msg("Main process loop left")
 	}()
 
+}
+
+func (sc *ScaleAlertAggregator) handleScaleAlerts(emitter string, scaPckg ScaleAlertPacket) {
+	sc.handleReceivedScaleAlerts(scaPckg)
 }
 
 func (sc *ScaleAlertAggregator) handleReceivedScaleAlerts(scaPckg ScaleAlertPacket) {

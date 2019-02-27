@@ -5,6 +5,8 @@ import "time"
 // ScaleAlertEmitter is a component emits ScaleAlerts.
 type ScaleAlertEmitter interface {
 	Subscribe(alertChannel chan ScaleAlertPacket)
+
+	Register(handleFunc ScaleAlertHandleFunc)
 }
 
 // ScaleAlert represents either a down or up-scale alert fired by an alerting system
@@ -25,3 +27,5 @@ type ScaleAlertPacket struct {
 
 	ScaleAlerts []ScaleAlert
 }
+
+type ScaleAlertHandleFunc func(emitter string, scaleAlerts ScaleAlertPacket)
