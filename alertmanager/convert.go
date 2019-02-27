@@ -3,7 +3,7 @@ package alertmanager
 import (
 	"strings"
 
-	sea "github.com/thomasobenaus/sokar/scaleEventAggregator"
+	saa "github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
 func genReceiver(name string) string {
@@ -17,8 +17,8 @@ func genReceiver(name string) string {
 }
 
 // amResponseToScalingAlerts extracts alerts from the response of the alertmanager
-func amResponseToScalingAlerts(resp response) sea.ScaleAlertPacket {
-	result := sea.ScaleAlertPacket{Receiver: genReceiver(resp.Receiver)}
+func amResponseToScalingAlerts(resp response) saa.ScaleAlertPacket {
+	result := saa.ScaleAlertPacket{Receiver: genReceiver(resp.Receiver)}
 	for _, alert := range resp.Alerts {
 		result.ScaleAlerts = append(result.ScaleAlerts, amAlertToScalingAlert(alert))
 	}
@@ -26,14 +26,14 @@ func amResponseToScalingAlerts(resp response) sea.ScaleAlertPacket {
 	return result
 }
 
-func amAlertToScalingAlert(alert alert) sea.ScaleAlert {
+func amAlertToScalingAlert(alert alert) saa.ScaleAlert {
 
 	name, ok := alert.Labels["alertname"]
 	if !ok {
 		name = "NO_NAME"
 	}
 
-	return sea.ScaleAlert{
+	return saa.ScaleAlert{
 		Name:      name,
 		Firing:    isFiring(alert.Status),
 		StartedAt: alert.StartsAt,

@@ -8,7 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/scaleEventAggregator"
+	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
 // Connector is the integration of prometheus/alertmanager
