@@ -1,7 +1,7 @@
 package sokar
 
-// ScaleEventAggregator represents the interface for the component that gathers and aggregates ScaleEvents.
-type ScaleEventAggregator interface {
+// ScaleAlertAggregator represents the interface for the component that gathers and aggregates ScaleEvents.
+type ScaleAlertAggregator interface {
 	Subscribe(eventChannel chan ScaleEvent)
 }
 

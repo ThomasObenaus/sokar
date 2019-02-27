@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func (sc *ScaleEventAggregator) aggregate() {
+func (sc *ScaleAlertAggregator) aggregate() {
 	sc.logger.Info().Msg("Aggregate")
 	sc.logPool()
 
@@ -51,7 +51,7 @@ func computeScaleCounterDamping(scaleCounter float32, dampingFactor float32) flo
 	return result
 }
 
-func (sc *ScaleEventAggregator) logPool() {
+func (sc *ScaleAlertAggregator) logPool() {
 	sc.logger.Debug().Int("num-entries", sc.scaleAlertPool.size()).Msg("ScaleAlertPool:")
 
 	sc.scaleAlertPool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
@@ -69,7 +69,7 @@ func getWeight(alertName string, weightMap ScaleAlertWeightMap) float32 {
 	return w
 }
 
-func (sc *ScaleEventAggregator) updateScaleCounter(key uint32, entry ScaleAlertPoolEntry) {
+func (sc *ScaleAlertAggregator) updateScaleCounter(key uint32, entry ScaleAlertPoolEntry) {
 	// ignore resolved alerts
 	if !entry.scaleAlert.Firing {
 		return

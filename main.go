@@ -109,7 +109,7 @@ func main() {
 	os.Exit(0)
 }
 
-func setupSokar(scaleAlertAggregator sokar.ScaleEventAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleAlertAggregator sokar.ScaleAlertAggregator, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
