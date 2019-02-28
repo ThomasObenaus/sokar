@@ -8,6 +8,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
+	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 const (
@@ -15,13 +16,16 @@ const (
 	ParamBy = "by"
 	// PathScaleBy is the url path to the scale-by end-point
 	PathScaleBy = "/scaler/scale/:" + ParamBy
+
+	// PathHealth is the url path for health end-point
+	PathHealth = "/health"
 )
 
 // Sokar component that can be used to scale jobs/instances
 type Sokar struct {
-	scaler            Scaler
-	capacityPlanner   CapacityPlanner
-	scaleEventEmitter ScaleEventEmitter
+	scaler            sokarIF.Scaler
+	capacityPlanner   sokarIF.CapacityPlanner
+	scaleEventEmitter sokarIF.ScaleEventEmitter
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -35,7 +39,7 @@ type Config struct {
 }
 
 // New creates a new instance of sokar
-func (cfg *Config) New(scaleEventEmitter ScaleEventEmitter, capacityPlanner CapacityPlanner, scaler Scaler) (*Sokar, error) {
+func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
@@ -73,7 +77,7 @@ func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	scaResult := sk.scaler.ScaleBy(int(by))
 
 	code := http.StatusOK
-	if scaResult.State == ScaleFailed {
+	if scaResult.State == sokarIF.ScaleFailed {
 		code = http.StatusInternalServerError
 	}
 	sk.logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)

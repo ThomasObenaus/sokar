@@ -1,9 +1,13 @@
 package sokar
 
+import (
+	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
+)
+
 // Run starts sokar
 func (sk *Sokar) Run() {
 
-	scaleEventChannel := make(chan ScaleEvent, 10)
+	scaleEventChannel := make(chan sokarIF.ScaleEvent, 10)
 	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 
 	// main loop
@@ -40,7 +44,7 @@ func (sk *Sokar) Join() {
 	<-sk.stopChan
 }
 
-func (sk *Sokar) handleScaleEvent(scaleEvent ScaleEvent) {
+func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 
 	sk.logger.Info().Msgf("SCALE-EVENT TRIGGERED: %v", scaleEvent)
 

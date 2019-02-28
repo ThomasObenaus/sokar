@@ -15,6 +15,7 @@ import (
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
+	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 func main() {
@@ -109,7 +110,7 @@ func main() {
 	os.Exit(0)
 }
 
-func setupSokar(scaleEventEmitter sokar.ScaleEventEmitter, capacityPlanner sokar.CapacityPlanner, scaler sokar.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
@@ -120,6 +121,7 @@ func setupSokar(scaleEventEmitter sokar.ScaleEventEmitter, capacityPlanner sokar
 
 	logger.Info().Msg("Registering http handlers ...")
 	api.Router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
+	api.Router.GET(sokar.PathHealth, sokarInst.Health)
 	logger.Info().Msg("Registering http handlers ... done")
 
 	return sokarInst, err

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/thomasobenaus/sokar/helper"
-	"github.com/thomasobenaus/sokar/sokar"
+	"github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 type jobConfig struct {
