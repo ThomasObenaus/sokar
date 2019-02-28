@@ -40,16 +40,6 @@ func Test_ComputeScaleCounterDamping(t *testing.T) {
 	assert.Equal(t, float32(-1), computeScaleCounterDamping(10, 1))
 }
 
-func Test_ComputeScaleFactor(t *testing.T) {
-	assert.Equal(t, float32(0), computeScaleFactor(0, time.Second*1))
-	assert.Equal(t, float32(10), computeScaleFactor(10, time.Second*1))
-	assert.Equal(t, float32(-10), computeScaleFactor(-10, time.Second*1))
-	assert.Equal(t, float32(-5), computeScaleFactor(-10, time.Second*2))
-	assert.Equal(t, float32(5), computeScaleFactor(10, time.Second*2))
-	assert.Equal(t, float32(0), computeScaleFactor(10, time.Second*0))
-	assert.Equal(t, float32(0), computeScaleFactor(0, time.Second*1))
-}
-
 func Test_ComputeScaleCounterIncrement(t *testing.T) {
 
 	wm := map[string]float32{"AlertA": 2.0, "AlertB": -1}
