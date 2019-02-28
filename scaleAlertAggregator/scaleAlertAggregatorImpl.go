@@ -60,11 +60,13 @@ func (sc *ScaleAlertAggregator) Run() {
 
 			case <-aggregationTicker.C:
 				aggregationCounter++
-				scaleFactor := sc.aggregate()
+				sc.aggregate()
 
-				if scaleFactor != 0 {
+				if sc.isScalingNeeded() {
 					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter, time.Now())
 					sc.logger.Info().Msgf("Scaling needed. Gradient %f.", gradient)
+					// TODO: use this LL somewhere
+					//sc.logger.Info().Msgf("Scale by %f because upscalingThreshold (%f) was violated. ScaleCounter is currently %f", scaleFactor, sc.upScalingThreshold, sc.scaleCounter)
 
 					// FIXME: This currently blocks until the deployment is done
 					sc.emitScaleEvent(gradient)
@@ -75,6 +77,10 @@ func (sc *ScaleAlertAggregator) Run() {
 					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter, time.Now())
 					sc.logger.Debug().Msgf("Evaluation period exceeded. Refresh gradient %f.", gradient)
 				}
+
+				// TODO: Use this LL somewhere
+				//	sc.logger.Info().Msgf("No scaling needed. ScaleCounter is currently %f [%f/%f/%f].", sc.scaleCounter, sc.downScalingThreshold, sc.upScalingThreshold, sc.noAlertScaleDamping)
+
 			}
 		}
 		sc.logger.Info().Msg("Main process loop left")

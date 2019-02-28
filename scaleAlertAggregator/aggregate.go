@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-// aggregate all ScaleAlerts available and calculates a scaling factor out of it.
-func (sc *ScaleAlertAggregator) aggregate() float32 {
+// aggregate all ScaleAlerts available and updates internally the scaleCounter.
+func (sc *ScaleAlertAggregator) aggregate() {
 	sc.logger.Info().Msg("Aggregation")
 	sc.logPool()
 
@@ -20,21 +20,15 @@ func (sc *ScaleAlertAggregator) aggregate() float32 {
 	if !alertsChangedScaleCounter {
 		sc.applyScaleCounterDamping(sc.noAlertScaleDamping, sc.aggregationCycle)
 	}
+}
 
+// isScalingNeeded returns true if the current scaleCounter violates either the upScaling-
+// or downScaling threshold
+func (sc *ScaleAlertAggregator) isScalingNeeded() bool {
 	scaleUpNeeded := sc.scaleCounter > sc.upScalingThreshold
 	scaleDownNeeded := sc.scaleCounter < sc.downScalingThreshold
-	// TODO: Don't calculate the scaleFactor here
-	var scaleFactor float32
-	if scaleUpNeeded || scaleDownNeeded {
-		scaleFactor = computeScaleFactor(sc.scaleCounter, time.Second*10)
 
-		sc.logger.Info().Msgf("Scale by %f because upscalingThreshold (%f) was violated. ScaleCounter is currently %f", scaleFactor, sc.upScalingThreshold, sc.scaleCounter)
-
-	} else {
-		sc.logger.Info().Msgf("No scaling needed. ScaleCounter is currently %f [%f/%f/%f].", sc.scaleCounter, sc.downScalingThreshold, sc.upScalingThreshold, sc.noAlertScaleDamping)
-		scaleFactor = 0
-	}
-	return scaleFactor
+	return scaleDownNeeded || scaleUpNeeded
 }
 
 // computeScaleFactor calculates the scaling factor by calculating the gradient of the scaleCounter in the
