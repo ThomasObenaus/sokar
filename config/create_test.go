@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -47,7 +48,50 @@ scale_alert_aggregator:
       description: "Down alert"
 `
 
-func Test_NewconfigFromYAML_Partial(t *testing.T) {
+var invalidConfig = `
+invalid:
+:yaml
+`
+
+func Test_NewconfigFromYAMLFile(t *testing.T) {
+	file, err := os.Open("../test/config/full.yaml")
+	require.NoError(t, err)
+	config, err := NewConfigFromYAMLFile(file)
+
+	// logging
+	assert.False(t, config.Logging.Structured)
+	assert.False(t, config.Logging.UxTimestamp)
+
+	// job
+	assert.Equal(t, "fail-service", config.Job.Name)
+	assert.Equal(t, uint(1), config.Job.MinCount)
+	assert.Equal(t, uint(10), config.Job.MaxCount)
+
+	// cfg
+	assert.Equal(t, float32(1), config.ScaleAlertAggregator.NoAlertScaleDamping)
+	assert.Equal(t, float32(10), config.ScaleAlertAggregator.UpScaleThreshold)
+	assert.Equal(t, float32(-10), config.ScaleAlertAggregator.DownScaleThreshold)
+	assert.Equal(t, time.Second*1, config.ScaleAlertAggregator.EvaluationCycle)
+	assert.Equal(t, uint(10), config.ScaleAlertAggregator.EvaluationPeriodFactor)
+	assert.Equal(t, time.Second*60, config.ScaleAlertAggregator.CleanupCycle)
+
+	// scale_alerts
+	assert.Len(t, config.ScaleAlertAggregator.ScaleAlerts, 2)
+	assert.Equal(t, "AlertA", config.ScaleAlertAggregator.ScaleAlerts[0].Name)
+	assert.Equal(t, float32(1.5), config.ScaleAlertAggregator.ScaleAlerts[0].Weight)
+	assert.Equal(t, "", config.ScaleAlertAggregator.ScaleAlerts[0].Description)
+	assert.Equal(t, "AlertB", config.ScaleAlertAggregator.ScaleAlerts[1].Name)
+	assert.Equal(t, float32(-1.5), config.ScaleAlertAggregator.ScaleAlerts[1].Weight)
+	assert.Equal(t, "Down alert", config.ScaleAlertAggregator.ScaleAlerts[1].Description)
+}
+func Test_NewconfigFromYAML_Invalid(t *testing.T) {
+	reader := strings.NewReader(invalidConfig)
+
+	_, err := NewConfigFromYAML(reader)
+	assert.Error(t, err)
+}
+
+func Test_NewConfigFromYAML_Partial(t *testing.T) {
 	reader := strings.NewReader(minimalConfig)
 
 	config, err := NewConfigFromYAML(reader)
