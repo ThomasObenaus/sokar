@@ -72,6 +72,11 @@ func main() {
 	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
 	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
 
+	weightMap := make(scaleAlertAggregator.ScaleAlertWeightMap, 0)
+	for _, alertDef := range cfg.ScaleAlertAggregator.ScaleAlerts {
+		weightMap[alertDef.Name] = alertDef.Weight
+	}
+
 	scaEvtAggCfg := scaleAlertAggregator.Config{
 		Logger:                 loggingFactory.NewNamedLogger("sokar.scaAlertAggr"),
 		NoAlertScaleDamping:    cfg.ScaleAlertAggregator.NoAlertScaleDamping,
@@ -80,6 +85,7 @@ func main() {
 		EvaluationCycle:        cfg.ScaleAlertAggregator.EvaluationCycle,
 		EvaluationPeriodFactor: cfg.ScaleAlertAggregator.EvaluationPeriodFactor,
 		CleanupCycle:           cfg.ScaleAlertAggregator.CleanupCycle,
+		WeightMap:              weightMap,
 	}
 
 	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters)
