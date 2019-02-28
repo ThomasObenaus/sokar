@@ -40,6 +40,7 @@ type Alert struct {
 	Description string  `yaml:"description,omitempty"`
 }
 
+// Logging is used for logging configuration
 type Logging struct {
 	Structured  bool `yaml:"structured,omitempty"`
 	UxTimestamp bool `yaml:"unix_ts,omitempty"`
