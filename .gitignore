@@ -5,3 +5,5 @@ coverage.out
 nomad/debug\.test
 
 scaler/debug\.test
+
+all\.log

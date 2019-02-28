@@ -86,10 +86,10 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		aggregationCycle:       time.Millisecond * 2000,
 		evaluationPeriodFactor: 10,
 		cleanupCycle:           time.Second * 10,
-		weightMap:              map[string]float32{"AlertA": 2.0, "AlertB": -1},
+		weightMap:              map[string]float32{"AlertA": 2.0, "AlertB": -1, "AlertC": -2},
 		noAlertScaleDamping:    1.0,
-		upScalingThreshold:     5.0,
-		downScalingThreshold:   -5.0,
+		upScalingThreshold:     20.0,
+		downScalingThreshold:   -20.0,
 		scaleCounter:           newScaleCounter(),
 		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 	}
