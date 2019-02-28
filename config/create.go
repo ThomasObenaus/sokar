@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
+
+	"gopkg.in/yaml.v2"
 )
 
 var data = `
