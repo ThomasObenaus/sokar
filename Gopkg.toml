@@ -51,3 +51,7 @@
 [[constraint]]
   name = "github.com/julienschmidt/httprouter"
   version = "1.2.0"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  version = "2.2.2"
