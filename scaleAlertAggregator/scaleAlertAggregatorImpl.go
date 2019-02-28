@@ -36,7 +36,7 @@ func (sc *ScaleAlertAggregator) Run() {
 		emitter.Register(sc.handleScaleAlerts)
 	}
 
-	aggregationTicker := time.NewTicker(sc.evaluationCycle)
+	evaluationTicker := time.NewTicker(sc.evaluationCycle)
 	cleanupTicker := time.NewTicker(sc.cleanupCycle)
 
 	// main loop
@@ -48,7 +48,7 @@ func (sc *ScaleAlertAggregator) Run() {
 			select {
 
 			case <-sc.stopChan:
-				aggregationTicker.Stop()
+				evaluationTicker.Stop()
 				cleanupTicker.Stop()
 				close(sc.stopChan)
 				break loop
@@ -56,7 +56,7 @@ func (sc *ScaleAlertAggregator) Run() {
 			case <-cleanupTicker.C:
 				sc.scaleAlertPool.cleanup()
 
-			case <-aggregationTicker.C:
+			case <-evaluationTicker.C:
 				sc.aggregate()
 				gradient := sc.evaluate()
 
