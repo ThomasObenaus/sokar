@@ -76,6 +76,27 @@ type ScaleAlertAggregator struct {
 // Config configuration for the ScaleAlertAggregator
 type Config struct {
 	Logger zerolog.Logger
+
+	WeightMap              ScaleAlertWeightMap
+	NoAlertScaleDamping    float32
+	UpScalingThreshold     float32
+	DownScalingThreshold   float32
+	EvaluationCycle        time.Duration
+	EvaluationPeriodFactor uint
+	CleanupCycle           time.Duration
+}
+
+// NewDefaultConfig creates an empty default configuration
+func NewDefaultConfig() Config {
+	return Config{
+		WeightMap:              make(ScaleAlertWeightMap, 0),
+		NoAlertScaleDamping:    1,
+		UpScalingThreshold:     10,
+		DownScalingThreshold:   -10,
+		EvaluationCycle:        time.Second * 1,
+		EvaluationPeriodFactor: 10,
+		CleanupCycle:           time.Second * 60,
+	}
 }
 
 // New creates a instance of the ScaleAlertAggregator
@@ -85,13 +106,13 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		emitters:               emitters,
 		stopChan:               make(chan struct{}, 1),
 		scaleAlertPool:         NewScaleAlertPool(),
-		evaluationCycle:        time.Millisecond * 2000,
-		evaluationPeriodFactor: 10,
-		cleanupCycle:           time.Second * 10,
-		weightMap:              map[string]float32{"AlertA": 2.0, "AlertB": -1, "AlertC": -2},
-		noAlertScaleDamping:    1.0,
-		upScalingThreshold:     20.0,
-		downScalingThreshold:   -20.0,
+		evaluationCycle:        cfg.EvaluationCycle,
+		evaluationPeriodFactor: cfg.EvaluationPeriodFactor,
+		cleanupCycle:           cfg.CleanupCycle,
+		weightMap:              cfg.WeightMap,
+		noAlertScaleDamping:    cfg.NoAlertScaleDamping,
+		upScalingThreshold:     cfg.UpScalingThreshold,
+		downScalingThreshold:   cfg.DownScalingThreshold,
 		scaleCounter:           0,
 		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 		evaluationCounter:      0,
