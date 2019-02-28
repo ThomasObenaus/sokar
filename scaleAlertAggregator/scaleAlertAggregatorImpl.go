@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/thomasobenaus/sokar/sokar"
+	"github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // Subscribe is used to register for receiving ScaleEvents

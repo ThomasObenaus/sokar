@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/helper"
-	"github.com/thomasobenaus/sokar/sokar"
+	"github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // ScaleAlertAggregator is a component that is responsible to gather and aggregate ScaleEvents
