@@ -103,7 +103,7 @@ func Test_Aggregate(t *testing.T) {
 	alerts = append(alerts, ScaleAlert{Firing: false, Name: "AlertC"})
 	saa.scaleAlertPool.update("AM-Test", alerts)
 	require.Len(t, saa.scaleAlertPool.entries, 2)
-	saa.aggregationCycle = time.Second * 1
+	saa.evaluationCycle = time.Second * 1
 
 	// No Scaling
 	saa.scaleCounter = 0
