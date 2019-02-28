@@ -66,7 +66,7 @@ vendor: depend.install depend.update
 run: build
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run ${name}"
-	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://192.168.0.236:4646" --job-name="fail-service" --job-min-count=1 --job-max-count=10 --scale-by=1
+	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://192.168.0.236:4646"
 	# --oneshot
 
 finish:

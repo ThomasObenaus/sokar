@@ -28,7 +28,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	scaleBy := parsedArgs.ScaleBy
 	localPort := 11000
 
 	log.Println("Read configuration...")
@@ -52,13 +51,6 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
 	logger.Info().Msg("Set up the scaler ... done")
-
-	// OneShot mode
-	if parsedArgs.OneShot {
-		scaResult := scaler.ScaleBy(scaleBy)
-		logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
-		os.Exit(0)
-	}
 
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
