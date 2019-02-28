@@ -22,3 +22,9 @@ func Test_IsScalingNeeded(t *testing.T) {
 	saa.scaleCounter = -5.1
 	assert.True(t, saa.isScalingNeeded())
 }
+
+func Test_GradientToScaleDir(t *testing.T) {
+	assert.Equal(t, "UP", gradientToScaleDir(1))
+	assert.Equal(t, "DOWN", gradientToScaleDir(-1))
+	assert.Equal(t, "NO", gradientToScaleDir(0))
+}
