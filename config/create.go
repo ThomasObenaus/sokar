@@ -29,6 +29,7 @@ func NewDefaultConfig() Config {
 			NoAlertScaleDamping:    1,
 			UpScaleThreshold:       10,
 			DownScaleThreshold:     -10,
+			ScaleAlerts:            make([]Alert, 0),
 		},
 	}
 }

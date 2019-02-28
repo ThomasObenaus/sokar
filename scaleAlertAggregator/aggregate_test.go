@@ -92,7 +92,7 @@ func Test_ApplyScaleCounterDamping(t *testing.T) {
 }
 
 func Test_Aggregate(t *testing.T) {
-	cfg := Config{}
+	cfg := NewDefaultConfig()
 	var emitters []ScaleAlertEmitter
 	saa := cfg.New(emitters)
 

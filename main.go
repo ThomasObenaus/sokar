@@ -55,18 +55,25 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
 
-	var scaleAlertReceivers []scaleAlertAggregator.ScaleAlertEmitter
+	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	amCfg := alertmanager.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.alertmanager"),
 	}
 	amConnector := amCfg.New()
 	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
-	scaleAlertReceivers = append(scaleAlertReceivers, amConnector)
+	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
 
 	scaEvtAggCfg := scaleAlertAggregator.Config{
-		Logger: loggingFactory.NewNamedLogger("sokar.scaAlertAggr"),
+		Logger:                 loggingFactory.NewNamedLogger("sokar.scaAlertAggr"),
+		NoAlertScaleDamping:    cfg.ScaleAlertAggregator.NoAlertScaleDamping,
+		UpScalingThreshold:     cfg.ScaleAlertAggregator.UpScaleThreshold,
+		DownScalingThreshold:   cfg.ScaleAlertAggregator.DownScaleThreshold,
+		EvaluationCycle:        cfg.ScaleAlertAggregator.EvaluationCycle,
+		EvaluationPeriodFactor: cfg.ScaleAlertAggregator.EvaluationPeriodFactor,
+		CleanupCycle:           cfg.ScaleAlertAggregator.CleanupCycle,
 	}
-	scaAlertAggr := scaEvtAggCfg.New(scaleAlertReceivers)
+
+	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters)
 	api.Router.POST("/alert", scaAlertAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
