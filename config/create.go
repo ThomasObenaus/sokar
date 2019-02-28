@@ -34,6 +34,10 @@ func NewDefaultConfig() Config {
 }
 
 // NewConfigFromYAMLFile reads the configuration from a file
-func NewConfigFromYAMLFile(file *os.File) (Config, error) {
+func NewConfigFromYAMLFile(fileName string) (Config, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return NewDefaultConfig(), err
+	}
 	return NewConfigFromYAML(file)
 }

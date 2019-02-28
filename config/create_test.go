@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -54,10 +53,11 @@ invalid:
 `
 
 func Test_NewconfigFromYAMLFile(t *testing.T) {
-	file, err := os.Open("../test/config/full.yaml")
-	require.NoError(t, err)
-	config, err := NewConfigFromYAMLFile(file)
+	config, err := NewConfigFromYAMLFile("NO_FILE")
+	assert.Error(t, err)
 
+	config, err = NewConfigFromYAMLFile("../test/config/full.yaml")
+	assert.NoError(t, err)
 	// logging
 	assert.False(t, config.Logging.Structured)
 	assert.False(t, config.Logging.UxTimestamp)
