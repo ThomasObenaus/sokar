@@ -41,7 +41,7 @@ type ScaleAlertAggregator struct {
 	// The scaleCounter is a value representing the aggregated weighted scaling alerts.
 	// To calculate this value the active scaling alerts (represented by their weight) are aggregated
 	// by the ScaleAlertAggregator.
-	scaleCounter scaleCounter
+	scaleCounter float32
 
 	// upScalingThreshold is the threshold that is used to trigger an upscaling event.
 	// In case the scaleCounter is higher than this threshold, the upscaling event will be triggered.
@@ -90,7 +90,7 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		noAlertScaleDamping:    1.0,
 		upScalingThreshold:     20.0,
 		downScalingThreshold:   -20.0,
-		scaleCounter:           newScaleCounter(),
+		scaleCounter:           0,
 		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 	}
 }

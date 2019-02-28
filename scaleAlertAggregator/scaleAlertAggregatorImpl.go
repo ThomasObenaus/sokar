@@ -63,16 +63,16 @@ func (sc *ScaleAlertAggregator) Run() {
 				scaleFactor := sc.aggregate()
 
 				if scaleFactor != 0 {
-					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter.val, time.Now())
+					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter, time.Now())
 					sc.logger.Info().Msgf("Scaling needed. Gradient %f.", gradient)
 
 					// FIXME: This currently blocks until the deployment is done
 					sc.emitScaleEvent(gradient)
-					sc.scaleCounter.reset()
+					sc.scaleCounter = 0
 					sc.scaleCounterGradient.Update(0, time.Now())
 					aggregationCounter = 0
 				} else if aggregationCounter%sc.evaluationPeriodFactor == 0 {
-					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter.val, time.Now())
+					gradient := sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter, time.Now())
 					sc.logger.Debug().Msgf("Evaluation period exceeded. Refresh gradient %f.", gradient)
 				}
 			}
