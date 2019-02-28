@@ -137,27 +137,43 @@ func Test_Aggregate(t *testing.T) {
 	alerts = append(alerts, ScaleAlert{Firing: false, Name: "AlertC"})
 	saa.scaleAlertPool.update("AM-Test", alerts)
 	require.Len(t, saa.scaleAlertPool.entries, 2)
-	saa.upScalingThreshold = 1
-	saa.downScalingThreshold = -1
+	saa.aggregationCycle = time.Second * 1
 
 	// No Scaling
 	saa.scaleCounter = 0
 	saa.weightMap["AlertA"] = 1
 	saa.weightMap["AlertB"] = -1
+	saa.aggregate()
 	assert.Equal(t, float32(0), saa.scaleCounter)
-	assert.Equal(t, float32(0), saa.aggregate())
 
 	// Scaling Up
 	saa.scaleCounter = 0
 	saa.weightMap["AlertA"] = 2
 	saa.weightMap["AlertB"] = -1
-	assert.Equal(t, float32(0), saa.scaleCounter)
-	assert.Equal(t, float32(1), saa.aggregate())
+	saa.aggregate()
+	assert.Equal(t, float32(1), saa.scaleCounter)
 
 	// Scaling Down
 	saa.scaleCounter = 0
 	saa.weightMap["AlertA"] = 1
 	saa.weightMap["AlertB"] = -2
-	assert.Equal(t, float32(0), saa.scaleCounter)
-	assert.Equal(t, float32(-1), saa.aggregate())
+	saa.aggregate()
+	assert.Equal(t, float32(-1), saa.scaleCounter)
+}
+
+func Test_IsScalingNeeded(t *testing.T) {
+	cfg := Config{}
+	var emitters []ScaleAlertEmitter
+	saa := cfg.New(emitters)
+	saa.downScalingThreshold = -5
+	saa.upScalingThreshold = 5
+
+	saa.scaleCounter = 0
+	assert.False(t, saa.isScalingNeeded())
+
+	saa.scaleCounter = 5.1
+	assert.True(t, saa.isScalingNeeded())
+
+	saa.scaleCounter = -5.1
+	assert.True(t, saa.isScalingNeeded())
 }
