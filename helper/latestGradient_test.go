@@ -46,10 +46,14 @@ func Test_Get(t *testing.T) {
 	now := time.Now()
 	ago60Secs := now.Add(time.Second * -60)
 	ago50Secs := now.Add(time.Second * -50)
+	ago50EpsSecs := now.Add(time.Second * -50).Add(time.Nanosecond * 1)
 	ago40Secs := now.Add(time.Second * -40)
 
 	lg.Update(0, ago50Secs)
 	assert.Equal(t, float32(1), lg.Get(10, ago40Secs))
 	assert.Equal(t, float32(0), lg.Get(0, ago40Secs))
 	assert.Equal(t, float32(0), lg.Get(10, ago60Secs))
+
+	// change in almost no time
+	assert.Equal(t, float32(1e+10), lg.Get(10, ago50EpsSecs))
 }
