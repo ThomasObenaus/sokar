@@ -22,15 +22,6 @@ func (sc *ScaleAlertAggregator) aggregate() {
 	}
 }
 
-// isScalingNeeded returns true if the current scaleCounter violates either the upScaling-
-// or downScaling threshold
-func (sc *ScaleAlertAggregator) isScalingNeeded() bool {
-	scaleUpNeeded := sc.scaleCounter > sc.upScalingThreshold
-	scaleDownNeeded := sc.scaleCounter < sc.downScalingThreshold
-
-	return scaleDownNeeded || scaleUpNeeded
-}
-
 // applyScaleCounterDamping applies the given damping to the scaleCounter
 func (sc *ScaleAlertAggregator) applyScaleCounterDamping(noAlertScaleDamping float32, aggregationCycle time.Duration) {
 	weight := weightPerSecondToWeight(noAlertScaleDamping, aggregationCycle)
@@ -74,16 +65,6 @@ func (sc *ScaleAlertAggregator) logPool() {
 	})
 }
 
-// getWeight returns the scale weight for the given alert.
-// 0 is returned in case the weight for the given alert is not defined in the map
-func getWeight(alertName string, weightMap ScaleAlertWeightMap) float32 {
-	w, ok := weightMap[alertName]
-	if !ok {
-		return 0
-	}
-	return w
-}
-
 // computeScaleCounterIncrement determines how much the scaleCounter has to be changed for the given alert.
 func computeScaleCounterIncrement(alertName string, weightMap ScaleAlertWeightMap, aggregationCycle time.Duration) (scaleIncrement float32, weightPerSecond float32) {
 	weightPerSecond = getWeight(alertName, weightMap)
@@ -112,10 +93,4 @@ func (sc *ScaleAlertAggregator) applyAlertsToScaleCounter(entries []ScaleAlertPo
 	}
 
 	return oldScaleCounterValue != sc.scaleCounter
-}
-
-//weightPerSecondToWeight converts the given weight (per second) into an absolute weight
-// based on the given aggregate cycle.
-func weightPerSecondToWeight(weightPerSecond float32, aggregationCycle time.Duration) float32 {
-	return float32(aggregationCycle.Seconds() * float64(weightPerSecond))
 }
