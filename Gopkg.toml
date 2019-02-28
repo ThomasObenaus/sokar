@@ -55,3 +55,7 @@
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.2"
+
+[[constraint]]
+  name = "github.com/davecgh/go-spew"
+  version = "1.1.1"
