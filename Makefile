@@ -7,13 +7,13 @@ all: build test tools cover finish
 test: generate.mocks
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests"
-	@go test ./alertmanager ./nomad ./logging ./scaler ./capacityPlanner ./helper ./scaleAlertAggregator ./sokar -v
+	@go test ./alertmanager ./nomad ./logging ./scaler ./capacityPlanner ./helper ./scaleAlertAggregator -v
 
 .PHONY: cover
 cover: 
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run the unit-tests + coverage"
-	@go test ./alertmanager ./nomad ./logging ./scaler ./capacityPlanner ./helper ./scaleAlertAggregator ./sokar -v -covermode=count -coverprofile=coverage.out
+	@go test ./alertmanager ./nomad ./logging ./scaler ./capacityPlanner ./helper ./scaleAlertAggregator -v -covermode=count -coverprofile=coverage.out
 
 cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
