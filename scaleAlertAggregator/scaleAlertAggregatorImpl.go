@@ -57,7 +57,6 @@ func (sc *ScaleAlertAggregator) Run() {
 				sc.scaleAlertPool.cleanup()
 
 			case <-aggregationTicker.C:
-				sc.evaluationCounter++
 				sc.aggregate()
 				gradient := sc.evaluate()
 
