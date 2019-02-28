@@ -2,6 +2,7 @@ package config
 
 import (
 	"io"
+	"os"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -30,4 +31,9 @@ func NewDefaultConfig() Config {
 			DownScaleThreshold:     -10,
 		},
 	}
+}
+
+// NewConfigFromYAMLFile reads the configuration from a file
+func NewConfigFromYAMLFile(file *os.File) (Config, error) {
+	return NewConfigFromYAML(file)
 }
