@@ -10,7 +10,7 @@ import (
 // NewConfigFromYAML reads in the configuration in yaml format
 // using the provided io.Reader
 func NewConfigFromYAML(reader io.Reader) (Config, error) {
-	cfg := Config{}
+	cfg := NewDefaultConfig()
 	err := yaml.NewDecoder(reader).Decode(&cfg)
 	return cfg, err
 }
