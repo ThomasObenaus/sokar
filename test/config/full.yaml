@@ -1,3 +1,5 @@
+nomad:
+  srv_addr: "http://localhost:4646"
 job:
   name: "fail-service"
   min: 1

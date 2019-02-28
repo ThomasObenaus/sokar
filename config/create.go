@@ -20,6 +20,7 @@ func NewConfigFromYAML(reader io.Reader) (Config, error) {
 // or server configuration defined.
 func NewDefaultConfig() Config {
 	return Config{
+		Nomad{},
 		Logging{Structured: false, UxTimestamp: false},
 		Job{},
 		ScaleAlertAggregator{

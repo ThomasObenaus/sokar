@@ -45,8 +45,17 @@ func main() {
 	loggingFactory := lCfg.New()
 	logger := loggingFactory.NewNamedLogger("sokar")
 
+	nomadServerAddress := cfg.Nomad.ServerAddr
+	// Prefer CLI parameter
+	if len(parsedArgs.NomadServerAddr) > 0 {
+		nomadServerAddress = parsedArgs.NomadServerAddr
+	}
+	if len(nomadServerAddress) == 0 {
+		logger.Fatal().Msg("Nomad Server address not specified.")
+	}
+
 	logger.Info().Msg("Set up the scaler ...")
-	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, parsedArgs.NomadServerAddr, loggingFactory)
+	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, nomadServerAddress, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
