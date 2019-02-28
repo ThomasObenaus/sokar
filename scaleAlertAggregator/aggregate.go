@@ -31,16 +31,6 @@ func (sc *ScaleAlertAggregator) isScalingNeeded() bool {
 	return scaleDownNeeded || scaleUpNeeded
 }
 
-// computeScaleFactor calculates the scaling factor by calculating the gradient of the scaleCounter in the
-// given timespan.
-// Assumption: The scaleCounter has changed in the given time span from 0 to the given value.
-func computeScaleFactor(scaleCounter float32, timeSpan time.Duration) float32 {
-	if timeSpan.Seconds() == 0 {
-		return 0
-	}
-	return float32(float64(scaleCounter) / timeSpan.Seconds())
-}
-
 // applyScaleCounterDamping applies the given damping to the scaleCounter
 func (sc *ScaleAlertAggregator) applyScaleCounterDamping(noAlertScaleDamping float32, aggregationCycle time.Duration) {
 	weight := weightPerSecondToWeight(noAlertScaleDamping, aggregationCycle)
