@@ -23,11 +23,6 @@ func (ca *cliArgs) validateArgs() bool {
 		success = false
 	}
 
-	if len(ca.NomadServerAddr) == 0 {
-		fmt.Printf("Parameter '-%s' is missing\n", pNomadServerAddress)
-		success = false
-	}
-
 	if !success {
 		fmt.Println()
 		fmt.Printf("Usage of %s\n", os.Args[0])

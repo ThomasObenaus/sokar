@@ -4,9 +4,15 @@ import "time"
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
+	Nomad                Nomad                `yaml:"nomad"`
 	Logging              Logging              `yaml:"logging,omitempty"`
 	Job                  Job                  `yaml:"job"`
 	ScaleAlertAggregator ScaleAlertAggregator `yaml:"scale_alert_aggregator"`
+}
+
+// Nomad represents the configuration for the scaling target nomad
+type Nomad struct {
+	ServerAddr string `yaml:"srv_addr"`
 }
 
 // Job represents the definition for the job that should be scaled.

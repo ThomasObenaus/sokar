@@ -12,6 +12,8 @@ import (
 )
 
 var fullConfig = `
+nomad:
+  srv_addr: "http://localhost:4646"
 job:
   name: "fail-service"
   min: 1
@@ -34,6 +36,8 @@ logging:
   unix_ts: false
 `
 var minimalConfig = `
+nomad:
+  srv_addr: "http://localhost:4646"
 job:
   name: "fail-service"
   min: 1
@@ -58,6 +62,10 @@ func Test_NewconfigFromYAMLFile(t *testing.T) {
 
 	config, err = NewConfigFromYAMLFile("../test/config/full.yaml")
 	assert.NoError(t, err)
+
+	// nomad
+	assert.Equal(t, "http://localhost:4646", config.Nomad.ServerAddr)
+
 	// logging
 	assert.False(t, config.Logging.Structured)
 	assert.False(t, config.Logging.UxTimestamp)
@@ -97,6 +105,9 @@ func Test_NewConfigFromYAML_Partial(t *testing.T) {
 	config, err := NewConfigFromYAML(reader)
 	require.NoError(t, err)
 
+	// nomad
+	assert.Equal(t, "http://localhost:4646", config.Nomad.ServerAddr)
+
 	// logging
 	assert.False(t, config.Logging.Structured)
 	assert.False(t, config.Logging.UxTimestamp)
@@ -130,6 +141,9 @@ func Test_NewConfigFromYAML_Full(t *testing.T) {
 
 	config, err := NewConfigFromYAML(reader)
 	require.NoError(t, err)
+
+	// nomad
+	assert.Equal(t, "http://localhost:4646", config.Nomad.ServerAddr)
 
 	// logging
 	assert.False(t, config.Logging.Structured)
