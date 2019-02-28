@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +11,7 @@ import (
 	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
+	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
@@ -26,22 +28,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	jobname := parsedArgs.JobName
-	jobMinCount := parsedArgs.JobMinCount
-	jobMaxCount := parsedArgs.JobMaxCount
 	scaleBy := parsedArgs.ScaleBy
 	localPort := 11000
 
+	log.Println("Read configuration...")
+	cfg, err := config.NewConfigFromYAMLFile(parsedArgs.CfgFile)
+	if err != nil {
+		log.Fatalf("Error reading configuration: %s.", err.Error())
+	}
+	log.Println("Read configuration...done")
+
 	// set up logging
 	lCfg := logging.Config{
-		UseStructuredLogging:       parsedArgs.StructuredLogging,
-		UseUnixTimestampForLogging: parsedArgs.UseUnixTimestampForLogging,
+		UseStructuredLogging:       cfg.Logging.Structured,
+		UseUnixTimestampForLogging: cfg.Logging.UxTimestamp,
 	}
 	loggingFactory := lCfg.New()
 	logger := loggingFactory.NewNamedLogger("sokar")
 
 	logger.Info().Msg("Set up the scaler ...")
-	scaler, err := setupScaler(jobname, jobMinCount, jobMaxCount, parsedArgs.NomadServerAddr, loggingFactory)
+	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, parsedArgs.NomadServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}

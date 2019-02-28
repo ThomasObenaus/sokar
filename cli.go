@@ -15,6 +15,7 @@ const pScaleBy = "scale-by"
 const pLogStructured = "logging-structured"
 const pLogUXTS = "logging-ux-ts"
 const pOneShot = "oneshot"
+const pCfgFile = "config-file"
 
 type cliArgs struct {
 	StructuredLogging          bool
@@ -25,10 +26,16 @@ type cliArgs struct {
 	JobMaxCount                uint
 	ScaleBy                    int
 	OneShot                    bool
+	CfgFile                    string
 }
 
 func (ca *cliArgs) validateArgs() bool {
 	success := true
+
+	if len(ca.CfgFile) == 0 {
+		fmt.Printf("Parameter '-%s' is missing\n", pCfgFile)
+		success = false
+	}
 
 	if len(ca.NomadServerAddr) == 0 {
 		fmt.Printf("Parameter '-%s' is missing\n", pNomadServerAddress)
@@ -58,6 +65,7 @@ func parseArgs() cliArgs {
 	var minCount = flag.Uint(pMinCount, 1, "Specifies the minimum number of instances this job shall have (default 1).")
 	var maxCount = flag.Uint(pMaxCount, 2, "Specifies the minimum number of instances this job shall have (default 2).")
 	var scaleBy = flag.Int(pScaleBy, 0, "Specifies the amount the job shall be scaled. A positive number means scale up and a negative means scale down by the specified amount.")
+	var cfgFile = flag.String(pCfgFile, "", "Specifies the full path and name of the configuration file for sokar.")
 	flag.Parse()
 
 	return cliArgs{
@@ -69,5 +77,6 @@ func parseArgs() cliArgs {
 		JobMaxCount:                *maxCount,
 		ScaleBy:                    *scaleBy,
 		OneShot:                    *oneShot,
+		CfgFile:                    *cfgFile,
 	}
 }
