@@ -35,7 +35,7 @@ func Test_Evaluate(t *testing.T) {
 	var emitters []ScaleAlertEmitter
 	saa := cfg.New(emitters)
 
-	saa.aggregationCycle = time.Second * 10
+	saa.evaluationCycle = time.Second * 10
 	saa.evaluationPeriodFactor = 10
 	saa.downScalingThreshold = -10
 	saa.upScalingThreshold = 10

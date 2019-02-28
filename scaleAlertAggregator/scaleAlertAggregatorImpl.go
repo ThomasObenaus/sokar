@@ -36,7 +36,7 @@ func (sc *ScaleAlertAggregator) Run() {
 		emitter.Register(sc.handleScaleAlerts)
 	}
 
-	aggregationTicker := time.NewTicker(sc.aggregationCycle)
+	aggregationTicker := time.NewTicker(sc.evaluationCycle)
 	cleanupTicker := time.NewTicker(sc.cleanupCycle)
 
 	// main loop

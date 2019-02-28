@@ -31,7 +31,7 @@ func (sc *ScaleAlertAggregator) evaluate() float32 {
 	sc.evaluationCounter++
 	now := time.Now()
 
-	gradientRefreshCause := fmt.Sprintf("Evaluation period (%fs) exceeded.", float64(sc.evaluationPeriodFactor)*sc.aggregationCycle.Seconds())
+	gradientRefreshCause := fmt.Sprintf("Evaluation period (%fs) exceeded.", float64(sc.evaluationPeriodFactor)*sc.evaluationCycle.Seconds())
 	var gradient float32
 	if sc.isScalingNeeded() {
 		gradient = sc.scaleCounterGradient.UpdateAndGet(sc.scaleCounter, now)

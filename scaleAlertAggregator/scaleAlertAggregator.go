@@ -55,15 +55,15 @@ type ScaleAlertAggregator struct {
 	// They where obtained through the different ScaleAlertEmitters
 	scaleAlertPool ScaleAlertPool
 
-	// aggregationCycle is the frequency the ScaleAlertAggregator will evaluate and aggregate the state
+	// evaluationCycle is the frequency the ScaleAlertAggregator will evaluate and aggregate the state
 	// of the received ScaleAlert's
-	aggregationCycle time.Duration
+	evaluationCycle time.Duration
 
 	// evaluationPeriodFactor is used to calculate the evaluation period.
 	// The evaluation period is the period that is regarded for calculating the scaleCounterGradient/ scaleFactor.
 	// Only the changes of the scaleCounter within this period/ window are regarded for scaleFactor calculation.
-	// The period is a multiple of the aggregationCycle thus it is calculated by:
-	// evaluationPeriod = aggregationCycle * evaluationPeriodFactor
+	// The period is a multiple of the evaluationCycle thus it is calculated by:
+	// evaluationPeriod = evaluationCycle * evaluationPeriodFactor
 	evaluationPeriodFactor uint
 
 	evaluationCounter uint
@@ -85,7 +85,7 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		emitters:               emitters,
 		stopChan:               make(chan struct{}, 1),
 		scaleAlertPool:         NewScaleAlertPool(),
-		aggregationCycle:       time.Millisecond * 2000,
+		evaluationCycle:        time.Millisecond * 2000,
 		evaluationPeriodFactor: 10,
 		cleanupCycle:           time.Second * 10,
 		weightMap:              map[string]float32{"AlertA": 2.0, "AlertB": -1, "AlertC": -2},
