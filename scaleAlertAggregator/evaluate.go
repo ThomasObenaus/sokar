@@ -14,6 +14,7 @@ func (sc *ScaleAlertAggregator) isScalingNeeded() bool {
 	return scaleDownNeeded || scaleUpNeeded
 }
 
+// gradientToScaleDir returns the scaling direction based on the given gradient
 func gradientToScaleDir(gradient float32) string {
 	result := "NO"
 
