@@ -49,11 +49,9 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 
 	// plan
 	plannedCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, 1)
-	scaleBy := 1
-	if plannedCount == 0 {
-		scaleBy = -1
-	}
-	err := sk.scaler.ScaleBy(scaleBy)
+	err := sk.scaler.ScaleTo(plannedCount)
+
+	// HACK: For now we ignore all rejected scaling tickets
 	if err != nil {
 		sk.logger.Error().Err(err).Msg("Failed to scale.")
 	}
