@@ -1,7 +1,6 @@
 package sokar
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -67,21 +66,24 @@ func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	byStr := ps.ByName(ParamBy)
 	sk.logger.Debug().Msgf("%s called with param='%s'.", PathScaleBy, byStr)
 
-	by, err := strconv.ParseInt(byStr, 10, 64)
+	_, err := strconv.ParseInt(byStr, 10, 64)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to parse parameter by=%s: %s.", byStr, err.Error())
 		http.Error(w, errMsg, http.StatusBadRequest)
 		sk.logger.Error().Msg(errMsg)
 		return
 	}
-	scaResult := sk.scaler.ScaleBy_Old(int(by))
 
-	code := http.StatusOK
-	if scaResult.State == sokarIF.ScaleFailed {
-		code = http.StatusInternalServerError
-	}
-	sk.logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
+	http.Error(w, "Not Implemented yet.", http.StatusInternalServerError)
 
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(scaResult)
+	//scaResult := sk.scaler.ScaleBy_Old(int(by))
+	//
+	//code := http.StatusOK
+	//if scaResult.State == sokarIF.ScaleFailed {
+	//	code = http.StatusInternalServerError
+	//}
+	//sk.logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
+	//
+	//w.WriteHeader(code)
+	//json.NewEncoder(w).Encode(scaResult)
 }

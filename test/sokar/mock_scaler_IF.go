@@ -6,7 +6,6 @@ package mock_sokar
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	iface "github.com/thomasobenaus/sokar/sokar/iface"
 	reflect "reflect"
 )
 
@@ -33,34 +32,10 @@ func (m *MockScaler) EXPECT() *MockScalerMockRecorder {
 	return m.recorder
 }
 
-// ScaleBy_Old mocks base method
-func (m *MockScaler) ScaleBy_Old(amount int) iface.ScaleResult {
-	ret := m.ctrl.Call(m, "ScaleBy_Old", amount)
-	ret0, _ := ret[0].(iface.ScaleResult)
-	return ret0
-}
-
-// ScaleBy_Old indicates an expected call of ScaleBy_Old
-func (mr *MockScalerMockRecorder) ScaleBy_Old(amount interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleBy_Old", reflect.TypeOf((*MockScaler)(nil).ScaleBy_Old), amount)
-}
-
-// ScaleBy mocks base method
-func (m *MockScaler) ScaleBy(amount int) error {
-	ret := m.ctrl.Call(m, "ScaleBy", amount)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ScaleBy indicates an expected call of ScaleBy
-func (mr *MockScalerMockRecorder) ScaleBy(amount interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleBy", reflect.TypeOf((*MockScaler)(nil).ScaleBy), amount)
-}
-
 // ScaleTo mocks base method
-func (m *MockScaler) ScaleTo(count uint) iface.ScaleResult {
+func (m *MockScaler) ScaleTo(count uint) error {
 	ret := m.ctrl.Call(m, "ScaleTo", count)
-	ret0, _ := ret[0].(iface.ScaleResult)
+	ret0, _ := ret[0].(error)
 	return ret0
 }
 

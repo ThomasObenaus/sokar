@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/helper"
 	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
@@ -20,14 +19,15 @@ type Scaler struct {
 	// the job count still matches the desired state.
 	jobWatcherCycle time.Duration
 
-	scalingTicket *ScalingTicket
+	scaleInProgress bool
+	desiredCount    uint
 
-	// lock to sync the multi-thread
-	// access to the ScalingTicket
-	lock sync.RWMutex
+	scaleTicketChan chan ScalingTicket
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
+
+	wg sync.WaitGroup
 }
 
 // Config is the configuration for the Scaler
@@ -54,17 +54,25 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
 		},
-		stopChan:      make(chan struct{}, 1),
-		scalingTicket: nil,
+		stopChan:        make(chan struct{}, 1),
+		scaleTicketChan: make(chan ScalingTicket, 1),
 	}, nil
 }
 
-// ScaleTo scales the job to the given count
-func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
-	if r, ok := trueIfNil(s); ok {
-		return r
-	}
+// ScaleTo will scale the job to the desired count.
+func (s *Scaler) ScaleTo(desiredCount uint) error {
+	s.logger.Info().Msgf("Scale to %d requested.", desiredCount)
 
+	if s.scaleInProgress {
+		s.logger.Debug().Msgf("Ticket rejected since currently a scaling is already in progress.")
+		return fmt.Errorf("Ticket rejected since currently a scaling is already in progress.")
+	}
+	s.scaleInProgress = true
+	s.scaleTicketChan <- NewScalingTicket(desiredCount)
+	return nil
+}
+
+func (s *Scaler) scaleTo(desiredCount uint) sokar.ScaleResult {
 	jobName := s.job.jobName
 	currentCount, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
@@ -77,27 +85,22 @@ func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
 	return s.scale(desiredCount, currentCount)
 }
 
-// ScaleBy scales the target component by the given amount of instances
-func (s *Scaler) ScaleBy(amount int) error {
-	return fmt.Errorf("ScaleBy not implemented yet.")
-}
-
-// ScaleBy_Old Scales the target component by the given amount of instances
-func (s *Scaler) ScaleBy_Old(amount int) sokar.ScaleResult {
-	if r, ok := trueIfNil(s); ok {
-		return r
-	}
-
-	jobName := s.job.jobName
-	count, err := s.scalingTarget.GetJobCount(jobName)
-	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
-		}
-	}
-
-	desiredCount := helper.IncUint(count, amount)
-
-	return s.scale(desiredCount, count)
-}
+//// ScaleBy_Old Scales the target component by the given amount of instances
+//func (s *Scaler) ScaleBy_Old(amount int) sokar.ScaleResult {
+//	if r, ok := trueIfNil(s); ok {
+//		return r
+//	}
+//
+//	jobName := s.job.jobName
+//	count, err := s.scalingTarget.GetJobCount(jobName)
+//	if err != nil {
+//		return sokar.ScaleResult{
+//			State:            sokar.ScaleFailed,
+//			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+//		}
+//	}
+//
+//	desiredCount := helper.IncUint(count, amount)
+//
+//	return s.scale(desiredCount, count)
+//}
