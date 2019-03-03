@@ -59,6 +59,11 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 	}, nil
 }
 
+// GetCount returns the number of currently deployed instances
+func (s *Scaler) GetCount() (uint, error) {
+	return s.scalingTarget.GetJobCount(s.job.jobName)
+}
+
 // ScaleTo will scale the job to the desired count.
 func (s *Scaler) ScaleTo(desiredCount uint) error {
 	s.logger.Info().Msgf("Scale to %d requested.", desiredCount)
