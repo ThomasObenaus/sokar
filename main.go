@@ -106,6 +106,7 @@ func main() {
 
 	// Run all components
 	sokarInst.Run()
+	scaler.Run()
 	scaAlertAggr.Run()
 	api.Run()
 
@@ -119,6 +120,7 @@ func main() {
 		// Stop all components
 		api.Stop()
 		scaAlertAggr.Stop()
+		scaler.Stop()
 		sokarInst.Stop()
 	}()
 
@@ -127,6 +129,7 @@ func main() {
 	scaAlertAggr.Join()
 	sokarInst.Join()
 
+	logger.Info().Msg("Shutdown successfully completed")
 	os.Exit(0)
 }
 

@@ -12,14 +12,13 @@ func (sk *Sokar) Run() {
 
 	// main loop
 	go func() {
-		sk.logger.Info().Msg("Sokar main loop started")
+		sk.logger.Info().Msg("Main loop started")
 
 	loop:
 		for {
 			select {
 			case <-sk.stopChan:
-				// send the stop message a second time to complete waiting join calls
-				sk.stopChan <- struct{}{}
+				close(sk.stopChan)
 				break loop
 
 			case se := <-scaleEventChannel:
@@ -27,7 +26,7 @@ func (sk *Sokar) Run() {
 
 			}
 		}
-		sk.logger.Info().Msg("Sokar main loop left")
+		sk.logger.Info().Msg("Main loop left")
 	}()
 
 }
