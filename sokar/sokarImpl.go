@@ -47,9 +47,15 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 
 	sk.logger.Info().Msgf("SCALE-EVENT TRIGGERED: %v", scaleEvent)
 
+	currentCount, err := sk.scaler.GetCount()
+	if err != nil {
+		sk.logger.Error().Err(err).Msg("Scaling ignored. Failed to obtain current count.")
+		return
+	}
+
 	// plan
-	plannedCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, 1)
-	err := sk.scaler.ScaleTo(plannedCount)
+	plannedCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, currentCount)
+	err = sk.scaler.ScaleTo(plannedCount)
 
 	// HACK: For now we ignore all rejected scaling tickets
 	if err != nil {
