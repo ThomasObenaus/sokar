@@ -128,32 +128,6 @@ func TestScaleBy(t *testing.T) {
 	assert.Equal(t, sokar.ScaleFailed, result.State)
 }
 
-func TestScaleTo(t *testing.T) {
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
-	scaler, err := cfg.New(scaTgt)
-	require.NoError(t, err)
-
-	// scale up
-	currentJobCount := uint(0)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
-	result := scaler.ScaleTo(2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
-
-	// scale err
-	scaTgt.EXPECT().GetJobCount(jobname).Return(uint(0), fmt.Errorf("internal err"))
-	result = scaler.ScaleTo(2)
-	assert.Equal(t, sokar.ScaleFailed, result.State)
-}
-
 func TestScaleBy_CheckScalingPolicy(t *testing.T) {
 
 	chk := checkScalingPolicy(0, 0, 0)

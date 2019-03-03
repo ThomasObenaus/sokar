@@ -122,24 +122,6 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 	}
 }
 
-// ScaleTo scales the job to the given count
-func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
-	if r, ok := trueIfNil(s); ok {
-		return r
-	}
-
-	jobName := s.job.jobName
-	currentCount, err := s.scalingTarget.GetJobCount(jobName)
-	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
-		}
-	}
-
-	return s.scale(desiredCount, currentCount)
-}
-
 // ScaleBy Scales the target component by the given amount of instances
 func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
 	if r, ok := trueIfNil(s); ok {

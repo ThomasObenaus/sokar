@@ -2,9 +2,11 @@ package scaler
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog"
+	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // Scaler is a component responsible for scaling a job
@@ -16,6 +18,12 @@ type Scaler struct {
 	// jobWatcherCycle the cycle the Scaler will check if
 	// the job count still matches the desired state.
 	jobWatcherCycle time.Duration
+
+	scalingTicket *ScalingTicket
+
+	// lock to sync the multi-thread
+	// access to the ScalingTicket
+	lock sync.RWMutex
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -45,6 +53,25 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
 		},
-		stopChan: make(chan struct{}, 1),
+		stopChan:      make(chan struct{}, 1),
+		scalingTicket: nil,
 	}, nil
+}
+
+// ScaleTo scales the job to the given count
+func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
+	if r, ok := trueIfNil(s); ok {
+		return r
+	}
+
+	jobName := s.job.jobName
+	currentCount, err := s.scalingTarget.GetJobCount(jobName)
+	if err != nil {
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+		}
+	}
+
+	return s.scale(desiredCount, currentCount)
 }
