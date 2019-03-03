@@ -35,6 +35,16 @@ func Test_Complete(t *testing.T) {
 	assert.Equal(t, sokar.ScaleDone, sj.state)
 }
 
+func Test_InProgress(t *testing.T) {
+	sj := NewScalingTicket(1)
+
+	assert.False(t, sj.isInProgress())
+	sj.start()
+	assert.True(t, sj.isInProgress())
+	sj.complete(sokar.ScaleDone)
+	assert.False(t, sj.isInProgress())
+}
+
 func Test_TicketAge(t *testing.T) {
 	sj := NewScalingTicket(1)
 	sj.issuedAt = time.Now().Add(time.Second * -10)

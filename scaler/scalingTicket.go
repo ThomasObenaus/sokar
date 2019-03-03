@@ -35,6 +35,10 @@ func NewScalingTicket(desiredCount uint) ScalingTicket {
 	}
 }
 
+func (st *ScalingTicket) isInProgress() bool {
+	return st.state == sokar.ScaleRunning
+}
+
 func (st *ScalingTicket) start() {
 	now := time.Now()
 	st.startedAt = &now

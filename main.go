@@ -127,6 +127,7 @@ func main() {
 	// Wait till completion
 	api.Join()
 	scaAlertAggr.Join()
+	scaler.Join()
 	sokarInst.Join()
 
 	logger.Info().Msg("Shutdown successfully completed")
