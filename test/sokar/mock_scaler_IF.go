@@ -45,6 +45,18 @@ func (mr *MockScalerMockRecorder) ScaleBy_Old(amount interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleBy_Old", reflect.TypeOf((*MockScaler)(nil).ScaleBy_Old), amount)
 }
 
+// ScaleBy mocks base method
+func (m *MockScaler) ScaleBy(amount int) error {
+	ret := m.ctrl.Call(m, "ScaleBy", amount)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScaleBy indicates an expected call of ScaleBy
+func (mr *MockScalerMockRecorder) ScaleBy(amount interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleBy", reflect.TypeOf((*MockScaler)(nil).ScaleBy), amount)
+}
+
 // ScaleTo mocks base method
 func (m *MockScaler) ScaleTo(count uint) iface.ScaleResult {
 	ret := m.ctrl.Call(m, "ScaleTo", count)
