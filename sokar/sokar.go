@@ -74,7 +74,7 @@ func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		sk.logger.Error().Msg(errMsg)
 		return
 	}
-	scaResult := sk.scaler.ScaleBy(int(by))
+	scaResult := sk.scaler.ScaleBy_Old(int(by))
 
 	code := http.StatusOK
 	if scaResult.State == sokarIF.ScaleFailed {

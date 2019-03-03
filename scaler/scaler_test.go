@@ -58,7 +58,7 @@ func TestScaleTo(t *testing.T) {
 	assert.Equal(t, sokar.ScaleFailed, result.State)
 }
 
-func TestScaleBy(t *testing.T) {
+func Test_ScaleBy_Old(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -75,59 +75,11 @@ func TestScaleBy(t *testing.T) {
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().GetJobCount(jobname).Return(currentJobCount, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
-	result := scaler.ScaleBy(2)
+	result := scaler.ScaleBy_Old(2)
 	assert.NotEqual(t, sokar.ScaleFailed, result.State)
 
 	// scale err
 	scaTgt.EXPECT().GetJobCount(jobname).Return(uint(0), fmt.Errorf("internal err"))
-	result = scaler.ScaleBy(2)
+	result = scaler.ScaleBy_Old(2)
 	assert.Equal(t, sokar.ScaleFailed, result.State)
-}
-
-func TestScaleBy_CheckScalingPolicy(t *testing.T) {
-
-	chk := checkScalingPolicy(0, 0, 0)
-	assert.Equal(t, uint(0), chk.validCount)
-	assert.Equal(t, uint(0), chk.desiredCount)
-	assert.False(t, chk.minPolicyViolated)
-	assert.False(t, chk.maxPolicyViolated)
-
-	chk = checkScalingPolicy(1, 0, 0)
-	assert.Equal(t, uint(0), chk.validCount)
-	assert.Equal(t, uint(1), chk.desiredCount)
-	assert.False(t, chk.minPolicyViolated)
-	assert.True(t, chk.maxPolicyViolated)
-
-	chk = checkScalingPolicy(1, 2, 3)
-	assert.Equal(t, uint(2), chk.validCount)
-	assert.Equal(t, uint(1), chk.desiredCount)
-	assert.True(t, chk.minPolicyViolated)
-	assert.False(t, chk.maxPolicyViolated)
-
-	chk = checkScalingPolicy(3, 1, 4)
-	assert.Equal(t, uint(3), chk.validCount)
-	assert.Equal(t, uint(3), chk.desiredCount)
-	assert.False(t, chk.minPolicyViolated)
-	assert.False(t, chk.maxPolicyViolated)
-
-	chk = checkScalingPolicy(3, 1, 2)
-	assert.Equal(t, uint(2), chk.validCount)
-	assert.Equal(t, uint(3), chk.desiredCount)
-	assert.False(t, chk.minPolicyViolated)
-	assert.True(t, chk.maxPolicyViolated)
-
-	chk = checkScalingPolicy(2, 3, 1)
-	assert.Equal(t, uint(1), chk.validCount)
-	assert.Equal(t, uint(2), chk.desiredCount)
-	assert.True(t, chk.minPolicyViolated)
-	assert.True(t, chk.maxPolicyViolated)
-}
-
-func TestScaleBy_trueIfNil(t *testing.T) {
-	_, ok := trueIfNil(nil)
-	assert.True(t, ok)
-
-	scaler := &Scaler{}
-	_, ok = trueIfNil(scaler)
-	assert.False(t, ok)
 }

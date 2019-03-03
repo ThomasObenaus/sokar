@@ -53,5 +53,5 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	if plannedCount == 0 {
 		scaleBy = -1
 	}
-	sk.scaler.ScaleBy(scaleBy)
+	sk.scaler.ScaleBy_Old(scaleBy)
 }

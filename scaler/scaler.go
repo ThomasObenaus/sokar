@@ -77,8 +77,8 @@ func (s *Scaler) ScaleTo(desiredCount uint) sokar.ScaleResult {
 	return s.scale(desiredCount, currentCount)
 }
 
-// ScaleBy Scales the target component by the given amount of instances
-func (s *Scaler) ScaleBy(amount int) sokar.ScaleResult {
+// ScaleBy_Old Scales the target component by the given amount of instances
+func (s *Scaler) ScaleBy_Old(amount int) sokar.ScaleResult {
 	if r, ok := trueIfNil(s); ok {
 		return r
 	}
