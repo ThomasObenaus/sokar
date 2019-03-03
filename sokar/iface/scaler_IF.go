@@ -28,5 +28,6 @@ type ScaleResult struct {
 // Scaler is a component that is able to scale a job/instance
 type Scaler interface {
 	ScaleBy_Old(amount int) ScaleResult
+	ScaleBy(amount int) error
 	ScaleTo(count uint) ScaleResult
 }

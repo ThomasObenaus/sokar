@@ -53,5 +53,8 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	if plannedCount == 0 {
 		scaleBy = -1
 	}
-	sk.scaler.ScaleBy_Old(scaleBy)
+	err := sk.scaler.ScaleBy(scaleBy)
+	if err != nil {
+		sk.logger.Error().Err(err).Msg("Failed to scale.")
+	}
 }
