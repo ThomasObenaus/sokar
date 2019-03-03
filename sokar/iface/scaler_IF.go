@@ -14,6 +14,8 @@ const (
 	ScaleFailed ScaleState = "failed"
 	// ScaleIgnored means the scale process was ignored (eventually not needed)
 	ScaleIgnored ScaleState = "ignored"
+	// ScaleNotStarted means the scale process was not started yet
+	ScaleNotStarted ScaleState = "not started"
 )
 
 // ScaleResult is created after scaling was done and contains the result
