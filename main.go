@@ -18,6 +18,8 @@ import (
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -53,6 +55,10 @@ func main() {
 	if len(nomadServerAddress) == 0 {
 		logger.Fatal().Msg("Nomad Server address not specified.")
 	}
+	logger.Info().Msg("Connecting components and setting up sokar ...")
+	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
+
+	setupMetricsHandler(api)
 
 	logger.Info().Msg("Set up the scaler ...")
 	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, nomadServerAddress, loggingFactory)
@@ -60,9 +66,6 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
 	logger.Info().Msg("Set up the scaler ... done")
-
-	logger.Info().Msg("Connecting components and setting up sokar ...")
-	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
 
 	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	amCfg := alertmanager.Config{
@@ -132,6 +135,10 @@ func main() {
 
 	logger.Info().Msg("Shutdown successfully completed")
 	os.Exit(0)
+}
+
+func setupMetricsHandler(api api.API) {
+	api.Router.Handler("GET", "/metrics", promhttp.Handler())
 }
 
 func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
