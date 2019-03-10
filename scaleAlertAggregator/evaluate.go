@@ -55,5 +55,6 @@ func (sc *ScaleAlertAggregator) evaluate() float32 {
 		sc.logger.Debug().Msgf("Refresh gradient %f. %s", gr, gradientRefreshCause)
 	}
 
+	sc.metrics.scaleFactor.Set(float64(gradient))
 	return gradient
 }

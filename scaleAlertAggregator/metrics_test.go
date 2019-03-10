@@ -10,6 +10,7 @@ import (
 
 type MetricsMocks struct {
 	scaleCounter *mock_metrics.MockGauge
+	scaleFactor  *mock_metrics.MockGauge
 	alerts       *mock_metrics.MockGaugeVec
 }
 
@@ -23,13 +24,16 @@ type MetricsMocks struct {
 // use metrics...
 func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScaleCounter := mock_metrics.NewMockGauge(mockCtrl)
+	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	mAlerts := mock_metrics.NewMockGaugeVec(mockCtrl)
 	metrics := Metrics{
 		scaleCounter: mScaleCounter,
 		alerts:       mAlerts,
+		scaleFactor:  mScaleFactor,
 	}
 	mocks := MetricsMocks{
 		scaleCounter: mScaleCounter,
+		scaleFactor:  mScaleFactor,
 		alerts:       mAlerts,
 	}
 	return metrics, mocks
