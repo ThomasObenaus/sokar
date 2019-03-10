@@ -80,3 +80,51 @@ Close all
 ```bash
 pkill consul && sudo pkill nomad && pkill alertmanager
 ```
+
+### Alerts via Curl
+
+```bash
+curl -X POST \
+  http://localhost:11000/alerts \
+  -d '{
+  "receiver": "PM",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firings",
+      "labels": {
+        "alertname": "AlertA",
+        "alert-type": "scaling",
+        "scale-type": "up"
+      },
+      "annotations": {
+        "description": "Scales the component XYZ UP"
+      },
+      "startsAt": "2019-02-23T12:00:00.000+01:00",
+      "endsAt": "2019-02-23T12:05:00.000+01:00",
+      "generatorURL": "http://generator_url"
+    },
+    {
+      "status": "firings",
+      "labels": {
+        "alertname": "AlertB",
+        "alert-type": "scaling",
+        "scale-type": "down"
+      },
+      "annotations": {
+        "description": "Scales the component XYZ DOWN"
+      },
+      "startsAt": "2019-02-23T12:00:00.000+01:00",
+      "endsAt": "2019-02-23T12:05:00.000+01:00",
+      "generatorURL": "http://generatorURL"
+    }
+  ],
+  "groupLabels": {},
+  "commonLabels": { "alertname": "AlertA" },
+  "commonAnnotations": {},
+  "externalURL": "http://externalURL",
+  "version": "4",
+  "groupKey": "{}:{}"
+}
+'
+```
