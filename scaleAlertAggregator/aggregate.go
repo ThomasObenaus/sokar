@@ -15,7 +15,7 @@ func (sc *ScaleAlertAggregator) aggregate() {
 		poolEntries = append(poolEntries, entry)
 	})
 
-	alertsChangedScaleCounter := sc.applyAlertsToScaleCounter(poolEntries, sc.weightMap, sc.evaluationCycle)
+	alertsChangedScaleCounter := sc.applyAlertsToScaleCounter(poolEntries, sc.evaluationCycle)
 
 	if !alertsChangedScaleCounter {
 		sc.applyScaleCounterDamping(sc.noAlertScaleDamping, sc.evaluationCycle)
@@ -67,18 +67,8 @@ func (sc *ScaleAlertAggregator) logPool() {
 	})
 }
 
-// computeScaleCounterIncrement determines how much the scaleCounter has to be changed for the given alert.
-func computeScaleCounterIncrement(alertName string, weightMap ScaleAlertWeightMap, evaluationCycle time.Duration) (scaleIncrement float32, weightPerSecond float32) {
-	weightPerSecond = getWeight(alertName, weightMap)
-	if weightPerSecond == 0 {
-		return 0, 0
-	}
-	scaleIncrement = weightPerSecondToWeight(weightPerSecond, evaluationCycle)
-	return scaleIncrement, weightPerSecond
-}
-
 // applyAlertsToScaleCounter applies the given alerts to the scaleCounter by incrementing/ decrementing the counter accordingly.
-func (sc *ScaleAlertAggregator) applyAlertsToScaleCounter(entries []ScaleAlertPoolEntry, weightMap ScaleAlertWeightMap, evaluationCycle time.Duration) (scaleCounterHasChanged bool) {
+func (sc *ScaleAlertAggregator) applyAlertsToScaleCounter(entries []ScaleAlertPoolEntry, evaluationCycle time.Duration) (scaleCounterHasChanged bool) {
 	oldScaleCounterValue := sc.scaleCounter
 
 	for _, entry := range entries {
@@ -88,7 +78,9 @@ func (sc *ScaleAlertAggregator) applyAlertsToScaleCounter(entries []ScaleAlertPo
 		}
 
 		alertName := entry.scaleAlert.Name
-		scaleIncrement, weightPerSecond := computeScaleCounterIncrement(alertName, weightMap, evaluationCycle)
+		weightPerSecond := entry.weight
+		scaleIncrement := weightPerSecondToWeight(weightPerSecond, evaluationCycle)
+
 		sc.scaleCounter += scaleIncrement
 
 		sc.logger.Debug().Msgf("ScaleCounter updated by %f to %f. Scaling-Alert: '%s' (%f wps).", scaleIncrement, sc.scaleCounter, alertName, weightPerSecond)
