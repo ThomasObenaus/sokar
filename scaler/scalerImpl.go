@@ -1,6 +1,7 @@
 package scaler
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -34,27 +35,25 @@ func (s *Scaler) jobWatcher(cycle time.Duration) {
 	}
 }
 
-func (s *Scaler) scaleTicketHandler(ticketChan <-chan ScalingTicket) {
+// scaleTicketProcessor
+func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.wg.Add(1)
 	defer s.wg.Done()
-	s.logger.Info().Msg("ScaleTicketHandler started.")
+	s.logger.Info().Msg("ScaleTicketProcessor started.")
 
 	for ticket := range ticketChan {
 		// TODO: Stop jobwatcher here
-		ticket.start()
-		result := s.scaleTo(ticket.desiredCount)
-		ticket.complete(result.State)
-		s.scaleInProgress = false
+		s.applyScaleTicket(ticket)
 		// TODO: Start jobwatcher here
 	}
 
-	s.logger.Info().Msg("ScaleTicketHandler closed.")
+	s.logger.Info().Msg("ScaleTicketProcessor closed.")
 }
 
 // Run starts/ runs the scaler
 func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
-	go s.scaleTicketHandler(s.scaleTicketChan)
+	go s.scaleTicketProcessor(s.scaleTicketChan)
 	// handler that checks periodically if the desired count is still valid
 	go s.jobWatcher(s.jobWatcherCycle)
 }
@@ -70,4 +69,25 @@ func (s *Scaler) Stop() {
 // Join blocks/ waits until scaler has been stopped
 func (s *Scaler) Join() {
 	s.wg.Wait()
+}
+
+func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
+	ticket.start()
+	result := s.scaleTo(ticket.desiredCount)
+	ticket.complete(result.State)
+	s.numOpenScalingTickets--
+
+	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.State, result.StateDescription, result.NewCount)
+}
+
+func (s *Scaler) openScalingTicket(desiredCount uint) error {
+
+	if s.numOpenScalingTickets > s.maxOpenScalingTickets {
+		msg := fmt.Sprintf("Ticket rejected since currently a %d scaling tickets are open and only %d are allowed.", s.numOpenScalingTickets, s.maxOpenScalingTickets)
+		s.logger.Debug().Msg(msg)
+		return fmt.Errorf(msg)
+	}
+	s.numOpenScalingTickets++
+	s.scaleTicketChan <- NewScalingTicket(desiredCount)
+	return nil
 }

@@ -19,10 +19,11 @@ type Scaler struct {
 	// the job count still matches the desired state.
 	jobWatcherCycle time.Duration
 
-	scaleInProgress bool
-	desiredCount    uint
+	desiredCount uint
 
-	scaleTicketChan chan ScalingTicket
+	numOpenScalingTickets uint
+	maxOpenScalingTickets uint
+	scaleTicketChan       chan ScalingTicket
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -54,8 +55,10 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
 		},
-		stopChan:        make(chan struct{}, 1),
-		scaleTicketChan: make(chan ScalingTicket, 1),
+		stopChan:              make(chan struct{}, 1),
+		numOpenScalingTickets: 0,
+		maxOpenScalingTickets: 0,
+		scaleTicketChan:       make(chan ScalingTicket, 1),
 	}, nil
 }
 
@@ -67,14 +70,7 @@ func (s *Scaler) GetCount() (uint, error) {
 // ScaleTo will scale the job to the desired count.
 func (s *Scaler) ScaleTo(desiredCount uint) error {
 	s.logger.Info().Msgf("Scale to %d requested.", desiredCount)
-
-	if s.scaleInProgress {
-		s.logger.Debug().Msgf("Ticket rejected since currently a scaling is already in progress.")
-		return fmt.Errorf("Ticket rejected since currently a scaling is already in progress.")
-	}
-	s.scaleInProgress = true
-	s.scaleTicketChan <- NewScalingTicket(desiredCount)
-	return nil
+	return s.openScalingTicket(desiredCount)
 }
 
 func (s *Scaler) scaleTo(desiredCount uint) sokar.ScaleResult {
