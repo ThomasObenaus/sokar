@@ -91,7 +91,7 @@ func main() {
 		WeightMap:              weightMap,
 	}
 
-	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters)
+	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters, scaleAlertAggregator.NewMetrics())
 	api.Router.POST("/alert", scaAlertAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
