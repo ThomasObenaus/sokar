@@ -34,6 +34,10 @@ type ScaleAlertPoolEntry struct {
 	// Name of the receiver of the alert
 	// This shows where the alert actually came from.
 	receiver string
+
+	// weight the weight of the ScaleAlert according to the configured
+	// ScaleAlertWeightMap
+	weight float32
 }
 
 // NewScaleAlertPool creates a new empty pool
@@ -59,7 +63,7 @@ func (sp *ScaleAlertPool) cleanup() {
 }
 
 // update adds firing and non expired ScaleAlerts to the pool
-func (sp *ScaleAlertPool) update(receiver string, scaleAlerts []ScaleAlert) {
+func (sp *ScaleAlertPool) update(receiver string, scaleAlerts []ScaleAlert, weightMap ScaleAlertWeightMap) {
 
 	expiresAt := time.Now().Add(sp.ttl)
 
@@ -81,9 +85,10 @@ func (sp *ScaleAlertPool) update(receiver string, scaleAlerts []ScaleAlert) {
 			continue
 		}
 
+		weight := getWeight(alert.Name, weightMap)
 		// add entry, even override it if it already exists
 		// for now there is no information to keep
-		sp.entries[id] = ScaleAlertPoolEntry{id: id, expiresAt: expiresAt, scaleAlert: alert, receiver: receiver}
+		sp.entries[id] = ScaleAlertPoolEntry{id: id, expiresAt: expiresAt, scaleAlert: alert, receiver: receiver, weight: weight}
 	}
 }
 

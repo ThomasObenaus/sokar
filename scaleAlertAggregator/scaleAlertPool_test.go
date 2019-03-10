@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewPool(t *testing.T) {
@@ -41,12 +42,15 @@ func Test_Update(t *testing.T) {
 
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert1", Firing: true})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert2", Firing: true})
-	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert3", Firing: false})
+	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert3", Firing: true})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert4", Firing: false})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
+	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap["Alert1"] = 1
+	weightMap["Alert2"] = -1
 	receiver := "AM"
-	scap.update(receiver, scaleAlerts)
+	scap.update(receiver, scaleAlerts, weightMap)
 	keyAlert1 := toID(receiver, "Alert1")
 	keyAlert2 := toID(receiver, "Alert2")
 	keyAlert3 := toID(receiver, "Alert3")
@@ -54,14 +58,20 @@ func Test_Update(t *testing.T) {
 
 	scap.cleanup()
 
-	assert.Equal(t, 2, len(scap.entries))
+	assert.Equal(t, 3, len(scap.entries))
 
-	_, ok := scap.entries[keyAlert1]
-	assert.True(t, ok)
-	_, ok = scap.entries[keyAlert2]
-	assert.True(t, ok)
-	_, ok = scap.entries[keyAlert3]
-	assert.False(t, ok)
+	entry, ok := scap.entries[keyAlert1]
+	require.True(t, ok)
+	assert.Equal(t, float32(1), entry.weight)
+
+	entry, ok = scap.entries[keyAlert2]
+	require.True(t, ok)
+	assert.Equal(t, float32(-1), entry.weight)
+
+	entry, ok = scap.entries[keyAlert3]
+	require.True(t, ok)
+	assert.Equal(t, float32(0), entry.weight)
+
 	_, ok = scap.entries[keyAlert4]
 	assert.False(t, ok)
 }
@@ -69,6 +79,9 @@ func Test_Update(t *testing.T) {
 func Test_Sync(t *testing.T) {
 	scap := NewScaleAlertPool()
 
+	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap["Alert1"] = 1
+	weightMap["Alert2"] = -1
 	var scaleAlerts []ScaleAlert
 
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert1", Firing: true})
@@ -83,7 +96,7 @@ func Test_Sync(t *testing.T) {
 		wg.Add(1)
 		defer wg.Done()
 		for {
-			scap.update("alertmanager", scaleAlerts)
+			scap.update("alertmanager", scaleAlerts, weightMap)
 			if stop {
 				break
 			}
@@ -94,7 +107,7 @@ func Test_Sync(t *testing.T) {
 		wg.Add(1)
 		defer wg.Done()
 		for {
-			scap.update("cloudwatch", scaleAlerts)
+			scap.update("cloudwatch", scaleAlerts, weightMap)
 			if stop {
 				break
 			}
@@ -119,8 +132,11 @@ func Test_Iterate(t *testing.T) {
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert4", Firing: false})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
+	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap["Alert1"] = 1
+	weightMap["Alert2"] = -1
 	receiver := "AM"
-	scap.update(receiver, scaleAlerts)
+	scap.update(receiver, scaleAlerts, weightMap)
 	keyAlert1 := toID(receiver, "Alert1")
 	keyAlert2 := toID(receiver, "Alert2")
 	keyAlert3 := toID(receiver, "Alert3")
