@@ -21,6 +21,7 @@ func (sc *ScaleAlertAggregator) aggregate() {
 		sc.applyScaleCounterDamping(sc.noAlertScaleDamping, sc.evaluationCycle)
 	}
 
+	updateAlertMetrics(&sc.scaleAlertPool, &sc.metrics)
 	sc.metrics.scaleCounter.Set(float64(sc.scaleCounter))
 }
 
