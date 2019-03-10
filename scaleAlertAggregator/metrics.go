@@ -6,6 +6,8 @@ import (
 	m "github.com/thomasobenaus/sokar/metrics"
 )
 
+// Metrics represents the collection of metrics internally set by
+// the ScaleAlertAggregator.
 type Metrics struct {
 	scaleCounter m.Gauge
 }

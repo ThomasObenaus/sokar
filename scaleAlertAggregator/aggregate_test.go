@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -45,9 +46,13 @@ func Test_ComputeScaleCounterIncrement(t *testing.T) {
 }
 
 func Test_ApplyAlertsToScaleCounter(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
-	saa := cfg.New(emitters)
+	saa := cfg.New(emitters, metrics)
 
 	var entries []ScaleAlertPoolEntry
 	entries = append(entries, ScaleAlertPoolEntry{scaleAlert: ScaleAlert{Name: "AlertA", Firing: true}})
@@ -74,9 +79,13 @@ func Test_ApplyAlertsToScaleCounter(t *testing.T) {
 }
 
 func Test_ApplyScaleCounterDamping(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
-	saa := cfg.New(emitters)
+	saa := cfg.New(emitters, metrics)
 
 	saa.scaleCounter = 0
 	saa.applyScaleCounterDamping(1, time.Second*1)
@@ -92,9 +101,19 @@ func Test_ApplyScaleCounterDamping(t *testing.T) {
 }
 
 func Test_Aggregate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	gomock.InOrder(
+		mocks.scaleCounter.EXPECT().Set(float64(0)),
+		mocks.scaleCounter.EXPECT().Set(float64(1)),
+		mocks.scaleCounter.EXPECT().Set(float64(-1)),
+	)
+
 	cfg := NewDefaultConfig()
 	var emitters []ScaleAlertEmitter
-	saa := cfg.New(emitters)
+	saa := cfg.New(emitters, metrics)
 
 	// add some alerts to the pool
 	var alerts []ScaleAlert

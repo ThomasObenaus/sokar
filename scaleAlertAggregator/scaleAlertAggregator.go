@@ -102,7 +102,7 @@ func NewDefaultConfig() Config {
 }
 
 // New creates a instance of the ScaleAlertAggregator
-func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
+func (cfg Config) New(emitters []ScaleAlertEmitter, metrics Metrics) *ScaleAlertAggregator {
 	return &ScaleAlertAggregator{
 		logger:                 cfg.Logger,
 		emitters:               emitters,
@@ -118,7 +118,7 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		scaleCounter:           0,
 		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 		evaluationCounter:      0,
-		metrics:                NewMetrics(),
+		metrics:                metrics,
 	}
 }
 

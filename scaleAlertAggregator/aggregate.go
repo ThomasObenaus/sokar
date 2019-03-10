@@ -20,6 +20,8 @@ func (sc *ScaleAlertAggregator) aggregate() {
 	if !alertsChangedScaleCounter {
 		sc.applyScaleCounterDamping(sc.noAlertScaleDamping, sc.evaluationCycle)
 	}
+
+	sc.metrics.scaleCounter.Set(float64(sc.scaleCounter))
 }
 
 // applyScaleCounterDamping applies the given damping to the scaleCounter

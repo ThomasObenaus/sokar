@@ -4,13 +4,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_IsScalingNeeded(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
-	saa := cfg.New(emitters)
+	saa := cfg.New(emitters, metrics)
 	saa.downScalingThreshold = -5
 	saa.upScalingThreshold = 5
 
@@ -31,9 +36,13 @@ func Test_GradientToScaleDir(t *testing.T) {
 }
 
 func Test_Evaluate(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
-	saa := cfg.New(emitters)
+	saa := cfg.New(emitters, metrics)
 
 	saa.evaluationCycle = time.Second * 10
 	saa.evaluationPeriodFactor = 10
