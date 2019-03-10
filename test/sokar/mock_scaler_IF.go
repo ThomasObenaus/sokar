@@ -43,3 +43,16 @@ func (m *MockScaler) ScaleTo(count uint) error {
 func (mr *MockScalerMockRecorder) ScaleTo(count interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleTo", reflect.TypeOf((*MockScaler)(nil).ScaleTo), count)
 }
+
+// GetCount mocks base method
+func (m *MockScaler) GetCount() (uint, error) {
+	ret := m.ctrl.Call(m, "GetCount")
+	ret0, _ := ret[0].(uint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCount indicates an expected call of GetCount
+func (mr *MockScalerMockRecorder) GetCount() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCount", reflect.TypeOf((*MockScaler)(nil).GetCount))
+}

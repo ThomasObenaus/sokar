@@ -42,10 +42,11 @@ type Scaler struct {
 
 // Config is the configuration for the Scaler
 type Config struct {
-	JobName  string
-	MinCount uint
-	MaxCount uint
-	Logger   zerolog.Logger
+	JobName               string
+	MinCount              uint
+	MaxCount              uint
+	Logger                zerolog.Logger
+	MaxOpenScalingTickets uint
 }
 
 // jobConfig config of the job to be scaled
@@ -73,8 +74,8 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 		},
 		stopChan:              make(chan struct{}, 1),
 		numOpenScalingTickets: 0,
-		maxOpenScalingTickets: 0,
-		scaleTicketChan:       make(chan ScalingTicket, 1),
+		maxOpenScalingTickets: cfg.MaxOpenScalingTickets,
+		scaleTicketChan:       make(chan ScalingTicket, cfg.MaxOpenScalingTickets+1),
 	}, nil
 }
 

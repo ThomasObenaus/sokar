@@ -76,3 +76,77 @@ func Test_RunJoinStop(t *testing.T) {
 
 	scaler.Join()
 }
+
+func Test_OpenScalingTicket(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	cfg := Config{}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	err = scaler.openScalingTicket(0)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(1), scaler.numOpenScalingTickets)
+	assert.Len(t, scaler.scaleTicketChan, 1)
+
+	err = scaler.openScalingTicket(0)
+	assert.Error(t, err)
+
+	ticket := <-scaler.scaleTicketChan
+	assert.Equal(t, uint(0), ticket.desiredCount)
+}
+
+func Test_ApplyScalingTicket(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil)
+	scaTgt.EXPECT().IsJobDead("any").Return(true, nil)
+
+	cfg := Config{JobName: "any"}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	ticket := NewScalingTicket(0)
+	scaler.applyScaleTicket(ticket)
+}
+
+func Test_OpenAndApplyScalingTicket(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil).MaxTimes(11)
+	scaTgt.EXPECT().IsJobDead("any").Return(true, nil).MaxTimes(11)
+
+	cfg := Config{JobName: "any", MaxOpenScalingTickets: 10}
+	scaler, err := cfg.New(scaTgt)
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	// open as many tickets as allowed
+	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
+		err = scaler.openScalingTicket(0)
+		assert.NoError(t, err)
+	}
+
+	// open new ticket --> should fail
+	err = scaler.openScalingTicket(0)
+	assert.Error(t, err)
+
+	// apply/ close as many tickets as are open
+	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
+		ticket := <-scaler.scaleTicketChan
+		scaler.applyScaleTicket(ticket)
+	}
+
+	// open new ticket --> should NOT fail
+	err = scaler.openScalingTicket(0)
+	assert.NoError(t, err)
+}
