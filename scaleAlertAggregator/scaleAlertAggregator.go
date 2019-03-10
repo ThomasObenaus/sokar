@@ -71,6 +71,8 @@ type ScaleAlertAggregator struct {
 	// cleanupCycle is the frequency the ScaleAlertAggregator will cleanup/ remove
 	// expired ScaleAlerts
 	cleanupCycle time.Duration
+
+	metrics Metrics
 }
 
 // Config configuration for the ScaleAlertAggregator
@@ -116,6 +118,7 @@ func (cfg Config) New(emitters []ScaleAlertEmitter) *ScaleAlertAggregator {
 		scaleCounter:           0,
 		scaleCounterGradient:   helper.LatestGradient{Value: 0, Timestamp: time.Now()},
 		evaluationCounter:      0,
+		metrics:                NewMetrics(),
 	}
 }
 
