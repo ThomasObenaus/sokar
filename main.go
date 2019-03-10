@@ -92,7 +92,6 @@ func main() {
 	}
 
 	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters, scaleAlertAggregator.NewMetrics())
-	api.Router.POST("/alert", scaAlertAggr.ScaleEvent)
 
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),

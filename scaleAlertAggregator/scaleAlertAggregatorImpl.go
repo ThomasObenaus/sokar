@@ -1,24 +1,14 @@
 package scaleAlertAggregator
 
 import (
-	"net/http"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // Subscribe is used to register for receiving ScaleEvents
 func (sc *ScaleAlertAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
 	sc.subscriptions = append(sc.subscriptions, subscriber)
-}
-
-// ScaleEvent implements the http end-point for emitting a scaling event
-func (sc *ScaleAlertAggregator) ScaleEvent(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
-	sc.logger.Info().Msg("ScaleEvent Received")
-	sc.emitScaleEvent(1)
-	w.WriteHeader(http.StatusOK)
 }
 
 func (sc *ScaleAlertAggregator) emitScaleEvent(scaleFactor float32) {
