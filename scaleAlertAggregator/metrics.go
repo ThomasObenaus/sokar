@@ -10,8 +10,8 @@ import (
 // the ScaleAlertAggregator.
 type Metrics struct {
 	scaleCounter m.Gauge
-
-	alerts m.GaugeVec
+	alerts       m.GaugeVec
+	scaleFactor  m.Gauge
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -32,8 +32,16 @@ func NewMetrics() Metrics {
 		Help:      "The number of currently active down and up alerts.",
 	}, alertLabels)
 
+	scaleFactor := promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "sokar",
+		Subsystem: "saa",
+		Name:      "scale_factor",
+		Help:      "The current scale factor (gradient).",
+	})
+
 	return Metrics{
 		scaleCounter: scaleCounter,
 		alerts:       alerts,
+		scaleFactor:  scaleFactor,
 	}
 }

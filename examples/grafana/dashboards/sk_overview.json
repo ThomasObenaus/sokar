@@ -52,7 +52,15 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "ScaleFactor",
+          "color": "rgb(255, 255, 255)",
+          "dashes": true,
+          "linewidth": 2,
+          "yaxis": 2
+        }
+      ],
       "stack": false,
       "steppedLine": true,
       "targets": [
@@ -62,6 +70,14 @@
           "intervalFactor": 1,
           "legendFormat": "ScaleCounter",
           "refId": "A"
+        },
+        {
+          "expr": "sokar_saa_scale_factor",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "ScaleFactor",
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -98,7 +114,7 @@
           "logBase": 1,
           "max": null,
           "min": null,
-          "show": false
+          "show": true
         }
       ],
       "yaxis": {

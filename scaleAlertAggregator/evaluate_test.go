@@ -38,7 +38,11 @@ func Test_GradientToScaleDir(t *testing.T) {
 func Test_Evaluate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	mocks.scaleFactor.EXPECT().Set(float64(0))
+	mocks.scaleFactor.EXPECT().Set(gomock.Any())
+	mocks.scaleFactor.EXPECT().Set(gomock.Any())
 
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
