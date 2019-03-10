@@ -6,6 +6,7 @@ package mock_metrics
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	metrics "github.com/thomasobenaus/sokar/metrics"
 	reflect "reflect"
 )
 
@@ -73,4 +74,43 @@ func (m *MockGauge) Set(arg0 float64) {
 // Set indicates an expected call of Set
 func (mr *MockGaugeMockRecorder) Set(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockGauge)(nil).Set), arg0)
+}
+
+// MockGaugeVec is a mock of GaugeVec interface
+type MockGaugeVec struct {
+	ctrl     *gomock.Controller
+	recorder *MockGaugeVecMockRecorder
+}
+
+// MockGaugeVecMockRecorder is the mock recorder for MockGaugeVec
+type MockGaugeVecMockRecorder struct {
+	mock *MockGaugeVec
+}
+
+// NewMockGaugeVec creates a new mock instance
+func NewMockGaugeVec(ctrl *gomock.Controller) *MockGaugeVec {
+	mock := &MockGaugeVec{ctrl: ctrl}
+	mock.recorder = &MockGaugeVecMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockGaugeVec) EXPECT() *MockGaugeVecMockRecorder {
+	return m.recorder
+}
+
+// WithLabelValues mocks base method
+func (m *MockGaugeVec) WithLabelValues(lvs ...string) metrics.Gauge {
+	varargs := []interface{}{}
+	for _, a := range lvs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "WithLabelValues", varargs...)
+	ret0, _ := ret[0].(metrics.Gauge)
+	return ret0
+}
+
+// WithLabelValues indicates an expected call of WithLabelValues
+func (mr *MockGaugeVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockGaugeVec)(nil).WithLabelValues), lvs...)
 }
