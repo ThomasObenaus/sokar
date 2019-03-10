@@ -62,8 +62,30 @@ func (sc *ScaleAlertAggregator) Run() {
 
 func (sc *ScaleAlertAggregator) handleScaleAlerts(emitter string, scaPckg ScaleAlertPacket) {
 	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), emitter)
-	sc.scaleAlertPool.update(emitter, scaPckg.ScaleAlerts)
+	sc.scaleAlertPool.update(emitter, scaPckg.ScaleAlerts, sc.weightMap)
+
+	updateAlertMetrics(&sc.scaleAlertPool, &sc.metrics)
 	sc.logPool()
+}
+
+func updateAlertMetrics(pool *ScaleAlertPool, metrics *Metrics) {
+	numUp := float64(0)
+	numDown := float64(0)
+	numNeutral := float64(0)
+
+	pool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
+		if entry.weight > 0 {
+			numUp++
+		} else if entry.weight < 0 {
+			numDown++
+		} else {
+			numNeutral++
+		}
+	})
+
+	metrics.alerts.WithLabelValues("up").Set(numUp)
+	metrics.alerts.WithLabelValues("down").Set(numDown)
+	metrics.alerts.WithLabelValues("neutral").Set(numNeutral)
 }
 
 // Stop tears down ScaleAlertAggregator
