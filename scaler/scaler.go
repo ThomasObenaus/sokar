@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // Scaler is a component responsible for scaling a job
@@ -73,35 +72,23 @@ func (s *Scaler) ScaleTo(desiredCount uint) error {
 	return s.openScalingTicket(desiredCount)
 }
 
-func (s *Scaler) scaleTo(desiredCount uint) sokar.ScaleResult {
-	jobName := s.job.jobName
-	currentCount, err := s.scalingTarget.GetJobCount(jobName)
-	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
-		}
-	}
-
-	return s.scale(desiredCount, currentCount)
+// Run starts/ runs the scaler
+func (s *Scaler) Run() {
+	// handler that processes incoming scaling tickets
+	go s.scaleTicketProcessor(s.scaleTicketChan)
+	// handler that checks periodically if the desired count is still valid
+	go s.jobWatcher(s.jobWatcherCycle)
 }
 
-//// ScaleBy_Old Scales the target component by the given amount of instances
-//func (s *Scaler) ScaleBy_Old(amount int) sokar.ScaleResult {
-//	if r, ok := trueIfNil(s); ok {
-//		return r
-//	}
-//
-//	jobName := s.job.jobName
-//	count, err := s.scalingTarget.GetJobCount(jobName)
-//	if err != nil {
-//		return sokar.ScaleResult{
-//			State:            sokar.ScaleFailed,
-//			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
-//		}
-//	}
-//
-//	desiredCount := helper.IncUint(count, amount)
-//
-//	return s.scale(desiredCount, count)
-//}
+// Stop tears down scaler
+func (s *Scaler) Stop() {
+	s.logger.Info().Msg("Teardown requested")
+
+	close(s.scaleTicketChan)
+	close(s.stopChan)
+}
+
+// Join blocks/ waits until scaler has been stopped
+func (s *Scaler) Join() {
+	s.wg.Wait()
+}
