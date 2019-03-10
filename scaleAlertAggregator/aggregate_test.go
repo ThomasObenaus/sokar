@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thomasobenaus/sokar/test/metrics"
 )
 
 func Test_ComputeScaleCounterDamping(t *testing.T) {
@@ -78,6 +79,10 @@ func Test_Aggregate(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	gauge := mock_metrics.NewMockGauge(mockCtrl)
+	gauge.EXPECT().Set(gomock.Any()).AnyTimes()
+	mocks.alerts.EXPECT().WithLabelValues(gomock.Any()).Return(gauge).AnyTimes()
 
 	gomock.InOrder(
 		mocks.scaleCounter.EXPECT().Set(float64(0)),
