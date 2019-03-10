@@ -62,7 +62,7 @@ func (st *ScalingTicket) ticketAge() time.Duration {
 func (st *ScalingTicket) leadDuration() (time.Duration, error) {
 
 	if st.completedAt == nil {
-		return 0, fmt.Errorf("Ticket not completed yet.")
+		return 0, fmt.Errorf("Ticket not completed yet")
 	}
 
 	return st.completedAt.Sub(st.issuedAt), nil
@@ -73,11 +73,11 @@ func (st *ScalingTicket) leadDuration() (time.Duration, error) {
 func (st *ScalingTicket) processingDuration() (time.Duration, error) {
 
 	if st.startedAt == nil {
-		return 0, fmt.Errorf("Ticket not started yet.")
+		return 0, fmt.Errorf("Ticket not started yet")
 	}
 
 	if st.completedAt == nil {
-		return 0, fmt.Errorf("Ticket not completed yet.")
+		return 0, fmt.Errorf("Ticket not completed yet")
 	}
 
 	return st.completedAt.Sub(*st.startedAt), nil
