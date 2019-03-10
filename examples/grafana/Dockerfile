@@ -1,6 +1,7 @@
 FROM  grafana/grafana:latest
 
-#COPY config.yml /etc/prometheus/prometheus.yml
+COPY grafana.ini /etc/grafana/grafana.ini
+COPY prometheus_ds.yaml /etc/grafana/provisioning/datasources
 
 EXPOSE     3000
 #VOLUME     [ "/prometheus" ]
