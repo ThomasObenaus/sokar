@@ -18,7 +18,8 @@
 ```bash
 export COS=<full path to the checked out cos repo> (see: https://github.com/MatthiasScholz/cos)
 export SCRATCH=<full path to location for configuration/ testing files>
-export AM=<full path to the checked out prometheus/alertmanager repo> (see: [https://github.com/MatthiasScholz/cos](https://github.com/prometheus/alertmanager))
+export AM=<full path to the checked out prometheus/alertmanager repo> (see: https://github.com/prometheus/alertmanager)
+export PM=<full path to the checked out prometheus repo> (see: https://github.com/prometheus/prometheus)
 export SK=<full path to the checked out sokar repo> (see: https://github.com/ThomasObenaus/sokar)
 export LOCAL_IP=<ip of your host pc>
 
@@ -127,4 +128,23 @@ curl -X POST \
   "groupKey": "{}:{}"
 }
 '
+```
+
+### Prometheus
+
+#### Install
+
+```bash
+cd $SK
+make prometheus.build && make prometheus.run
+```
+
+#### Run
+
+```bash
+cd $SK
+make prometheus.start
+
+# open UI
+xdg-open http://localhost:9090
 ```

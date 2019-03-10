@@ -1,3 +1,5 @@
+include examples/prometheus/Makefile
+
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
@@ -19,8 +21,6 @@ cover.upload:
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
 	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
 	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
-	
-
 
 #-----------------
 #-- build
