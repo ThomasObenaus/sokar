@@ -10,17 +10,27 @@ import (
 
 // Scaler is a component responsible for scaling a job
 type Scaler struct {
-	logger        zerolog.Logger
+	logger zerolog.Logger
+
+	// scalingTarget is the component that represents
+	// the system that shall be used for scaling (i.e nomad)
 	scalingTarget ScalingTarget
-	job           jobConfig
+
+	// job is the configuration for the job that should be scaled
+	job jobConfig
 
 	// jobWatcherCycle the cycle the Scaler will check if
 	// the job count still matches the desired state.
 	jobWatcherCycle time.Duration
 
-	desiredCount uint
-
+	// numOpenScalingTickets represents the number
+	// of Scaling Tickets that where issued but not yet
+	// applied.
 	numOpenScalingTickets uint
+
+	// maxOpenScalingTickets is a number that states how
+	// many scaling tickets are accepted to be in state open
+	// at the same time at max.
 	maxOpenScalingTickets uint
 	scaleTicketChan       chan ScalingTicket
 
@@ -36,6 +46,13 @@ type Config struct {
 	MinCount uint
 	MaxCount uint
 	Logger   zerolog.Logger
+}
+
+// jobConfig config of the job to be scaled
+type jobConfig struct {
+	jobName  string
+	minCount uint
+	maxCount uint
 }
 
 // New creates a new instance of a scaler using the given

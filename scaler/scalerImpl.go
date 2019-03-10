@@ -7,19 +7,6 @@ import (
 	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
-type jobConfig struct {
-	jobName  string
-	minCount uint
-	maxCount uint
-}
-
-type policyCheckResult struct {
-	validCount        uint
-	desiredCount      uint
-	minPolicyViolated bool
-	maxPolicyViolated bool
-}
-
 func (s *Scaler) jobWatcher(cycle time.Duration) {
 	s.wg.Add(1)
 	defer s.wg.Done()
@@ -32,12 +19,13 @@ func (s *Scaler) jobWatcher(cycle time.Duration) {
 			s.logger.Info().Msg("JobWatcher Closed.")
 			return
 		case <-jobWatcherTicker.C:
-			s.logger.Error().Msgf("Check job state (not implemented yet). Desired %d.", s.desiredCount)
+			s.logger.Error().Msg("Check job state (not implemented yet).")
 		}
 	}
 }
 
-// scaleTicketProcessor
+// scaleTicketProcessor listens on the given channel for incoming
+// ScalingTickets to be processed.
 func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.wg.Add(1)
 	defer s.wg.Done()
@@ -52,6 +40,7 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.logger.Info().Msg("ScaleTicketProcessor closed.")
 }
 
+// applyScaleTicket applies the given ScalingTicket by issuing and tracking the scaling action.
 func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.start()
 	result := s.scaleTo(ticket.desiredCount)
@@ -61,6 +50,7 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.State, result.StateDescription, result.NewCount)
 }
 
+// openScalingTicket opens based on the desired count a ScalingTicket
 func (s *Scaler) openScalingTicket(desiredCount uint) error {
 
 	if s.numOpenScalingTickets > s.maxOpenScalingTickets {

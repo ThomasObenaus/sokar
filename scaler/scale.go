@@ -7,6 +7,13 @@ import (
 	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
+type policyCheckResult struct {
+	validCount        uint
+	desiredCount      uint
+	minPolicyViolated bool
+	maxPolicyViolated bool
+}
+
 func amountToScaleType(amount int) string {
 	scaleTypeStr := "UP"
 	if amount < 0 {
