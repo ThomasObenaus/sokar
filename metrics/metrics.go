@@ -7,3 +7,7 @@ type Counter interface {
 type Gauge interface {
 	Set(float64)
 }
+
+type GaugeVec interface {
+	WithLabelValues(lvs ...string) Gauge
+}

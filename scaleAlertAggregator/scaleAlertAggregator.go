@@ -72,6 +72,7 @@ type ScaleAlertAggregator struct {
 	// expired ScaleAlerts
 	cleanupCycle time.Duration
 
+	// metrics is a collection of metrics used by the ScaleAlertAggregator
 	metrics Metrics
 }
 
