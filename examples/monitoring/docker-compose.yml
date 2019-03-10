@@ -1,0 +1,36 @@
+version: "3"
+services:
+  prometheus:
+    build:
+      context: ../prometheus
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "9090:9090"
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "wget", "-O -", "http://localhost:9090"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+  grafana:
+    build:
+      context: ../grafana
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "3000:3000"
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "wget", "-O -", "http://localhost:3000"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+networks:
+  webnet:
