@@ -3,6 +3,8 @@ package scaler
 import (
 	"fmt"
 	"time"
+
+	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 type jobConfig struct {
@@ -50,27 +52,6 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.logger.Info().Msg("ScaleTicketProcessor closed.")
 }
 
-// Run starts/ runs the scaler
-func (s *Scaler) Run() {
-	// handler that processes incoming scaling tickets
-	go s.scaleTicketProcessor(s.scaleTicketChan)
-	// handler that checks periodically if the desired count is still valid
-	go s.jobWatcher(s.jobWatcherCycle)
-}
-
-// Stop tears down scaler
-func (s *Scaler) Stop() {
-	s.logger.Info().Msg("Teardown requested")
-
-	close(s.scaleTicketChan)
-	close(s.stopChan)
-}
-
-// Join blocks/ waits until scaler has been stopped
-func (s *Scaler) Join() {
-	s.wg.Wait()
-}
-
 func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.start()
 	result := s.scaleTo(ticket.desiredCount)
@@ -90,4 +71,17 @@ func (s *Scaler) openScalingTicket(desiredCount uint) error {
 	s.numOpenScalingTickets++
 	s.scaleTicketChan <- NewScalingTicket(desiredCount)
 	return nil
+}
+
+func (s *Scaler) scaleTo(desiredCount uint) sokar.ScaleResult {
+	jobName := s.job.jobName
+	currentCount, err := s.scalingTarget.GetJobCount(jobName)
+	if err != nil {
+		return sokar.ScaleResult{
+			State:            sokar.ScaleFailed,
+			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+		}
+	}
+
+	return s.scale(desiredCount, currentCount)
 }
