@@ -1,5 +1,3 @@
-include examples/prometheus/Makefile
-
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 

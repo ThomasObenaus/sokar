@@ -130,21 +130,22 @@ curl -X POST \
 '
 ```
 
-### Prometheus
+### Prometheus + Grafana
 
-#### Install
+#### Start
 
 ```bash
-cd $SK
-make prometheus.build && make prometheus.run
+cd $SK/examples/monitoring && docker-compose up -d
+
+# open grafana ui
+xdg-open http://localhost:3000
+
+# open prometheus ui
+xdg-open http://localhost:9090
 ```
 
-#### Run
+#### Stop
 
 ```bash
-cd $SK
-make prometheus.start
-
-# open UI
-xdg-open http://localhost:9090
+cd $SK/examples/monitoring && docker-compose down
 ```
