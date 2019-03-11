@@ -3,6 +3,22 @@ name 								:= "sokar-bin"
 
 all: build test tools cover finish
 
+help:
+	@echo "Available make targets:"
+	@echo "\t- run\t\t\tBuilds + runs sokar locally."
+	@echo "\t- build\t\t\tBuilds the sokar binary."
+	@echo "\t- monitoring.start\tStarts up a prometheus and a grafana instance,"
+	@echo "\t\t\t\tscraping metrics of sokar and providing a dashboard for sokar."
+	@echo "\t- test\t\t\tRuns all unittests."
+	@echo "\t- cover\t\t\tRuns the unittests and generates a coverage report."
+	@echo "\t- cover.upload\t\tUploads the unittest coverage to coveralls"
+	@echo "\t\t\t\t(for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly)."
+	@echo "\t- depend.install\tInstall the dependencies."
+	@echo "\t- depend.update\t\tUpdate the installed dependencies."
+	@echo "\t- tools\t\t\tInstalls needed tools (i.e. mock generators)."
+	@echo "\t- generate.mocks\tGenerates test doubles (mocks)."
+
+
 .PHONY: test
 test: generate.mocks
 	@echo "----------------------------------------------------------------------------------"
@@ -67,6 +83,17 @@ run: build
 	@echo "--> Run ${name}"
 	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://192.168.0.236:4646"
 	# --oneshot
+
+monitoring.start:
+	@echo "----------------------------------------------------------------------------------"
+	@echo "--> Startup (+build) monitoring components"
+	@cd examples/monitoring && docker-compose up --build -d
+	@xdg-open http://localhost:3000
+
+monitoring.stop:
+	@echo "----------------------------------------------------------------------------------"
+	@echo "--> Stop monitoring components"
+	@cd $SK/examples/monitoring && docker-compose down
 
 finish:
 	@echo "=================================================================================="
