@@ -17,6 +17,12 @@ type cliArgs struct {
 	flagSet *flag.FlagSet
 }
 
+func (ca *cliArgs) printDefaults() {
+	fmt.Println()
+	fmt.Printf("Usage of %s\n", os.Args[0])
+	ca.flagSet.PrintDefaults()
+}
+
 func (ca *cliArgs) validateArgs() bool {
 	success := true
 
@@ -24,13 +30,6 @@ func (ca *cliArgs) validateArgs() bool {
 		fmt.Printf("Parameter '-%s' is missing\n", pCfgFile)
 		success = false
 	}
-
-	if !success {
-		fmt.Println()
-		fmt.Printf("Usage of %s\n", os.Args[0])
-		ca.flagSet.PrintDefaults()
-	}
-
 	return success
 }
 
