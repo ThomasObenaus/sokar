@@ -13,6 +13,8 @@ const pCfgFile = "config-file"
 type cliArgs struct {
 	NomadServerAddr string
 	CfgFile         string
+
+	flagSet *flag.FlagSet
 }
 
 func (ca *cliArgs) validateArgs() bool {
@@ -26,19 +28,26 @@ func (ca *cliArgs) validateArgs() bool {
 	if !success {
 		fmt.Println()
 		fmt.Printf("Usage of %s\n", os.Args[0])
-		flag.PrintDefaults()
+		ca.flagSet.PrintDefaults()
 	}
 
 	return success
 }
 
-func parseArgs() cliArgs {
-	var nomadServerAddr = flag.String(pNomadServerAddress, "", "Specifies the address of the nomad server.")
-	var cfgFile = flag.String(pCfgFile, "", "Specifies the full path and name of the configuration file for sokar.")
-	flag.Parse()
+func parseArgs(args []string) (cliArgs, error) {
+	if args == nil || len(args) == 0 {
+		return cliArgs{}, fmt.Errorf("Args are missing")
+	}
 
+	flagSet := flag.NewFlagSet(args[0], flag.ContinueOnError)
+
+	var nomadServerAddr = flagSet.String(pNomadServerAddress, "", "Specifies the address of the nomad server.")
+	var cfgFile = flagSet.String(pCfgFile, "", "Specifies the full path and name of the configuration file for sokar.")
+
+	err := flagSet.Parse(args[1:])
 	return cliArgs{
 		NomadServerAddr: *nomadServerAddr,
 		CfgFile:         *cfgFile,
-	}
+		flagSet:         flagSet,
+	}, err
 }

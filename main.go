@@ -22,10 +22,37 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+func cliAndConfig() config.Config {
+	// parse commandline args and consume environment variables
+	parsedArgs, err := parseArgs(os.Args)
+	if !parsedArgs.validateArgs() {
+		os.Exit(1)
+	}
+
+	log.Println("Read configuration...")
+	cfg, err := config.NewConfigFromYAMLFile(parsedArgs.CfgFile)
+	if err != nil {
+		log.Printf("Error reading configuration: %s. Using the default config instead.", err.Error())
+	}
+
+	// Prefer CLI parameter for the nomadServerAddress
+	if len(parsedArgs.NomadServerAddr) > 0 {
+		cfg.Nomad.ServerAddr = parsedArgs.NomadServerAddr
+
+	}
+
+	if len(cfg.Nomad.ServerAddr) == 0 {
+		log.Fatal("Nomad Server address not specified.")
+	}
+
+	log.Println("Read configuration...done")
+	return cfg
+}
+
 func main() {
 
 	// parse commandline args and consume environment variables
-	parsedArgs := parseArgs()
+	parsedArgs, err := parseArgs(os.Args)
 	if !parsedArgs.validateArgs() {
 		os.Exit(1)
 	}
@@ -53,6 +80,7 @@ func main() {
 	if len(nomadServerAddress) == 0 {
 		logger.Fatal().Msg("Nomad Server address not specified.")
 	}
+
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
