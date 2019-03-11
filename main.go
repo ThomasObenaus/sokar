@@ -30,8 +30,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	localPort := 11000
-
 	log.Println("Read configuration...")
 	cfg, err := config.NewConfigFromYAMLFile(parsedArgs.CfgFile)
 	if err != nil {
@@ -56,7 +54,7 @@ func main() {
 		logger.Fatal().Msg("Nomad Server address not specified.")
 	}
 	logger.Info().Msg("Connecting components and setting up sokar ...")
-	api := api.New(localPort, loggingFactory.NewNamedLogger("sokar.api"))
+	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
 	setupMetricsHandler(api)
 

@@ -4,6 +4,7 @@ import "time"
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
+	Port                 int                  `yaml:"port"`
 	Nomad                Nomad                `yaml:"nomad"`
 	Logging              Logging              `yaml:"logging,omitempty"`
 	Job                  Job                  `yaml:"job"`
