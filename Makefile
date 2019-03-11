@@ -93,7 +93,7 @@ monitoring.start:
 monitoring.stop:
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Stop monitoring components"
-	@cd $SK/examples/monitoring && docker-compose down
+	@cd examples/monitoring && docker-compose down
 
 finish:
 	@echo "=================================================================================="
