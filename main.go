@@ -22,11 +22,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func cliAndConfig() config.Config {
+func cliAndConfig(args []string) (config.Config, error) {
+
 	// parse commandline args and consume environment variables
-	parsedArgs, err := parseArgs(os.Args)
+	parsedArgs, err := parseArgs(args)
+	if err != nil {
+		return config.Config{}, err
+	}
+
 	if !parsedArgs.validateArgs() {
-		os.Exit(1)
+		parsedArgs.printDefaults()
+		return config.Config{}, fmt.Errorf("Invalid cli parameters.")
 	}
 
 	log.Println("Read configuration...")
@@ -38,31 +44,23 @@ func cliAndConfig() config.Config {
 	// Prefer CLI parameter for the nomadServerAddress
 	if len(parsedArgs.NomadServerAddr) > 0 {
 		cfg.Nomad.ServerAddr = parsedArgs.NomadServerAddr
-
 	}
 
 	if len(cfg.Nomad.ServerAddr) == 0 {
-		log.Fatal("Nomad Server address not specified.")
+		parsedArgs.printDefaults()
+		return config.Config{}, fmt.Errorf("Nomad Server address not specified.")
 	}
 
 	log.Println("Read configuration...done")
-	return cfg
+	return cfg, nil
 }
 
 func main() {
 
-	// parse commandline args and consume environment variables
-	parsedArgs, err := parseArgs(os.Args)
-	if !parsedArgs.validateArgs() {
-		os.Exit(1)
-	}
-
-	log.Println("Read configuration...")
-	cfg, err := config.NewConfigFromYAMLFile(parsedArgs.CfgFile)
+	cfg, err := cliAndConfig(os.Args)
 	if err != nil {
-		log.Fatalf("Error reading configuration: %s.", err.Error())
+		log.Fatalf("%s", err.Error())
 	}
-	log.Println("Read configuration...done")
 
 	// set up logging
 	lCfg := logging.Config{
@@ -72,22 +70,13 @@ func main() {
 	loggingFactory := lCfg.New()
 	logger := loggingFactory.NewNamedLogger("sokar")
 
-	nomadServerAddress := cfg.Nomad.ServerAddr
-	// Prefer CLI parameter
-	if len(parsedArgs.NomadServerAddr) > 0 {
-		nomadServerAddress = parsedArgs.NomadServerAddr
-	}
-	if len(nomadServerAddress) == 0 {
-		logger.Fatal().Msg("Nomad Server address not specified.")
-	}
-
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
 	setupMetricsHandler(api)
 
 	logger.Info().Msg("Set up the scaler ...")
-	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, nomadServerAddress, loggingFactory)
+	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
