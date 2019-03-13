@@ -81,7 +81,7 @@ vendor: depend.install depend.update
 run: build
 	@echo "----------------------------------------------------------------------------------"
 	@echo "--> Run ${name}"
-	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://192.168.0.236:4646"
+	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://${LOCAL_IP}:4646"
 	# --oneshot
 
 monitoring.start:
