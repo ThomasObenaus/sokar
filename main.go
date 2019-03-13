@@ -22,17 +22,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func cliAndConfig(args []string) (config.Config, error) {
+// cliAndConfig provides the configuration by reading parameters from the cli and from config-file.
+func cliAndConfig(args []string) (*config.Config, error) {
 
 	// parse commandline args and consume environment variables
 	parsedArgs, err := parseArgs(args)
 	if err != nil {
-		return config.Config{}, err
+		return nil, err
 	}
 
 	if !parsedArgs.validateArgs() {
 		parsedArgs.printDefaults()
-		return config.Config{}, fmt.Errorf("Invalid cli parameters.")
+		return nil, fmt.Errorf("Invalid cli parameters")
 	}
 
 	log.Println("Read configuration...")
@@ -48,11 +49,23 @@ func cliAndConfig(args []string) (config.Config, error) {
 
 	if len(cfg.Nomad.ServerAddr) == 0 {
 		parsedArgs.printDefaults()
-		return config.Config{}, fmt.Errorf("Nomad Server address not specified.")
+		return nil, fmt.Errorf("Nomad Server address not specified")
 	}
 
 	log.Println("Read configuration...done")
-	return cfg, nil
+	return &cfg, nil
+}
+
+func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("Error creating LoggerFactory: Config is nil")
+	}
+	lCfg := logging.Config{
+		UseStructuredLogging:       cfg.Logging.Structured,
+		UseUnixTimestampForLogging: cfg.Logging.UxTimestamp,
+	}
+	loggingFactory := lCfg.New()
+	return loggingFactory, nil
 }
 
 func main() {
@@ -63,11 +76,11 @@ func main() {
 	}
 
 	// set up logging
-	lCfg := logging.Config{
-		UseStructuredLogging:       cfg.Logging.Structured,
-		UseUnixTimestampForLogging: cfg.Logging.UxTimestamp,
+	loggingFactory, err := setupLogging(cfg)
+	if err != nil {
+		log.Fatalf("%s", err.Error())
 	}
-	loggingFactory := lCfg.New()
+
 	logger := loggingFactory.NewNamedLogger("sokar")
 
 	logger.Info().Msg("Connecting components and setting up sokar ...")
@@ -179,7 +192,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 	nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
 	nomad, err := nomadConfig.New()
 	if err != nil {
-		return nil, fmt.Errorf("Failed setting up nomad connector: %s.", err)
+		return nil, fmt.Errorf("Failed setting up nomad connector: %s", err)
 	}
 
 	scaCfg := scaler.Config{
@@ -191,7 +204,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 
 	scaler, err := scaCfg.New(nomad)
 	if err != nil {
-		return nil, fmt.Errorf("Failed setting up scaler: %s.", err)
+		return nil, fmt.Errorf("Failed setting up scaler: %s", err)
 	}
 
 	return scaler, nil
