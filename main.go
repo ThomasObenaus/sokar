@@ -68,6 +68,12 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	return loggingFactory, nil
 }
 
+func setupAPI(port int, loggerFactory logging.LoggerFactory) api.API {
+	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
+	// Register metrics handler
+	api.Router.Handler("GET", "/metrics", promhttp.Handler())
+}
+
 func main() {
 
 	cfg, err := cliAndConfig(os.Args)
@@ -86,7 +92,8 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
-	setupMetricsHandler(api)
+	// Register metrics handler
+	api.Router.Handler("GET", "/metrics", promhttp.Handler())
 
 	logger.Info().Msg("Set up the scaler ...")
 	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
@@ -162,10 +169,6 @@ func main() {
 
 	logger.Info().Msg("Shutdown successfully completed")
 	os.Exit(0)
-}
-
-func setupMetricsHandler(api api.API) {
-	api.Router.Handler("GET", "/metrics", promhttp.Handler())
 }
 
 func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
