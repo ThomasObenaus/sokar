@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Runnable is a interface for runnable sokar components
 type Runnable interface {
 	Run()
 	Join()
