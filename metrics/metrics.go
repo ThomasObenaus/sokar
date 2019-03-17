@@ -13,3 +13,7 @@ type Gauge interface {
 type GaugeVec interface {
 	WithLabelValues(lvs ...string) Gauge
 }
+
+type CounterVec interface {
+	WithLabelValues(lvs ...string) Counter
+}

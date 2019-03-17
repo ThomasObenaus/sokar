@@ -21,3 +21,20 @@ func NewWrappedGaugeVec(opts prometheus.GaugeOpts, labelNames []string) *Wrapped
 		prom: promauto.NewGaugeVec(opts, labelNames),
 	}
 }
+
+// WrappedCounterVec wraps a prometheus CounterVec
+type WrappedCounterVec struct {
+	prom *prometheus.CounterVec
+}
+
+// WithLabelValues implements the WithLabelValues to meet the CounterVec interface
+func (wG *WrappedCounterVec) WithLabelValues(lvs ...string) Counter {
+	return wG.prom.WithLabelValues(lvs...)
+}
+
+// NewWrappedCounterVec creates a prometheus CounterVec that is wrapped
+func NewWrappedCounterVec(opts prometheus.CounterOpts, labelNames []string) *WrappedCounterVec {
+	return &WrappedCounterVec{
+		prom: promauto.NewCounterVec(opts, labelNames),
+	}
+}
