@@ -37,33 +37,33 @@ func main() {
 	}
 
 	logger := loggingFactory.NewNamedLogger("sokar")
-	logger.Info().Msg("Connecting components and setting up sokar ...")
+	logger.Info().Msg("Connecting components and setting up sokar")
 
-	// 1. API
+	logger.Info().Msg("1. Setup: API")
 	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
-	// 2. AlertEmitters (i.e. Alertmanager Connector)
+	logger.Info().Msg("2. Setup: ScaleAlertEmitters")
 	scaleAlertEmitters, err := setupScaleAlertEmitters(api, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating scale alert emitters.")
 	}
 
-	// 3. ScaleAlertAggregator
+	logger.Info().Msg("3. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
-	// 4. Scaler
+	logger.Info().Msg("4. Setup: Scaler")
 	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
 
-	// 5. CapacityPlanner
+	logger.Info().Msg("5. Setup: CapacityPlanner")
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
 
-	// 6. Sokar
+	logger.Info().Msg("6. Setup: Sokar")
 	sokarInst, err := setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)
 
 	if err != nil {
@@ -71,9 +71,7 @@ func main() {
 	}
 
 	// Register metrics handler
-	api.Router.Handler("GET", "/metrics", promhttp.Handler())
-
-	logger.Info().Msg("Connecting components and setting up sokar ... done")
+	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
 
 	// Define runnables and their execution order
 	var orderedRunnables []Runnable
@@ -82,13 +80,13 @@ func main() {
 	orderedRunnables = append(orderedRunnables, scaAlertAggr)
 	orderedRunnables = append(orderedRunnables, api)
 
-	// Run all components
-	Run(orderedRunnables, logger)
-
 	// Install signal handler for shutdown
 	shutDownChan := make(chan os.Signal, 1)
 	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
 	go shutdownHandler(shutDownChan, orderedRunnables, logger)
+
+	// Run all components
+	Run(orderedRunnables, logger)
 
 	// Wait till completion
 	Join(orderedRunnables, logger)
@@ -179,7 +177,7 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 		Logger: logF.NewNamedLogger("sokar.alertmanager"),
 	}
 	amConnector := amCfg.New()
-	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
+	api.Router.POST(sokar.PathAlertmanager, amConnector.HandleScaleAlerts)
 
 	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
@@ -196,10 +194,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 		return nil, err
 	}
 
-	logger.Info().Msg("Registering http handlers ...")
-	api.Router.POST(sokar.PathScaleBy, sokarInst.ScaleBy)
 	api.Router.GET(sokar.PathHealth, sokarInst.Health)
-	logger.Info().Msg("Registering http handlers ... done")
 
 	return sokarInst, err
 }

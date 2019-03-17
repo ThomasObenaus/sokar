@@ -2,26 +2,16 @@ package sokar
 
 import (
 	"fmt"
-	"net/http"
-	"strconv"
+	"sync"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
-const (
-	// ParamBy part of the path specifying the amount to be scaled
-	ParamBy = "by"
-	// PathScaleBy is the url path to the scale-by end-point
-	PathScaleBy = "/scaler/scale/:" + ParamBy
-
-	// PathHealth is the url path for health end-point
-	PathHealth = "/health"
-)
-
 // Sokar component that can be used to scale jobs/instances
 type Sokar struct {
+	logger zerolog.Logger
+
 	scaler            sokarIF.Scaler
 	capacityPlanner   sokarIF.CapacityPlanner
 	scaleEventEmitter sokarIF.ScaleEventEmitter
@@ -29,7 +19,7 @@ type Sokar struct {
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
 
-	logger zerolog.Logger
+	wg sync.WaitGroup
 }
 
 // Config cfg for sokar
@@ -61,29 +51,26 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 	}, nil
 }
 
-// ScaleBy is the http end-point for scale actions
-func (sk *Sokar) ScaleBy(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	byStr := ps.ByName(ParamBy)
-	sk.logger.Debug().Msgf("%s called with param='%s'.", PathScaleBy, byStr)
+// Stop tears down sokar
+func (sk *Sokar) Stop() {
+	sk.logger.Info().Msg("Teardown requested")
+	close(sk.stopChan)
+}
 
-	_, err := strconv.ParseInt(byStr, 10, 64)
-	if err != nil {
-		errMsg := fmt.Sprintf("Unable to parse parameter by=%s: %s.", byStr, err.Error())
-		http.Error(w, errMsg, http.StatusBadRequest)
-		sk.logger.Error().Msg(errMsg)
-		return
-	}
+// Join blocks/ waits until sokar has been stopped
+func (sk *Sokar) Join() {
+	sk.wg.Wait()
+}
 
-	http.Error(w, "Not Implemented yet.", http.StatusInternalServerError)
+// GetName returns the name of this component
+func (sk *Sokar) GetName() string {
+	return "sokar"
+}
 
-	//scaResult := sk.scaler.ScaleBy_Old(int(by))
-	//
-	//code := http.StatusOK
-	//if scaResult.State == sokarIF.ScaleFailed {
-	//	code = http.StatusInternalServerError
-	//}
-	//sk.logger.Info().Msgf("Scale %s: %s", scaResult.State, scaResult.StateDescription)
-	//
-	//w.WriteHeader(code)
-	//json.NewEncoder(w).Encode(scaResult)
+// Run starts sokar
+func (sk *Sokar) Run() {
+	scaleEventChannel := make(chan sokarIF.ScaleEvent, 10)
+	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
+
+	go sk.scaleEventProcessor(scaleEventChannel)
 }
