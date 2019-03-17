@@ -56,6 +56,7 @@ func cliAndConfig(args []string) (*config.Config, error) {
 	return &cfg, nil
 }
 
+// setupLogging configures logging according to the given parameters
 func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("Error creating LoggerFactory: Config is nil")
@@ -68,14 +69,9 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	return loggingFactory, nil
 }
 
-func setupAPI(port int, loggerFactory logging.LoggerFactory) api.API {
-	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
-	// Register metrics handler
-	api.Router.Handler("GET", "/metrics", promhttp.Handler())
-}
-
 func main() {
 
+	// read config
 	cfg, err := cliAndConfig(os.Args)
 	if err != nil {
 		log.Fatalf("%s", err.Error())
@@ -88,19 +84,18 @@ func main() {
 	}
 
 	logger := loggingFactory.NewNamedLogger("sokar")
-
 	logger.Info().Msg("Connecting components and setting up sokar ...")
-	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
-	// Register metrics handler
-	api.Router.Handler("GET", "/metrics", promhttp.Handler())
-
-	logger.Info().Msg("Set up the scaler ...")
+	// 1. Scaler
 	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
-	logger.Info().Msg("Set up the scaler ... done")
+
+	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
+
+	// Register metrics handler
+	api.Router.Handler("GET", "/metrics", promhttp.Handler())
 
 	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	amCfg := alertmanager.Config{
@@ -188,7 +183,12 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	return sokarInst, err
 }
 
+// setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+
+	if logF == nil {
+		return nil, fmt.Errorf("Logging factory is nil")
+	}
 
 	// Set up the nomad connector
 	nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)

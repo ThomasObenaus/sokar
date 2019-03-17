@@ -75,6 +75,7 @@ generate.mocks:
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
 	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/sokar/mock_scaleEventEmitter_IF.go 
 	@mockgen -source=metrics/metrics.go -destination test/metrics/mock_metrics.go 
+	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
 
 vendor: depend.install depend.update
 
