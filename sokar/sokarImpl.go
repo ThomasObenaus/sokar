@@ -11,36 +11,30 @@ func (sk *Sokar) GetName() string {
 
 // Run starts sokar
 func (sk *Sokar) Run() {
-
 	scaleEventChannel := make(chan sokarIF.ScaleEvent, 10)
 	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 
-	// main loop
-	go func() {
-		sk.logger.Info().Msg("Main loop started")
+	go sk.scaleEventProcessor(scaleEventChannel)
+}
 
-	loop:
-		for {
-			select {
-			case <-sk.stopChan:
-				close(sk.stopChan)
-				break loop
+func (sk *Sokar) scaleEventProcessor(scaleEventChannel <-chan sokarIF.ScaleEvent) {
+	sk.logger.Info().Msg("ScaleEventProcessor started.")
 
-			case se := <-scaleEventChannel:
-				sk.handleScaleEvent(se)
-
-			}
+	for {
+		select {
+		case <-sk.stopChan:
+			sk.logger.Info().Msg("ScaleEventProcessor stopped.")
+			return
+		case se := <-scaleEventChannel:
+			sk.handleScaleEvent(se)
 		}
-		sk.logger.Info().Msg("Main loop left")
-	}()
-
+	}
 }
 
 // Stop tears down sokar
 func (sk *Sokar) Stop() {
 	sk.logger.Info().Msg("Teardown requested")
-	// send the stop message
-	sk.stopChan <- struct{}{}
+	close(sk.stopChan)
 }
 
 // Join blocks/ waits until sokar has been stopped
