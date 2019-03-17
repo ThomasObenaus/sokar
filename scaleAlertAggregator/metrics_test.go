@@ -9,9 +9,10 @@ import (
 )
 
 type MetricsMocks struct {
-	scaleCounter *mock_metrics.MockGauge
-	scaleFactor  *mock_metrics.MockGauge
-	alerts       *mock_metrics.MockGaugeVec
+	scaleCounter      *mock_metrics.MockGauge
+	scaleFactor       *mock_metrics.MockGauge
+	alerts            *mock_metrics.MockGaugeVec
+	scaleEventCounter *mock_metrics.MockCounterVec
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -26,15 +27,18 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScaleCounter := mock_metrics.NewMockGauge(mockCtrl)
 	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	mAlerts := mock_metrics.NewMockGaugeVec(mockCtrl)
+	mScaleEventCounter := mock_metrics.NewMockCounterVec(mockCtrl)
 	metrics := Metrics{
-		scaleCounter: mScaleCounter,
-		alerts:       mAlerts,
-		scaleFactor:  mScaleFactor,
+		scaleCounter:      mScaleCounter,
+		alerts:            mAlerts,
+		scaleFactor:       mScaleFactor,
+		scaleEventCounter: mScaleEventCounter,
 	}
 	mocks := MetricsMocks{
-		scaleCounter: mScaleCounter,
-		scaleFactor:  mScaleFactor,
-		alerts:       mAlerts,
+		scaleCounter:      mScaleCounter,
+		scaleFactor:       mScaleFactor,
+		alerts:            mAlerts,
+		scaleEventCounter: mScaleEventCounter,
 	}
 	return metrics, mocks
 }
@@ -42,6 +46,9 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 func Test_NewMetrics(t *testing.T) {
 	metrics := NewMetrics()
 	assert.NotNil(t, metrics.scaleCounter)
+	assert.NotNil(t, metrics.alerts)
+	assert.NotNil(t, metrics.scaleFactor)
+	assert.NotNil(t, metrics.scaleEventCounter)
 }
 
 func Test_UpdateAlertMetrics(t *testing.T) {

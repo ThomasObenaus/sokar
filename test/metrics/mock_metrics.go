@@ -134,3 +134,42 @@ func (m *MockGaugeVec) WithLabelValues(lvs ...string) metrics.Gauge {
 func (mr *MockGaugeVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockGaugeVec)(nil).WithLabelValues), lvs...)
 }
+
+// MockCounterVec is a mock of CounterVec interface
+type MockCounterVec struct {
+	ctrl     *gomock.Controller
+	recorder *MockCounterVecMockRecorder
+}
+
+// MockCounterVecMockRecorder is the mock recorder for MockCounterVec
+type MockCounterVecMockRecorder struct {
+	mock *MockCounterVec
+}
+
+// NewMockCounterVec creates a new mock instance
+func NewMockCounterVec(ctrl *gomock.Controller) *MockCounterVec {
+	mock := &MockCounterVec{ctrl: ctrl}
+	mock.recorder = &MockCounterVecMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockCounterVec) EXPECT() *MockCounterVecMockRecorder {
+	return m.recorder
+}
+
+// WithLabelValues mocks base method
+func (m *MockCounterVec) WithLabelValues(lvs ...string) metrics.Counter {
+	varargs := []interface{}{}
+	for _, a := range lvs {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "WithLabelValues", varargs...)
+	ret0, _ := ret[0].(metrics.Counter)
+	return ret0
+}
+
+// WithLabelValues indicates an expected call of WithLabelValues
+func (mr *MockCounterVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockCounterVec)(nil).WithLabelValues), lvs...)
+}

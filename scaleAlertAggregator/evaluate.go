@@ -44,6 +44,8 @@ func (sc *ScaleAlertAggregator) evaluate() float32 {
 
 		// restart evaluation counter to force a reset of the gradient
 		sc.evaluationCounter = 0
+
+		sc.metrics.scaleEventCounter.WithLabelValues(scaleDir).Inc()
 	} else {
 		gr := sc.scaleCounterGradient.Get(sc.scaleCounter, now)
 		sc.logger.Debug().Float32("sCnt", sc.scaleCounter).Float32("upThrs", sc.upScalingThreshold).Float32("downTrhs", sc.downScalingThreshold).Float32("grad", gr).Msg("No scale needed.")

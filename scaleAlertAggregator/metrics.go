@@ -9,9 +9,10 @@ import (
 // Metrics represents the collection of metrics internally set by
 // the ScaleAlertAggregator.
 type Metrics struct {
-	scaleCounter m.Gauge
-	alerts       m.GaugeVec
-	scaleFactor  m.Gauge
+	scaleCounter      m.Gauge
+	alerts            m.GaugeVec
+	scaleFactor       m.Gauge
+	scaleEventCounter m.CounterVec
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -39,9 +40,18 @@ func NewMetrics() Metrics {
 		Help:      "The scale factor (gradient) as it is calculated by the SAA on each evaluation.",
 	})
 
+	scaleEventDirs := []string{"direction"}
+	scaleEventCounter := m.NewWrappedCounterVec(prometheus.CounterOpts{
+		Namespace: "sokar",
+		Subsystem: "saa",
+		Name:      "scale_event_counter",
+		Help:      "Counts the number of ScaleEvent's separated by up/down.",
+	}, scaleEventDirs)
+
 	return Metrics{
-		scaleCounter: scaleCounter,
-		alerts:       alerts,
-		scaleFactor:  scaleFactor,
+		scaleCounter:      scaleCounter,
+		alerts:            alerts,
+		scaleFactor:       scaleFactor,
+		scaleEventCounter: scaleEventCounter,
 	}
 }

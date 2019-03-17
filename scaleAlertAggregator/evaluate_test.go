@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/thomasobenaus/sokar/test/metrics"
 )
 
 func Test_IsScalingNeeded(t *testing.T) {
@@ -43,6 +44,15 @@ func Test_Evaluate(t *testing.T) {
 	mocks.scaleFactor.EXPECT().Set(float64(0))
 	mocks.scaleFactor.EXPECT().Set(gomock.Any())
 	mocks.scaleFactor.EXPECT().Set(gomock.Any())
+
+	scaleEventCounterUp := mock_metrics.NewMockCounter(mockCtrl)
+	scaleEventCounterUp.EXPECT().Inc().Times(1)
+	scaleEventCounterDown := mock_metrics.NewMockCounter(mockCtrl)
+	scaleEventCounterDown.EXPECT().Inc().Times(1)
+	gomock.InOrder(
+		mocks.scaleEventCounter.EXPECT().WithLabelValues("UP").Return(scaleEventCounterUp),
+		mocks.scaleEventCounter.EXPECT().WithLabelValues("DOWN").Return(scaleEventCounterDown),
+	)
 
 	cfg := Config{}
 	var emitters []ScaleAlertEmitter
