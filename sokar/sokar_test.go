@@ -33,5 +33,22 @@ func Test_HandleScaleEvent(t *testing.T) {
 		scalerIF.EXPECT().ScaleTo(scaleTo),
 	)
 	sokar.handleScaleEvent(event)
+}
 
+func Test_Run(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	evEmitterIF.EXPECT().Subscribe(gomock.Any())
+	sokar.Run()
 }
