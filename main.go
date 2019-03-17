@@ -189,7 +189,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	cfg := sokar.Config{
 		Logger: logger,
 	}
-	sokarInst, err := cfg.New(scaleEventEmitter, capacityPlanner, scaler)
+	sokarInst, err := cfg.New(scaleEventEmitter, capacityPlanner, scaler, sokar.NewMetrics())
 	if err != nil {
 		return nil, err
 	}

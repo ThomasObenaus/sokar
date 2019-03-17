@@ -16,6 +16,9 @@ type Sokar struct {
 	capacityPlanner   sokarIF.CapacityPlanner
 	scaleEventEmitter sokarIF.ScaleEventEmitter
 
+	// metrics is a collection of metrics used by the sokar
+	metrics Metrics
+
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
 
@@ -28,7 +31,7 @@ type Config struct {
 }
 
 // New creates a new instance of sokar
-func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler) (*Sokar, error) {
+func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, metrics Metrics) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
@@ -46,8 +49,8 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 		capacityPlanner:   capacityPlanner,
 		scaler:            scaler,
 		stopChan:          make(chan struct{}, 1),
-
-		logger: cfg.Logger,
+		metrics:           metrics,
+		logger:            cfg.Logger,
 	}, nil
 }
 

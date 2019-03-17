@@ -20,9 +20,10 @@ func Test_Health(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
