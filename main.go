@@ -69,6 +69,41 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	return loggingFactory, nil
 }
 
+func setupScaleAlertAggregator(scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter, cfg *config.Config, logF logging.LoggerFactory) *scaleAlertAggregator.ScaleAlertAggregator {
+	weightMap := make(scaleAlertAggregator.ScaleAlertWeightMap, 0)
+	for _, alertDef := range cfg.ScaleAlertAggregator.ScaleAlerts {
+		weightMap[alertDef.Name] = alertDef.Weight
+	}
+
+	scaEvtAggCfg := scaleAlertAggregator.Config{
+		Logger:                 logF.NewNamedLogger("sokar.scaAlertAggr"),
+		NoAlertScaleDamping:    cfg.ScaleAlertAggregator.NoAlertScaleDamping,
+		UpScalingThreshold:     cfg.ScaleAlertAggregator.UpScaleThreshold,
+		DownScalingThreshold:   cfg.ScaleAlertAggregator.DownScaleThreshold,
+		EvaluationCycle:        cfg.ScaleAlertAggregator.EvaluationCycle,
+		EvaluationPeriodFactor: cfg.ScaleAlertAggregator.EvaluationPeriodFactor,
+		CleanupCycle:           cfg.ScaleAlertAggregator.CleanupCycle,
+		WeightMap:              weightMap,
+	}
+
+	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters, scaleAlertAggregator.NewMetrics())
+	return scaAlertAggr
+}
+
+func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) []scaleAlertAggregator.ScaleAlertEmitter {
+	// Alertmanger Connector
+	amCfg := alertmanager.Config{
+		Logger: logF.NewNamedLogger("sokar.alertmanager"),
+	}
+	amConnector := amCfg.New()
+	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
+
+	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
+	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
+
+	return scaleAlertEmitters
+}
+
 func main() {
 
 	// read config
@@ -86,53 +121,36 @@ func main() {
 	logger := loggingFactory.NewNamedLogger("sokar")
 	logger.Info().Msg("Connecting components and setting up sokar ...")
 
-	// 1. Scaler
+	// 1. API
+	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
+
+	// 2. AlertEmitters (i.e. Alertmanager Connector)
+	scaleAlertEmitters := setupScaleAlertEmitters(api, loggingFactory)
+
+	// 3. ScaleAlertAggregator
+	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
+
+	// 4. Scaler
 	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
 	}
 
-	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
-
-	// Register metrics handler
-	api.Router.Handler("GET", "/metrics", promhttp.Handler())
-
-	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
-	amCfg := alertmanager.Config{
-		Logger: loggingFactory.NewNamedLogger("sokar.alertmanager"),
-	}
-	amConnector := amCfg.New()
-	api.Router.POST("/alerts", amConnector.HandleScaleAlerts)
-	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
-
-	weightMap := make(scaleAlertAggregator.ScaleAlertWeightMap, 0)
-	for _, alertDef := range cfg.ScaleAlertAggregator.ScaleAlerts {
-		weightMap[alertDef.Name] = alertDef.Weight
-	}
-
-	scaEvtAggCfg := scaleAlertAggregator.Config{
-		Logger:                 loggingFactory.NewNamedLogger("sokar.scaAlertAggr"),
-		NoAlertScaleDamping:    cfg.ScaleAlertAggregator.NoAlertScaleDamping,
-		UpScalingThreshold:     cfg.ScaleAlertAggregator.UpScaleThreshold,
-		DownScalingThreshold:   cfg.ScaleAlertAggregator.DownScaleThreshold,
-		EvaluationCycle:        cfg.ScaleAlertAggregator.EvaluationCycle,
-		EvaluationPeriodFactor: cfg.ScaleAlertAggregator.EvaluationPeriodFactor,
-		CleanupCycle:           cfg.ScaleAlertAggregator.CleanupCycle,
-		WeightMap:              weightMap,
-	}
-
-	scaAlertAggr := scaEvtAggCfg.New(scaleAlertEmitters, scaleAlertAggregator.NewMetrics())
-
+	// 5. CapacityPlanner
 	capaCfg := capacityPlanner.Config{
 		Logger: loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 	}
 	capaPlanner := capaCfg.New()
 
+	// 6. Sokar
 	sokarInst, err := setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed creating sokar.")
 	}
+
+	// Register metrics handler
+	api.Router.Handler("GET", "/metrics", promhttp.Handler())
 
 	logger.Info().Msg("Connecting components and setting up sokar ... done")
 
