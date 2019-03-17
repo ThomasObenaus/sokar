@@ -4,6 +4,11 @@ import (
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
+// GetName returns the name of this component
+func (sk *Sokar) GetName() string {
+	return "sokar"
+}
+
 // Run starts sokar
 func (sk *Sokar) Run() {
 
