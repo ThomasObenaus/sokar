@@ -13,6 +13,7 @@ type MetricsMocks struct {
 	failedScalingTotal *mock_metrics.MockCounter
 	plannedCount       *mock_metrics.MockGauge
 	currentCount       *mock_metrics.MockGauge
+	scaleFactor        *mock_metrics.MockGauge
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -28,17 +29,20 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mFailedScalingTotal := mock_metrics.NewMockCounter(mockCtrl)
 	mPlannedCount := mock_metrics.NewMockGauge(mockCtrl)
 	mCurrentCount := mock_metrics.NewMockGauge(mockCtrl)
+	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	metrics := Metrics{
 		scaleEventsTotal:   mScaleEventsTotal,
 		failedScalingTotal: mFailedScalingTotal,
 		plannedCount:       mPlannedCount,
 		currentCount:       mCurrentCount,
+		scaleFactor:        mScaleFactor,
 	}
 	mocks := MetricsMocks{
 		scaleEventsTotal:   mScaleEventsTotal,
 		failedScalingTotal: mFailedScalingTotal,
 		plannedCount:       mPlannedCount,
 		currentCount:       mCurrentCount,
+		scaleFactor:        mScaleFactor,
 	}
 	return metrics, mocks
 }
@@ -49,4 +53,5 @@ func Test_NewMetrics(t *testing.T) {
 	assert.NotNil(t, metrics.failedScalingTotal)
 	assert.NotNil(t, metrics.plannedCount)
 	assert.NotNil(t, metrics.currentCount)
+	assert.NotNil(t, metrics.scaleFactor)
 }

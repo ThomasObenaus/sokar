@@ -25,6 +25,7 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	sk.logger.Info().Msgf("Scale Event received: %v", scaleEvent)
 
 	sk.metrics.scaleEventsTotal.Inc()
+	sk.metrics.scaleFactor.Set(float64(scaleEvent.ScaleFactor))
 
 	currentCount, err := sk.scaler.GetCount()
 	if err != nil {

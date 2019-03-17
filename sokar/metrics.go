@@ -12,6 +12,7 @@ type Metrics struct {
 	failedScalingTotal m.Counter
 	plannedCount       m.Gauge
 	currentCount       m.Gauge
+	scaleFactor        m.Gauge
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -43,10 +44,18 @@ func NewMetrics() Metrics {
 		Help:      "The count currently deployed. Based on this count sokar does the planning.",
 	})
 
+	scaleFactor := promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "sokar",
+		Subsystem: "cap",
+		Name:      "scale_factor",
+		Help:      "The scale factor (gradient) as it was received with a ScalingEvent.",
+	})
+
 	return Metrics{
 		scaleEventsTotal:   scaleEventsTotal,
 		failedScalingTotal: failedScalingTotal,
 		plannedCount:       plannedCount,
 		currentCount:       currentCount,
+		scaleFactor:        scaleFactor,
 	}
 }
