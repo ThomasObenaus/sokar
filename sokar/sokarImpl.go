@@ -32,6 +32,7 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 		sk.logger.Error().Err(err).Msg("Scaling ignored. Failed to obtain current count.")
 		return
 	}
+	sk.metrics.currentCount.Set(float64(currentCount))
 
 	// plan
 	plannedCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, currentCount)

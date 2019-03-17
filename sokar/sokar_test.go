@@ -35,6 +35,7 @@ func Test_HandleScaleEvent(t *testing.T) {
 		scalerIF.EXPECT().ScaleTo(scaleTo),
 	)
 	metricMocks.scaleEventsTotal.EXPECT().Inc().Times(1)
+	metricMocks.currentCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedCount.EXPECT().Set(float64(scaleTo))
 
 	sokar.handleScaleEvent(event)
@@ -68,6 +69,7 @@ func Test_HandleScaleEvent_Fail(t *testing.T) {
 	gomock.InOrder(
 		metricMocks.scaleEventsTotal.EXPECT().Inc(),
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.currentCount.EXPECT().Set(float64(currentScale)),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
 		metricMocks.plannedCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("ERROR")),
