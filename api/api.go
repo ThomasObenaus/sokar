@@ -21,13 +21,18 @@ type API struct {
 }
 
 // New creates a new runnable api server
-func New(port int, logger zerolog.Logger) API {
-	return API{
+func New(port int, logger zerolog.Logger) *API {
+	return &API{
 		Router:   httprouter.New(),
 		port:     port,
 		logger:   logger,
 		stopChan: make(chan struct{}, 1),
 	}
+}
+
+// GetName returns the name of this component
+func (api *API) GetName() string {
+	return "api"
 }
 
 // Stop stops/ tears down the api server

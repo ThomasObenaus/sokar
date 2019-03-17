@@ -90,6 +90,11 @@ func (s *Scaler) ScaleTo(desiredCount uint) error {
 	return s.openScalingTicket(desiredCount)
 }
 
+// GetName returns the name of this component
+func (s *Scaler) GetName() string {
+	return "scaler"
+}
+
 // Run starts/ runs the scaler
 func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets

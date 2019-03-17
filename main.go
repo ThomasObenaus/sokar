@@ -136,37 +136,29 @@ func main() {
 
 	logger.Info().Msg("Connecting components and setting up sokar ... done")
 
+	// Define runnables and their execution order
+	var orderedRunnables []Runnable
+	orderedRunnables = append(orderedRunnables, sokarInst)
+	orderedRunnables = append(orderedRunnables, scaler)
+	orderedRunnables = append(orderedRunnables, scaAlertAggr)
+	orderedRunnables = append(orderedRunnables, api)
+
 	// Run all components
-	sokarInst.Run()
-	scaler.Run()
-	scaAlertAggr.Run()
-	api.Run()
+	Run(orderedRunnables, logger)
 
 	// Install signal handler for shutdown
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		s := <-signalChan
-		logger.Info().Msgf("Received %v. Shutting down...", s)
-
-		// Stop all components
-		api.Stop()
-		scaAlertAggr.Stop()
-		scaler.Stop()
-		sokarInst.Stop()
-	}()
+	shutDownChan := make(chan os.Signal, 1)
+	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
+	go shutdownHandler(shutDownChan, orderedRunnables, logger)
 
 	// Wait till completion
-	api.Join()
-	scaAlertAggr.Join()
-	scaler.Join()
-	sokarInst.Join()
+	Join(orderedRunnables, logger)
 
 	logger.Info().Msg("Shutdown successfully completed")
 	os.Exit(0)
 }
 
-func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api *api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger: logger,
 	}
