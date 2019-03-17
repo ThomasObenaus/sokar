@@ -43,6 +43,16 @@ func (mr *MockCounterMockRecorder) Inc() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Inc", reflect.TypeOf((*MockCounter)(nil).Inc))
 }
 
+// Add mocks base method
+func (m *MockCounter) Add(arg0 float64) {
+	m.ctrl.Call(m, "Add", arg0)
+}
+
+// Add indicates an expected call of Add
+func (mr *MockCounterMockRecorder) Add(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockCounter)(nil).Add), arg0)
+}
+
 // MockGauge is a mock of Gauge interface
 type MockGauge struct {
 	ctrl     *gomock.Controller

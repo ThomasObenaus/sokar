@@ -36,7 +36,7 @@ func NewMetrics() Metrics {
 		Namespace: "sokar",
 		Subsystem: "saa",
 		Name:      "scale_factor",
-		Help:      "The current scale factor (gradient).",
+		Help:      "The scale factor (gradient) as it is calculated by the SAA on each evaluation.",
 	})
 
 	return Metrics{
