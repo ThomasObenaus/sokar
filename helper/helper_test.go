@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,4 +54,18 @@ func Test_Hash(t *testing.T) {
 	hashed1 = Hash("HALLO")
 	hashed2 = Hash("HALLO.")
 	assert.NotEqual(t, hashed1, hashed2)
+}
+
+func willFail(fail bool) (string, error) {
+	if fail {
+		return "Fail", fmt.Errorf("Failed")
+	}
+	return "No Fail", nil
+}
+
+func Test_Must(t *testing.T) {
+	result := Must(willFail(false))
+
+	assert.NotEmpty(t, result)
+	assert.Panics(t, func() { Must(willFail(true)) })
 }
