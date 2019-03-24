@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thomasobenaus/sokar/test/metrics"
 	"github.com/thomasobenaus/sokar/test/scaler"
 )
 
@@ -82,7 +83,7 @@ func Test_RunJoinStop(t *testing.T) {
 func Test_OpenScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
@@ -91,11 +92,15 @@ func Test_OpenScalingTicket(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
+	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
+	scalingTicketCounter.EXPECT().Inc().Times(2)
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), scaler.numOpenScalingTickets)
 	assert.Len(t, scaler.scaleTicketChan, 1)
 
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.Error(t, err)
 
@@ -106,7 +111,7 @@ func Test_OpenScalingTicket(t *testing.T) {
 func Test_ApplyScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil)
@@ -117,6 +122,9 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
+	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
+	scalingTicketCounter.EXPECT().Inc()
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter)
 	ticket := NewScalingTicket(0)
 	scaler.applyScaleTicket(ticket)
 }
@@ -124,7 +132,7 @@ func Test_ApplyScalingTicket(t *testing.T) {
 func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil).MaxTimes(11)
@@ -136,22 +144,33 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	require.NotNil(t, scaler)
 
 	// open as many tickets as allowed
+	ticketCounter := int(scaler.maxOpenScalingTickets) + 1
+	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
+	scalingTicketCounter.EXPECT().Inc().Times(ticketCounter)
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(ticketCounter)
+
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
 		err = scaler.openScalingTicket(0)
 		assert.NoError(t, err)
 	}
 
 	// open new ticket --> should fail
+	scalingTicketCounter.EXPECT().Inc().Times(1)
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.Error(t, err)
 
 	// apply/ close as many tickets as are open
+	scalingTicketCounter.EXPECT().Inc().Times(ticketCounter)
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter).Times(ticketCounter)
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
 		ticket := <-scaler.scaleTicketChan
 		scaler.applyScaleTicket(ticket)
 	}
 
 	// open new ticket --> should NOT fail
+	scalingTicketCounter.EXPECT().Inc().Times(1)
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(1)
 	err = scaler.openScalingTicket(0)
 	assert.NoError(t, err)
 }
