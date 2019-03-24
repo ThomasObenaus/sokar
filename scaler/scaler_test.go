@@ -154,6 +154,8 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
 	ignoredCounter.EXPECT().Inc()
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
+	mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any())
+
 	ticket := NewScalingTicket(0)
 	scaler.applyScaleTicket(ticket)
 }
@@ -195,6 +197,7 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
 	ignoredCounter.EXPECT().Inc().Times(ticketCounter)
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter).Times(ticketCounter)
+	mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any()).Times(ticketCounter)
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
 		ticket := <-scaler.scaleTicketChan
 		scaler.applyScaleTicket(ticket)

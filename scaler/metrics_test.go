@@ -9,9 +9,10 @@ import (
 )
 
 type MetricsMocks struct {
-	scalingPolicyViolated *mock_metrics.MockCounterVec
-	scalingTicketCount    *mock_metrics.MockCounterVec
-	scaleResultCounter    *mock_metrics.MockCounterVec
+	scalingPolicyViolated  *mock_metrics.MockCounterVec
+	scalingTicketCount     *mock_metrics.MockCounterVec
+	scaleResultCounter     *mock_metrics.MockCounterVec
+	scalingDurationSeconds *mock_metrics.MockHistogram
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -26,15 +27,18 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScalingPolicyViolated := mock_metrics.NewMockCounterVec(mockCtrl)
 	mScalingTicketCount := mock_metrics.NewMockCounterVec(mockCtrl)
 	mScaleResultCounter := mock_metrics.NewMockCounterVec(mockCtrl)
+	mScalingDurationSeconds := mock_metrics.NewMockHistogram(mockCtrl)
 	metrics := Metrics{
-		scalingPolicyViolated: mScalingPolicyViolated,
-		scalingTicketCount:    mScalingTicketCount,
-		scaleResultCounter:    mScaleResultCounter,
+		scalingPolicyViolated:  mScalingPolicyViolated,
+		scalingTicketCount:     mScalingTicketCount,
+		scaleResultCounter:     mScaleResultCounter,
+		scalingDurationSeconds: mScalingDurationSeconds,
 	}
 	mocks := MetricsMocks{
-		scalingPolicyViolated: mScalingPolicyViolated,
-		scalingTicketCount:    mScalingTicketCount,
-		scaleResultCounter:    mScaleResultCounter,
+		scalingPolicyViolated:  mScalingPolicyViolated,
+		scalingTicketCount:     mScalingTicketCount,
+		scaleResultCounter:     mScaleResultCounter,
+		scalingDurationSeconds: mScalingDurationSeconds,
 	}
 	return metrics, mocks
 }
@@ -44,4 +48,5 @@ func Test_NewMetrics(t *testing.T) {
 	assert.NotNil(t, metrics.scalingPolicyViolated)
 	assert.NotNil(t, metrics.scalingTicketCount)
 	assert.NotNil(t, metrics.scaleResultCounter)
+	assert.NotNil(t, metrics.scalingDurationSeconds)
 }
