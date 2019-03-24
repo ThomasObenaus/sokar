@@ -1,7 +1,7 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
-all: build test tools cover finish
+all: tools build test finish
 
 help:
 	@echo "Available make targets:"
@@ -9,63 +9,42 @@ help:
 	@echo "\t- build\t\t\tBuilds the sokar binary."
 	@echo "\t- monitoring.start\tStarts up a prometheus and a grafana instance,"
 	@echo "\t\t\t\tscraping metrics of sokar and providing a dashboard for sokar."
-	@echo "\t- test\t\t\tRuns all unittests."
-	@echo "\t- cover\t\t\tRuns the unittests and generates a coverage report."
-	@echo "\t- cover.upload\t\tUploads the unittest coverage to coveralls"
+	@echo "\t- test\t\t\tRuns all unittests and generates a coverage report."
+	@echo "\t- cover-upload\t\tUploads the unittest coverage to coveralls"
 	@echo "\t\t\t\t(for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly)."
-	@echo "\t- depend.install\tInstall the dependencies."
-	@echo "\t- depend.update\t\tUpdate the installed dependencies."
+	@echo "\t- deps-install\tInstall the dependencies."
+	@echo "\t- deps-update\t\tUpdate the installed dependencies."
 	@echo "\t- tools\t\t\tInstalls needed tools (i.e. mock generators)."
-	@echo "\t- generate.mocks\tGenerates test doubles (mocks)."
+	@echo "\t- gen-mocks\tGenerates test doubles (mocks)."
 
 
 .PHONY: test
-test: generate.mocks
-	@echo "----------------------------------------------------------------------------------"
+test: sep gen-mocks
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./ -v
-
-.PHONY: cover
-cover: 
-	@echo "----------------------------------------------------------------------------------"
-	@echo "--> Run the unit-tests + coverage"
 	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./ -v -covermode=count -coverprofile=coverage.out
 
-cover.upload:
+cover-upload: sep
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
 	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
 	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
 
-#-----------------
-#-- build
-#-----------------
-build:
-	@echo "----------------------------------------------------------------------------------"
+build: sep
 	@echo "--> Build the $(name)"
 	@go build -o $(name) .
 
-#------------------
-#-- dependencies
-#------------------
-depend.update:
-	@echo "----------------------------------------------------------------------------------"
-	@echo "--> updating dependencies from Gopkg.lock"
+deps-update: sep
+	@echo "--> updating dependencies. Trying to find newer versions as they are listed in Gopkg.lock"
 	@dep ensure -update -v
 
-depend.install:
-	@echo "----------------------------------------------------------------------------------"
-	@echo "--> install dependencies as listed in Gopkg.toml"
+deps-install: sep
+	@echo "--> install dependencies as listed in Gopkg.toml and Gopkg.lock"
 	@dep ensure -v
 
-#------------------
-#-- Tools
-#------------------
-tools:
+tools: sep
 	@go get golang.org/x/tools/cmd/cover
 	@go get github.com/mattn/goveralls
 
-generate.mocks:
-	@echo "----------------------------------------------------------------------------------"
+gen-mocks: sep
 	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
@@ -78,24 +57,23 @@ generate.mocks:
 	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
 	@mockgen -source=runnable.go -destination test/mock_runnable.go
 
-vendor: depend.install depend.update
-
-run: build
-	@echo "----------------------------------------------------------------------------------"
+run: sep build
 	@echo "--> Run ${name}"
 	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://${LOCAL_IP}:4646"
 	# --oneshot
 
-monitoring.start:
-	@echo "----------------------------------------------------------------------------------"
+monitoring.start: sep
 	@echo "--> Startup (+build) monitoring components"
 	@cd examples/monitoring && docker-compose up --build -d
 	@xdg-open http://localhost:3000
 
-monitoring.stop:
-	@echo "----------------------------------------------------------------------------------"
+monitoring.stop: sep
 	@echo "--> Stop monitoring components"
 	@cd examples/monitoring && docker-compose down
+
+
+sep:
+	@echo "----------------------------------------------------------------------------------"
 
 finish:
 	@echo "=================================================================================="
