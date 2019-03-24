@@ -46,7 +46,7 @@ func NewMetrics() Metrics {
 		Subsystem: "sca",
 		Name:      "scaling_duration_seconds",
 		Help:      "Holds the duration of the scaling actions so far. This is the time it took to apply a scaling (execute the deployment).",
-		Buckets:   []float64{0.5, 1, 2, 5, 10, 20, 30, 50, 100},
+		Buckets:   []float64{0.2, 0.5, 1, 2, 5, 8, 15, 20, 25, 30, 40, 50, 75, 100},
 	})
 
 	return Metrics{

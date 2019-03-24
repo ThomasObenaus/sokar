@@ -120,13 +120,13 @@ func Test_OpenScalingTicket(t *testing.T) {
 
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc().Times(2)
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), scaler.numOpenScalingTickets)
 	assert.Len(t, scaler.scaleTicketChan, 1)
 
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.Error(t, err)
 
@@ -150,7 +150,7 @@ func Test_ApplyScalingTicket(t *testing.T) {
 
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc()
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter)
 	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
 	ignoredCounter.EXPECT().Inc()
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
@@ -178,7 +178,7 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	ticketCounter := int(scaler.maxOpenScalingTickets) + 1
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc().Times(ticketCounter)
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(ticketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(ticketCounter)
 
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
 		err = scaler.openScalingTicket(0)
@@ -187,13 +187,13 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 
 	// open new ticket --> should fail
 	scalingTicketCounter.EXPECT().Inc().Times(1)
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
 	err = scaler.openScalingTicket(0)
 	assert.Error(t, err)
 
 	// apply/ close as many tickets as are open
 	scalingTicketCounter.EXPECT().Inc().Times(ticketCounter)
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter).Times(ticketCounter)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter).Times(ticketCounter)
 	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
 	ignoredCounter.EXPECT().Inc().Times(ticketCounter)
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter).Times(ticketCounter)
@@ -205,7 +205,7 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 
 	// open new ticket --> should NOT fail
 	scalingTicketCounter.EXPECT().Inc().Times(1)
-	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(1)
+	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(1)
 	err = scaler.openScalingTicket(0)
 	assert.NoError(t, err)
 }
