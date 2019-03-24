@@ -3,8 +3,6 @@ package scaler
 import (
 	"fmt"
 	"time"
-
-	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 func (s *Scaler) jobWatcher(cycle time.Duration) {
@@ -44,10 +42,10 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.start()
 	result := s.scaleTo(ticket.desiredCount)
-	ticket.complete(result.State)
+	ticket.complete(result.state)
 	s.numOpenScalingTickets--
 
-	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.State, result.StateDescription, result.NewCount)
+	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.state, result.stateDescription, result.newCount)
 }
 
 // openScalingTicket opens based on the desired count a ScalingTicket
@@ -63,13 +61,13 @@ func (s *Scaler) openScalingTicket(desiredCount uint) error {
 	return nil
 }
 
-func (s *Scaler) scaleTo(desiredCount uint) sokar.ScaleResult {
+func (s *Scaler) scaleTo(desiredCount uint) scaleResult {
 	jobName := s.job.jobName
 	currentCount, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+		return scaleResult{
+			state:            scaleFailed,
+			stateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
 		}
 	}
 

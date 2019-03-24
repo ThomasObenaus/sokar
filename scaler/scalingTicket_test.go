@@ -6,13 +6,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 func TestNewScalingTicket(t *testing.T) {
 	sj := NewScalingTicket(0)
 	assert.WithinDuration(t, time.Now(), sj.issuedAt, time.Millisecond*100)
-	assert.Equal(t, sokar.ScaleNotStarted, sj.state)
+	assert.Equal(t, scaleNotStarted, sj.state)
 	assert.Equal(t, uint(0), sj.desiredCount)
 	assert.Nil(t, sj.startedAt)
 	assert.Nil(t, sj.completedAt)
@@ -23,16 +22,16 @@ func Test_Start(t *testing.T) {
 	sj.start()
 	require.NotNil(t, sj.startedAt)
 	assert.WithinDuration(t, time.Now(), *sj.startedAt, time.Millisecond*100)
-	assert.Equal(t, sokar.ScaleRunning, sj.state)
+	assert.Equal(t, scaleRunning, sj.state)
 	assert.Nil(t, sj.completedAt)
 }
 
 func Test_Complete(t *testing.T) {
 	sj := NewScalingTicket(10)
-	sj.complete(sokar.ScaleDone)
+	sj.complete(scaleDone)
 	require.NotNil(t, sj.completedAt)
 	assert.WithinDuration(t, time.Now(), *sj.completedAt, time.Millisecond*100)
-	assert.Equal(t, sokar.ScaleDone, sj.state)
+	assert.Equal(t, scaleDone, sj.state)
 }
 
 func Test_InProgress(t *testing.T) {
@@ -41,7 +40,7 @@ func Test_InProgress(t *testing.T) {
 	assert.False(t, sj.isInProgress())
 	sj.start()
 	assert.True(t, sj.isInProgress())
-	sj.complete(sokar.ScaleDone)
+	sj.complete(scaleDone)
 	assert.False(t, sj.isInProgress())
 }
 

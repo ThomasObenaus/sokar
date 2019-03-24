@@ -7,7 +7,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/sokar/iface"
 	"github.com/thomasobenaus/sokar/test/scaler"
 )
 
@@ -26,12 +25,12 @@ func TestScale_JobDead(t *testing.T) {
 	// dead job - error
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, fmt.Errorf("internal error"))
 	result := scaler.scale(2, 0)
-	assert.Equal(t, sokar.ScaleFailed, result.State)
+	assert.Equal(t, scaleFailed, result.state)
 
 	// dead job
 	scaTgt.EXPECT().IsJobDead(jobname).Return(true, nil)
 	result = scaler.scale(2, 0)
-	assert.Equal(t, sokar.ScaleIgnored, result.State)
+	assert.Equal(t, scaleIgnored, result.state)
 }
 
 func TestScale_Up(t *testing.T) {
@@ -50,13 +49,13 @@ func TestScale_Up(t *testing.T) {
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
 	result := scaler.scale(2, 0)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - max hit
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
 	result = scaler.scale(6, 0)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.NotEqual(t, scaleFailed, result.state)
 }
 
 func TestScale_Down(t *testing.T) {
@@ -75,13 +74,13 @@ func TestScale_Down(t *testing.T) {
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
 	result := scaler.scale(1, 4)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - min hit
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
 	result = scaler.scale(0, 2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.NotEqual(t, scaleFailed, result.state)
 }
 
 func TestScale_NoScale(t *testing.T) {
@@ -99,7 +98,7 @@ func TestScale_NoScale(t *testing.T) {
 	// scale down
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	result := scaler.scale(2, 2)
-	assert.NotEqual(t, sokar.ScaleFailed, result.State)
+	assert.NotEqual(t, scaleFailed, result.state)
 }
 
 func TestScaleBy_CheckScalingPolicy(t *testing.T) {
