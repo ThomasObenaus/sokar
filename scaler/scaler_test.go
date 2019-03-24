@@ -12,19 +12,19 @@ import (
 )
 
 func Test_New(t *testing.T) {
-
-	cfg := Config{}
-	scaler, err := cfg.New(nil)
-	assert.Error(t, err)
-	assert.Nil(t, scaler)
-
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	scaler, err := cfg.New(nil, metrics)
+	assert.Error(t, err)
+	assert.Nil(t, scaler)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg = Config{}
-	scaler, err = cfg.New(scaTgt)
+	scaler, err = cfg.New(scaTgt, metrics)
 	assert.NoError(t, err)
 	assert.NotNil(t, scaler)
 	assert.NotNil(t, scaler.stopChan)
@@ -36,12 +36,13 @@ func Test_GetCount(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetJobCount("any").Return(uint(10), nil)
 
 	cfg := Config{JobName: "any"}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -58,11 +59,12 @@ func Test_GetCount(t *testing.T) {
 func Test_RunJoinStop(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg := Config{}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -80,11 +82,12 @@ func Test_RunJoinStop(t *testing.T) {
 func Test_OpenScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg := Config{}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -103,13 +106,14 @@ func Test_OpenScalingTicket(t *testing.T) {
 func Test_ApplyScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil)
 	scaTgt.EXPECT().IsJobDead("any").Return(true, nil)
 
 	cfg := Config{JobName: "any"}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -120,13 +124,14 @@ func Test_ApplyScalingTicket(t *testing.T) {
 func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil).MaxTimes(11)
 	scaTgt.EXPECT().IsJobDead("any").Return(true, nil).MaxTimes(11)
 
 	cfg := Config{JobName: "any", MaxOpenScalingTickets: 10}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 

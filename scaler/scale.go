@@ -117,9 +117,11 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) scaleResult {
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, currentCount, newCount)
+		s.metrics.scalingPolicyViolated.WithLabelValues("min").Inc()
 	}
 	if chkResult.maxPolicyViolated {
 		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", max, chkResult.desiredCount, currentCount, newCount)
+		s.metrics.scalingPolicyViolated.WithLabelValues("max").Inc()
 	}
 
 	diff := helper.SubUint(newCount, currentCount)

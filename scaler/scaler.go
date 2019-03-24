@@ -37,6 +37,8 @@ type Scaler struct {
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
 
+	metrics Metrics
+
 	wg sync.WaitGroup
 }
 
@@ -58,7 +60,7 @@ type jobConfig struct {
 
 // New creates a new instance of a scaler using the given
 // ScalingTarget to send scaling events to.
-func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
+func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, error) {
 	if scalingTarget == nil {
 		return nil, fmt.Errorf("Given ScalingTarget is nil")
 	}
@@ -76,6 +78,7 @@ func (cfg Config) New(scalingTarget ScalingTarget) (*Scaler, error) {
 		numOpenScalingTickets: 0,
 		maxOpenScalingTickets: cfg.MaxOpenScalingTickets,
 		scaleTicketChan:       make(chan ScalingTicket, cfg.MaxOpenScalingTickets+1),
+		metrics:               metrics,
 	}, nil
 }
 

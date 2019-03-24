@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/thomasobenaus/sokar/test/metrics"
 	"github.com/thomasobenaus/sokar/test/scaler"
 )
 
@@ -14,12 +15,13 @@ func TestScale_JobDead(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	jobname := "any"
 	cfg := Config{JobName: jobname}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
 	// dead job - error
@@ -37,12 +39,13 @@ func TestScale_Up(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	jobname := "any"
 	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
 	// scale up
@@ -52,6 +55,9 @@ func TestScale_Up(t *testing.T) {
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - max hit
+	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
+	polViolatedCounter.EXPECT().Inc()
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("max").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
 	result = scaler.scale(6, 0)
@@ -62,12 +68,13 @@ func TestScale_Down(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	jobname := "any"
 	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
 	// scale down
@@ -77,6 +84,9 @@ func TestScale_Down(t *testing.T) {
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - min hit
+	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
+	polViolatedCounter.EXPECT().Inc()
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("min").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
 	result = scaler.scale(0, 2)
@@ -87,12 +97,13 @@ func TestScale_NoScale(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	jobname := "any"
 	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
-	scaler, err := cfg.New(scaTgt)
+	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
 	// scale down
