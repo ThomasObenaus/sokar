@@ -38,8 +38,6 @@ func Test_HandleScaleEvent(t *testing.T) {
 	metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor))
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
-	scalerIF.EXPECT().GetCount().Return(scaleTo, nil)
-	metricMocks.postScaleJobCount.EXPECT().Set(float64(scaleTo))
 
 	sokar.handleScaleEvent(event)
 }
@@ -79,8 +77,6 @@ func Test_HandleScaleEvent_Fail(t *testing.T) {
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("ERROR")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
-		scalerIF.EXPECT().GetCount().Return(scaleTo, nil),
-		metricMocks.postScaleJobCount.EXPECT().Set(float64(scaleTo)),
 	)
 	sokar.handleScaleEvent(event)
 }

@@ -13,7 +13,6 @@ type MetricsMocks struct {
 	failedScalingTotal *mock_metrics.MockCounter
 	preScaleJobCount   *mock_metrics.MockGauge
 	plannedJobCount    *mock_metrics.MockGauge
-	postScaleJobCount  *mock_metrics.MockGauge
 	scaleFactor        *mock_metrics.MockGauge
 }
 
@@ -30,14 +29,12 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mFailedScalingTotal := mock_metrics.NewMockCounter(mockCtrl)
 	mPlannedJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mPreScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
-	mPostScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	metrics := Metrics{
 		scaleEventsTotal:   mScaleEventsTotal,
 		failedScalingTotal: mFailedScalingTotal,
 		plannedJobCount:    mPlannedJobCount,
 		preScaleJobCount:   mPreScaleJobCount,
-		postScaleJobCount:  mPostScaleJobCount,
 		scaleFactor:        mScaleFactor,
 	}
 	mocks := MetricsMocks{
@@ -45,7 +42,6 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 		failedScalingTotal: mFailedScalingTotal,
 		preScaleJobCount:   mPreScaleJobCount,
 		plannedJobCount:    mPlannedJobCount,
-		postScaleJobCount:  mPostScaleJobCount,
 		scaleFactor:        mScaleFactor,
 	}
 	return metrics, mocks
@@ -57,6 +53,5 @@ func Test_NewMetrics(t *testing.T) {
 	assert.NotNil(t, metrics.failedScalingTotal)
 	assert.NotNil(t, metrics.preScaleJobCount)
 	assert.NotNil(t, metrics.plannedJobCount)
-	assert.NotNil(t, metrics.postScaleJobCount)
 	assert.NotNil(t, metrics.scaleFactor)
 }
