@@ -4,8 +4,32 @@ import (
 	"fmt"
 
 	"github.com/thomasobenaus/sokar/helper"
-	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
+
+// scaleState represents the state of a scaling
+type scaleState string
+
+const (
+	// scaleUnknown means the scale process was completed successfully
+	scaleUnknown scaleState = "unknown"
+	// scaleDone means the scale process was completed successfully
+	scaleDone scaleState = "done"
+	// scaleRunning means the scale process is in progress
+	scaleRunning scaleState = "running"
+	// scaleFailed means the scale process was completed but failed
+	scaleFailed scaleState = "failed"
+	// scaleIgnored means the scale process was ignored (eventually not needed)
+	scaleIgnored scaleState = "ignored"
+	// scaleNotStarted means the scale process was not started yet
+	scaleNotStarted scaleState = "not started"
+)
+
+// ScaleResult is created after scaling was done and contains the result
+type scaleResult struct {
+	state            scaleState
+	stateDescription string
+	newCount         uint
+}
 
 type policyCheckResult struct {
 	validCount        uint
@@ -45,17 +69,17 @@ func checkScalingPolicy(desiredCount uint, min uint, max uint) policyCheckResult
 	return result
 }
 
-// trueIfNil returns a ScaleResult filled in with an appropriate error message in case the given scaler is nil
-func trueIfNil(s *Scaler) (result sokar.ScaleResult, ok bool) {
+// trueIfNil returns a scaleResult filled in with an appropriate error message in case the given scaler is nil
+func trueIfNil(s *Scaler) (result scaleResult, ok bool) {
 	ok = false
-	result = sokar.ScaleResult{State: sokar.ScaleUnknown}
+	result = scaleResult{state: scaleUnknown}
 
 	if s == nil {
 		ok = true
-		result = sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: "Scaler is nil",
-			NewCount:         0,
+		result = scaleResult{
+			state:            scaleFailed,
+			stateDescription: "Scaler is nil",
+			newCount:         0,
 		}
 	}
 	return result, ok
@@ -63,7 +87,7 @@ func trueIfNil(s *Scaler) (result sokar.ScaleResult, ok bool) {
 
 // scale scales the job from currentCount to desiredCount.
 // Internally it is checked if a scaling is needed and if the scaling policy is valid.
-func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
+func (s *Scaler) scale(desiredCount uint, currentCount uint) scaleResult {
 	if r, ok := trueIfNil(s); ok {
 		return r
 	}
@@ -76,16 +100,16 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 
 	dead, err := s.scalingTarget.IsJobDead(jobName)
 	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error obtaining if job is dead: %s.", err.Error()),
+		return scaleResult{
+			state:            scaleFailed,
+			stateDescription: fmt.Sprintf("Error obtaining if job is dead: %s.", err.Error()),
 		}
 	}
 
 	if dead {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleIgnored,
-			StateDescription: fmt.Sprintf("Job '%s' is dead. Can't scale", jobName),
+		return scaleResult{
+			state:            scaleIgnored,
+			stateDescription: fmt.Sprintf("Job '%s' is dead. Can't scale", jobName),
 		}
 	}
 
@@ -103,10 +127,10 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 
 	if !scaleNeeded {
 		s.logger.Info().Str("job", jobName).Msg("No scaling needed/ possible.")
-		return sokar.ScaleResult{
-			State:            sokar.ScaleIgnored,
-			StateDescription: "No scaling needed/ possible.",
-			NewCount:         newCount,
+		return scaleResult{
+			state:            scaleIgnored,
+			stateDescription: "No scaling needed/ possible.",
+			newCount:         newCount,
 		}
 	}
 
@@ -116,15 +140,15 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) sokar.ScaleResult {
 	// Set the new job count
 	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
 	if err != nil {
-		return sokar.ScaleResult{
-			State:            sokar.ScaleFailed,
-			StateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
+		return scaleResult{
+			state:            scaleFailed,
+			stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
 		}
 	}
 
-	return sokar.ScaleResult{
-		State:            sokar.ScaleDone,
-		StateDescription: "Scaling successfully done.",
-		NewCount:         newCount,
+	return scaleResult{
+		state:            scaleDone,
+		stateDescription: "Scaling successfully done.",
+		newCount:         newCount,
 	}
 }

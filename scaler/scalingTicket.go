@@ -3,8 +3,6 @@ package scaler
 import (
 	"fmt"
 	"time"
-
-	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // ScalingTicket represents a ticket/ job to express the whish to scale
@@ -21,7 +19,7 @@ type ScalingTicket struct {
 	completedAt *time.Time
 
 	desiredCount uint
-	state        sokar.ScaleState
+	state        scaleState
 }
 
 // NewScalingTicket creates and opens/ issues a new ScalingTicket
@@ -31,21 +29,21 @@ func NewScalingTicket(desiredCount uint) ScalingTicket {
 		startedAt:    nil,
 		completedAt:  nil,
 		desiredCount: desiredCount,
-		state:        sokar.ScaleNotStarted,
+		state:        scaleNotStarted,
 	}
 }
 
 func (st *ScalingTicket) isInProgress() bool {
-	return st.state == sokar.ScaleRunning
+	return st.state == scaleRunning
 }
 
 func (st *ScalingTicket) start() {
 	now := time.Now()
 	st.startedAt = &now
-	st.state = sokar.ScaleRunning
+	st.state = scaleRunning
 }
 
-func (st *ScalingTicket) complete(state sokar.ScaleState) {
+func (st *ScalingTicket) complete(state scaleState) {
 	now := time.Now()
 	st.completedAt = &now
 	st.state = state
