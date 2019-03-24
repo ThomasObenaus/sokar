@@ -36,8 +36,10 @@ func Test_HandleScaleEvent(t *testing.T) {
 	)
 	metricMocks.scaleEventsTotal.EXPECT().Inc().Times(1)
 	metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor))
-	metricMocks.currentCount.EXPECT().Set(float64(currentScale))
-	metricMocks.plannedCount.EXPECT().Set(float64(scaleTo))
+	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
+	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	scalerIF.EXPECT().GetCount().Return(scaleTo, nil)
+	metricMocks.postScaleJobCount.EXPECT().Set(float64(scaleTo))
 
 	sokar.handleScaleEvent(event)
 }
@@ -72,11 +74,13 @@ func Test_HandleScaleEvent_Fail(t *testing.T) {
 		metricMocks.scaleEventsTotal.EXPECT().Inc(),
 		metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor)),
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		metricMocks.currentCount.EXPECT().Set(float64(currentScale)),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
-		metricMocks.plannedCount.EXPECT().Set(float64(scaleTo)),
+		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("ERROR")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
+		scalerIF.EXPECT().GetCount().Return(scaleTo, nil),
+		metricMocks.postScaleJobCount.EXPECT().Set(float64(scaleTo)),
 	)
 	sokar.handleScaleEvent(event)
 }
