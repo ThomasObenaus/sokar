@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 1,
-  "iteration": 1552860353084,
+  "iteration": 1553431551415,
   "links": [],
   "panels": [
     {
@@ -68,18 +68,19 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "sokar_cap_planned_count",
+          "expr": "sokar_cap_pre_scale_job_count",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "legendFormat": "PreScale Count",
+          "refId": "C"
+        },
+        {
+          "expr": "sokar_cap_planned_job_count",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Planned Count",
           "refId": "A"
-        },
-        {
-          "expr": "sokar_cap_current_count",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "Current Count",
-          "refId": "C"
         },
         {
           "expr": "sokar_cap_scale_factor",

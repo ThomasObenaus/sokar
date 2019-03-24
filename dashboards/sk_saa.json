@@ -15,17 +15,17 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 2,
-  "id": 1,
-  "iteration": 1553431551415,
+  "id": 2,
+  "iteration": 1552863818164,
   "links": [],
   "panels": [
     {
       "aliasColors": {},
-      "bars": false,
+      "bars": true,
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "description": "Shows the relation between the currently deployed and the planned number of instances.\n\nNotice: Current and Planned Count are measured **before** the scale action took place. Thus the current count reflects the state without the applied desired/ planned count.",
+      "description": "Shows the UP/DOWN ScaleEvents triggered by the SAA.",
       "fill": 1,
       "gridPos": {
         "h": 8,
@@ -33,7 +33,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 8,
+      "id": 6,
       "legend": {
         "avg": false,
         "current": false,
@@ -42,6 +42,104 @@
         "show": true,
         "total": false,
         "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "paceLength": 10,
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+        {
+          "alias": "DOWN",
+          "color": "#5794F2"
+        },
+        {
+          "alias": "UP",
+          "color": "#F2495C"
+        }
+      ],
+      "stack": false,
+      "steppedLine": true,
+      "targets": [
+        {
+          "expr": "increase(sokar_saa_scale_event_counter[$interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{direction}}",
+          "refId": "C"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Scale Events",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "description": "Shows the current ScaleCounter and the ScaleFactor that is the according gradient.",
+      "fill": 1,
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "legend": {
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
       },
       "lines": true,
       "linewidth": 1,
@@ -54,13 +152,10 @@
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "/.*Scale Factor.*/",
-          "bars": false,
+          "alias": "ScaleFactor",
           "color": "rgb(255, 255, 255)",
           "dashes": true,
-          "lines": true,
           "linewidth": 2,
-          "stack": false,
           "yaxis": 2
         }
       ],
@@ -68,26 +163,18 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "sokar_cap_pre_scale_job_count",
-          "format": "time_series",
-          "hide": false,
-          "intervalFactor": 1,
-          "legendFormat": "PreScale Count",
-          "refId": "C"
-        },
-        {
-          "expr": "sokar_cap_planned_job_count",
+          "expr": "sokar_saa_scale_counter",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "Planned Count",
+          "legendFormat": "ScaleCounter",
           "refId": "A"
         },
         {
-          "expr": "sokar_cap_scale_factor",
+          "expr": "sokar_saa_scale_factor",
           "format": "time_series",
-          "hide": false,
+          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Scale Factor",
+          "legendFormat": "ScaleFactor",
           "refId": "B"
         }
       ],
@@ -95,7 +182,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Current vs Planned Count ",
+      "title": "ScaleCounter",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -113,7 +200,7 @@
         {
           "decimals": null,
           "format": "short",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -139,26 +226,30 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "description": "For each ScaleEvent sokar tries to scale the target.\n\nThis panel shows the number of failed and successful scale actions. A failed scale action can be caused by the fact that the scaler rejected the request to scale since the min/max bound of the target count is already reached.\n",
+      "decimals": 0,
+      "description": "Shows the number of currently active Up/Down alerts.",
       "fill": 1,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 18
       },
-      "id": 6,
+      "id": 4,
       "legend": {
+        "alignAsTable": true,
         "avg": false,
-        "current": false,
-        "max": false,
+        "current": true,
+        "max": true,
         "min": false,
+        "rightSide": true,
         "show": true,
-        "total": false,
-        "values": false
+        "sideWidth": null,
+        "total": true,
+        "values": true
       },
-      "lines": false,
-      "linewidth": 2,
+      "lines": true,
+      "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
       "paceLength": 10,
@@ -168,32 +259,24 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "stack": true,
-      "steppedLine": true,
+      "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(sokar_scale_events_total[$interval]) - increase(sokar_failed_scaling_total[$interval])",
+          "expr": "sokar_saa_alerts_total",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "Successful Scale Actions",
+          "legendFormat": "{{direction}}",
           "refId": "A"
-        },
-        {
-          "expr": "increase(sokar_failed_scaling_total[$interval])",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "Failed Scale Actions",
-          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Scale Actions (in last $interval)",
+      "title": "ScaleAlerts",
       "tooltip": {
         "shared": true,
-        "sort": 2,
+        "sort": 0,
         "value_type": "individual"
       },
       "type": "graph",
@@ -211,7 +294,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -248,6 +331,16 @@
         "name": "interval",
         "options": [
           {
+            "selected": false,
+            "text": "10s",
+            "value": "10s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
             "selected": true,
             "text": "1m",
             "value": "1m"
@@ -276,24 +369,9 @@
             "selected": false,
             "text": "1h",
             "value": "1h"
-          },
-          {
-            "selected": false,
-            "text": "2h",
-            "value": "2h"
-          },
-          {
-            "selected": false,
-            "text": "5h",
-            "value": "5h"
-          },
-          {
-            "selected": false,
-            "text": "10h",
-            "value": "10h"
           }
         ],
-        "query": "1m,2m,5m,10m,30m,1h,2h,5h,10h",
+        "query": "10s,30s,1m,2m,5m,10m,30m,1h",
         "refresh": 2,
         "skipUrlSync": false,
         "type": "interval"
@@ -320,7 +398,7 @@
     "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "",
-  "title": "Sokar",
-  "uid": "-K3Cnsjik",
+  "title": "ScaleAlertAggregator",
+  "uid": "-K3Cnsjikw",
   "version": 1
 }
