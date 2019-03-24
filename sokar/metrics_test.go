@@ -11,8 +11,9 @@ import (
 type MetricsMocks struct {
 	scaleEventsTotal   *mock_metrics.MockCounter
 	failedScalingTotal *mock_metrics.MockCounter
-	plannedCount       *mock_metrics.MockGauge
-	currentCount       *mock_metrics.MockGauge
+	preScaleJobCount   *mock_metrics.MockGauge
+	plannedJobCount    *mock_metrics.MockGauge
+	postScaleJobCount  *mock_metrics.MockGauge
 	scaleFactor        *mock_metrics.MockGauge
 }
 
@@ -27,21 +28,24 @@ type MetricsMocks struct {
 func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScaleEventsTotal := mock_metrics.NewMockCounter(mockCtrl)
 	mFailedScalingTotal := mock_metrics.NewMockCounter(mockCtrl)
-	mPlannedCount := mock_metrics.NewMockGauge(mockCtrl)
-	mCurrentCount := mock_metrics.NewMockGauge(mockCtrl)
+	mPlannedJobCount := mock_metrics.NewMockGauge(mockCtrl)
+	mPreScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
+	mPostScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	metrics := Metrics{
 		scaleEventsTotal:   mScaleEventsTotal,
 		failedScalingTotal: mFailedScalingTotal,
-		plannedCount:       mPlannedCount,
-		currentCount:       mCurrentCount,
+		plannedJobCount:    mPlannedJobCount,
+		preScaleJobCount:   mPreScaleJobCount,
+		postScaleJobCount:  mPostScaleJobCount,
 		scaleFactor:        mScaleFactor,
 	}
 	mocks := MetricsMocks{
 		scaleEventsTotal:   mScaleEventsTotal,
 		failedScalingTotal: mFailedScalingTotal,
-		plannedCount:       mPlannedCount,
-		currentCount:       mCurrentCount,
+		preScaleJobCount:   mPreScaleJobCount,
+		plannedJobCount:    mPlannedJobCount,
+		postScaleJobCount:  mPostScaleJobCount,
 		scaleFactor:        mScaleFactor,
 	}
 	return metrics, mocks
@@ -51,7 +55,8 @@ func Test_NewMetrics(t *testing.T) {
 	metrics := NewMetrics()
 	assert.NotNil(t, metrics.scaleEventsTotal)
 	assert.NotNil(t, metrics.failedScalingTotal)
-	assert.NotNil(t, metrics.plannedCount)
-	assert.NotNil(t, metrics.currentCount)
+	assert.NotNil(t, metrics.preScaleJobCount)
+	assert.NotNil(t, metrics.plannedJobCount)
+	assert.NotNil(t, metrics.postScaleJobCount)
 	assert.NotNil(t, metrics.scaleFactor)
 }
