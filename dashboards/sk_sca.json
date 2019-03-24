@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1553459834710,
+  "iteration": 1553459982510,
   "links": [],
   "panels": [
     {
@@ -125,7 +125,7 @@
       "color": {
         "cardColor": "#b4ff00",
         "colorScale": "sqrt",
-        "colorScheme": "interpolateOranges",
+        "colorScheme": "interpolateSpectral",
         "exponent": 0.2,
         "max": null,
         "mode": "opacity"
@@ -286,7 +286,7 @@
       }
     }
   ],
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 18,
   "style": "dark",
   "tags": ["sokar"],
@@ -353,7 +353,7 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
