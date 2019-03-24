@@ -221,7 +221,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 		Logger:   logF.NewNamedLogger("sokar.scaler"),
 	}
 
-	scaler, err := scaCfg.New(nomad)
+	scaler, err := scaCfg.New(nomad, scaler.NewMetrics())
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s", err)
 	}
