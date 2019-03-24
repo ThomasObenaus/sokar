@@ -45,6 +45,11 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.complete(result.state)
 	s.numOpenScalingTickets--
 
+	s.metrics.scalingPolicyViolated.WithLabelValues("applied").Inc()
+
+	// TODO: Add metric "Scaling duration"
+	// TODO: Add metric "Scaling result success/failed/ignored"
+
 	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.state, result.stateDescription, result.newCount)
 }
 
@@ -52,10 +57,13 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 func (s *Scaler) openScalingTicket(desiredCount uint) error {
 
 	if s.numOpenScalingTickets > s.maxOpenScalingTickets {
+		s.metrics.scalingPolicyViolated.WithLabelValues("rejected").Inc()
 		msg := fmt.Sprintf("Ticket rejected since currently a %d scaling tickets are open and only %d are allowed.", s.numOpenScalingTickets, s.maxOpenScalingTickets)
 		s.logger.Debug().Msg(msg)
 		return fmt.Errorf(msg)
 	}
+	s.metrics.scalingPolicyViolated.WithLabelValues("added").Inc()
+	// TODO: Add metric "open scaling tickets"
 	s.numOpenScalingTickets++
 	s.scaleTicketChan <- NewScalingTicket(desiredCount)
 	return nil

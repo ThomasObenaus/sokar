@@ -10,6 +10,7 @@ import (
 
 type MetricsMocks struct {
 	scalingPolicyViolated *mock_metrics.MockCounterVec
+	scalingTicketCount    *mock_metrics.MockCounterVec
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -22,11 +23,14 @@ type MetricsMocks struct {
 // use metrics...
 func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScalingPolicyViolated := mock_metrics.NewMockCounterVec(mockCtrl)
+	mScalingTicketCount := mock_metrics.NewMockCounterVec(mockCtrl)
 	metrics := Metrics{
 		scalingPolicyViolated: mScalingPolicyViolated,
+		scalingTicketCount:    mScalingTicketCount,
 	}
 	mocks := MetricsMocks{
 		scalingPolicyViolated: mScalingPolicyViolated,
+		scalingTicketCount:    mScalingTicketCount,
 	}
 	return metrics, mocks
 }
@@ -34,4 +38,5 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 func Test_NewMetrics(t *testing.T) {
 	metrics := NewMetrics()
 	assert.NotNil(t, metrics.scalingPolicyViolated)
+	assert.NotNil(t, metrics.scalingTicketCount)
 }
