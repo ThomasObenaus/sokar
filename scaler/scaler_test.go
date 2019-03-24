@@ -80,6 +80,32 @@ func Test_RunJoinStop(t *testing.T) {
 	scaler.Join()
 }
 
+func Test_UpdateScaleResultMetric(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	scaleResultCounter := mock_metrics.NewMockCounterVec(mockCtrl)
+
+	otherCounter := mock_metrics.NewMockCounter(mockCtrl)
+	otherCounter.EXPECT().Inc()
+	scaleResultCounter.EXPECT().WithLabelValues("other").Return(otherCounter)
+	updateScaleResultMetric(scaleResult{}, scaleResultCounter)
+
+	failedCounter := mock_metrics.NewMockCounter(mockCtrl)
+	failedCounter.EXPECT().Inc()
+	scaleResultCounter.EXPECT().WithLabelValues("failed").Return(failedCounter)
+	updateScaleResultMetric(scaleResult{state: scaleFailed}, scaleResultCounter)
+
+	doneCounter := mock_metrics.NewMockCounter(mockCtrl)
+	doneCounter.EXPECT().Inc()
+	scaleResultCounter.EXPECT().WithLabelValues("done").Return(doneCounter)
+	updateScaleResultMetric(scaleResult{state: scaleDone}, scaleResultCounter)
+
+	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
+	ignoredCounter.EXPECT().Inc()
+	scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
+	updateScaleResultMetric(scaleResult{state: scaleIgnored}, scaleResultCounter)
+}
+
 func Test_OpenScalingTicket(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -125,6 +151,9 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc()
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter)
+	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
+	ignoredCounter.EXPECT().Inc()
+	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
 	ticket := NewScalingTicket(0)
 	scaler.applyScaleTicket(ticket)
 }
@@ -163,6 +192,9 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	// apply/ close as many tickets as are open
 	scalingTicketCounter.EXPECT().Inc().Times(ticketCounter)
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter).Times(ticketCounter)
+	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
+	ignoredCounter.EXPECT().Inc().Times(ticketCounter)
+	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter).Times(ticketCounter)
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
 		ticket := <-scaler.scaleTicketChan
 		scaler.applyScaleTicket(ticket)

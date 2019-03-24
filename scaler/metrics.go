@@ -9,6 +9,7 @@ import (
 type Metrics struct {
 	scalingPolicyViolated m.CounterVec
 	scalingTicketCount    m.CounterVec
+	scaleResultCounter    m.CounterVec
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -30,8 +31,17 @@ func NewMetrics() Metrics {
 		Help:      "Counts the number of added, rejected and applied scaling tickets.",
 	}, ticketAction)
 
+	resultType := []string{"result"}
+	scaleResultCounter := m.NewWrappedCounterVec(prometheus.CounterOpts{
+		Namespace: "sokar",
+		Subsystem: "sca",
+		Name:      "scale_result_counter",
+		Help:      "Counts the result types of a scaling action (success, failed, ignored).",
+	}, resultType)
+
 	return Metrics{
 		scalingPolicyViolated: scalingPolicyViolated,
 		scalingTicketCount:    scalingTicketCount,
+		scaleResultCounter:    scaleResultCounter,
 	}
 }

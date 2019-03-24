@@ -3,6 +3,8 @@ package scaler
 import (
 	"fmt"
 	"time"
+
+	m "github.com/thomasobenaus/sokar/metrics"
 )
 
 func (s *Scaler) jobWatcher(cycle time.Duration) {
@@ -48,9 +50,27 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	s.metrics.scalingPolicyViolated.WithLabelValues("applied").Inc()
 
 	// TODO: Add metric "Scaling duration"
-	// TODO: Add metric "Scaling result success/failed/ignored"
+	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
 	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.state, result.stateDescription, result.newCount)
+}
+
+func updateScaleResultMetric(result scaleResult, scaleResultCounter m.CounterVec) {
+
+	switch result.state {
+	case scaleFailed:
+		scaleResultCounter.WithLabelValues("failed").Inc()
+		break
+	case scaleDone:
+		scaleResultCounter.WithLabelValues("done").Inc()
+		break
+	case scaleIgnored:
+		scaleResultCounter.WithLabelValues("ignored").Inc()
+		break
+	default:
+		scaleResultCounter.WithLabelValues("other").Inc()
+		break
+	}
 }
 
 // openScalingTicket opens based on the desired count a ScalingTicket
@@ -62,6 +82,7 @@ func (s *Scaler) openScalingTicket(desiredCount uint) error {
 		s.logger.Debug().Msg(msg)
 		return fmt.Errorf(msg)
 	}
+
 	s.metrics.scalingPolicyViolated.WithLabelValues("added").Inc()
 	// TODO: Add metric "open scaling tickets"
 	s.numOpenScalingTickets++
