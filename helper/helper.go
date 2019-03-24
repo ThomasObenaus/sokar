@@ -64,3 +64,13 @@ func Hash(s string) uint32 {
 
 	return h.Sum32()
 }
+
+// Must is a helper that checks if a error returned by a function is nil
+// in this case Must will end the program with a fatal printing out the error.
+// If the error is nil the result of the function will be returned.
+func Must(v interface{}, err error) interface{} {
+	if err != nil {
+		panic(err.Error())
+	}
+	return v
+}

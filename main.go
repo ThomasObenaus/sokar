@@ -12,6 +12,7 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/config"
+	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
@@ -25,16 +26,10 @@ import (
 func main() {
 
 	// read config
-	cfg, err := cliAndConfig(os.Args)
-	if err != nil {
-		log.Fatalf("%s", err.Error())
-	}
+	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 
 	// set up logging
-	loggingFactory, err := setupLogging(cfg)
-	if err != nil {
-		log.Fatalf("%s", err.Error())
-	}
+	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
 
 	logger := loggingFactory.NewNamedLogger("sokar")
 	logger.Info().Msg("Connecting components and setting up sokar")
@@ -43,19 +38,13 @@ func main() {
 	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
 
 	logger.Info().Msg("2. Setup: ScaleAlertEmitters")
-	scaleAlertEmitters, err := setupScaleAlertEmitters(api, loggingFactory)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed creating scale alert emitters.")
-	}
+	scaleAlertEmitters := helper.Must(setupScaleAlertEmitters(api, loggingFactory)).([]scaleAlertAggregator.ScaleAlertEmitter)
 
 	logger.Info().Msg("3. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
 	logger.Info().Msg("4. Setup: Scaler")
-	scaler, err := setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed setting up the scaler")
-	}
+	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
 	capaCfg := capacityPlanner.Config{
@@ -64,11 +53,7 @@ func main() {
 	capaPlanner := capaCfg.New()
 
 	logger.Info().Msg("6. Setup: Sokar")
-	sokarInst, err := setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)
-
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed creating sokar.")
-	}
+	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)).(*sokar.Sokar)
 
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
