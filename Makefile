@@ -1,13 +1,13 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
-all: tools build test finish
+all: tools test build finish
 
 help:
 	@echo "Available make targets:"
 	@echo "\t- run\t\t\tBuilds + runs sokar locally."
 	@echo "\t- build\t\t\tBuilds the sokar binary."
-	@echo "\t- monitoring.start\tStarts up a prometheus and a grafana instance,"
+	@echo "\t- monitoring.up\tStarts up a prometheus and a grafana instance,"
 	@echo "\t\t\t\tscraping metrics of sokar and providing a dashboard for sokar."
 	@echo "\t- test\t\t\tRuns all unittests and generates a coverage report."
 	@echo "\t- cover-upload\t\tUploads the unittest coverage to coveralls"
@@ -41,6 +41,7 @@ deps-install: sep
 	@dep ensure -v
 
 tools: sep
+	@echo "--> Install needed tools."
 	@go get golang.org/x/tools/cmd/cover
 	@go get github.com/mattn/goveralls
 
@@ -60,17 +61,12 @@ gen-mocks: sep
 run: sep build
 	@echo "--> Run ${name}"
 	./${name} --config-file="examples/config/full.yaml" --nomad-server-address="http://${LOCAL_IP}:4646"
-	# --oneshot
 
-monitoring.start: sep
-	@echo "--> Startup (+build) monitoring components"
-	@cd examples/monitoring && docker-compose up --build -d
-	@xdg-open http://localhost:3000
+monitoring.up:
+	make -C examples/monitoring up
 
-monitoring.stop: sep
-	@echo "--> Stop monitoring components"
-	@cd examples/monitoring && docker-compose down
-
+monitoring.down:
+	make -C examples/monitoring down
 
 sep:
 	@echo "----------------------------------------------------------------------------------"
