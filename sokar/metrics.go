@@ -12,7 +12,6 @@ type Metrics struct {
 	failedScalingTotal m.Counter
 	preScaleJobCount   m.Gauge
 	plannedJobCount    m.Gauge
-	postScaleJobCount  m.Gauge
 	scaleFactor        m.Gauge
 }
 
@@ -45,13 +44,6 @@ func NewMetrics() Metrics {
 		Help:      "The count planned by the CapacityPlanner for the current scale action.",
 	})
 
-	postScaleJobCount := promauto.NewGauge(prometheus.GaugeOpts{
-		Namespace: "sokar",
-		Subsystem: "cap",
-		Name:      "post_scale_job_count",
-		Help:      "The job count after the scaling action.",
-	})
-
 	scaleFactor := promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: "sokar",
 		Subsystem: "cap",
@@ -64,7 +56,6 @@ func NewMetrics() Metrics {
 		failedScalingTotal: failedScalingTotal,
 		preScaleJobCount:   preScaleJobCount,
 		plannedJobCount:    plannedJobCount,
-		postScaleJobCount:  postScaleJobCount,
 		scaleFactor:        scaleFactor,
 	}
 }

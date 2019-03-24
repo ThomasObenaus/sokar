@@ -68,8 +68,9 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "sokar_cap_pre_scale_count",
+          "expr": "sokar_cap_pre_scale_job_count",
           "format": "time_series",
+          "hide": false,
           "intervalFactor": 1,
           "legendFormat": "PreScale Count",
           "refId": "C"
@@ -80,13 +81,6 @@
           "intervalFactor": 1,
           "legendFormat": "Planned Count",
           "refId": "A"
-        },
-        {
-          "expr": "sokar_cap_post_scale_job_count",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "PostScale Count",
-          "refId": "D"
         },
         {
           "expr": "sokar_cap_scale_factor",

@@ -45,13 +45,5 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 		sk.metrics.failedScalingTotal.Inc()
 		sk.logger.Error().Err(err).Msg("Failed to scale.")
 	}
-
-	postScaleJobCount, err := sk.scaler.GetCount()
-	if err != nil {
-		sk.logger.Error().Err(err).Msg("Failed to obtain current count.")
-		return
-	}
-	sk.metrics.postScaleJobCount.Set(float64(postScaleJobCount))
-
-	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Uint("postScaleCnt", postScaleJobCount).Msg("Scaling done.")
+	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Msg("Scaling done.")
 }
