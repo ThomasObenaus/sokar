@@ -2,14 +2,16 @@ package scaler
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	m "github.com/thomasobenaus/sokar/metrics"
 )
 
 // Metrics represents the collection of metrics internally set by scaler.
 type Metrics struct {
-	scalingPolicyViolated m.CounterVec
-	scalingTicketCount    m.CounterVec
-	scaleResultCounter    m.CounterVec
+	scalingPolicyViolated  m.CounterVec
+	scalingTicketCount     m.CounterVec
+	scaleResultCounter     m.CounterVec
+	scalingDurationSeconds m.Histogram
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -39,9 +41,18 @@ func NewMetrics() Metrics {
 		Help:      "Counts the result types of a scaling action (success, failed, ignored).",
 	}, resultType)
 
+	scalingDurationSeconds := promauto.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "sokar",
+		Subsystem: "sca",
+		Name:      "scaling_duration_seconds",
+		Help:      "Holds the duration of the scaling actions so far. This is the time it took to apply a scaling (execute the deployment).",
+		Buckets:   []float64{0.5, 1, 2, 5, 10, 20, 30, 50, 100},
+	})
+
 	return Metrics{
-		scalingPolicyViolated: scalingPolicyViolated,
-		scalingTicketCount:    scalingTicketCount,
-		scaleResultCounter:    scaleResultCounter,
+		scalingPolicyViolated:  scalingPolicyViolated,
+		scalingTicketCount:     scalingTicketCount,
+		scaleResultCounter:     scaleResultCounter,
+		scalingDurationSeconds: scalingDurationSeconds,
 	}
 }

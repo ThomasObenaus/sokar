@@ -21,3 +21,8 @@ type GaugeVec interface {
 type CounterVec interface {
 	WithLabelValues(lvs ...string) Counter
 }
+
+// Histogram represents a histogram metric
+type Histogram interface {
+	Observe(float64)
+}

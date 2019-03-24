@@ -173,3 +173,36 @@ func (m *MockCounterVec) WithLabelValues(lvs ...string) metrics.Counter {
 func (mr *MockCounterVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockCounterVec)(nil).WithLabelValues), lvs...)
 }
+
+// MockHistogram is a mock of Histogram interface
+type MockHistogram struct {
+	ctrl     *gomock.Controller
+	recorder *MockHistogramMockRecorder
+}
+
+// MockHistogramMockRecorder is the mock recorder for MockHistogram
+type MockHistogramMockRecorder struct {
+	mock *MockHistogram
+}
+
+// NewMockHistogram creates a new mock instance
+func NewMockHistogram(ctrl *gomock.Controller) *MockHistogram {
+	mock := &MockHistogram{ctrl: ctrl}
+	mock.recorder = &MockHistogramMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockHistogram) EXPECT() *MockHistogramMockRecorder {
+	return m.recorder
+}
+
+// Observe mocks base method
+func (m *MockHistogram) Observe(arg0 float64) {
+	m.ctrl.Call(m, "Observe", arg0)
+}
+
+// Observe indicates an expected call of Observe
+func (mr *MockHistogramMockRecorder) Observe(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Observe", reflect.TypeOf((*MockHistogram)(nil).Observe), arg0)
+}

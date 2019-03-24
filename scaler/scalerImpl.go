@@ -49,7 +49,8 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 
 	s.metrics.scalingPolicyViolated.WithLabelValues("applied").Inc()
 
-	// TODO: Add metric "Scaling duration"
+	dur, _ := ticket.processingDuration()
+	s.metrics.scalingDurationSeconds.Observe(float64(dur.Seconds()))
 	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
 	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d.", result.state, result.stateDescription, result.newCount)
