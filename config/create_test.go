@@ -18,6 +18,9 @@ job:
   name: "fail-service"
   min: 1
   max: 10
+capacity_planner:
+  down_scale_cooldown: 20s
+  up_scale_cooldown: 10s
 scale_alert_aggregator:
   no_alert_damping: 1.0
   up_thresh: 10.0
@@ -94,6 +97,10 @@ func Test_NewconfigFromYAMLFile(t *testing.T) {
 	assert.Equal(t, "AlertB", config.ScaleAlertAggregator.ScaleAlerts[1].Name)
 	assert.Equal(t, float32(-1.5), config.ScaleAlertAggregator.ScaleAlerts[1].Weight)
 	assert.Equal(t, "Down alert", config.ScaleAlertAggregator.ScaleAlerts[1].Description)
+
+	// capacity_planner
+	assert.Equal(t, time.Second*20, config.CapacityPlanner.DownScaleCooldownPeriod)
+	assert.Equal(t, time.Second*10, config.CapacityPlanner.UpScaleCooldownPeriod)
 }
 func Test_NewconfigFromYAML_Invalid(t *testing.T) {
 	reader := strings.NewReader(invalidConfig)
@@ -136,6 +143,10 @@ func Test_NewConfigFromYAML_Partial(t *testing.T) {
 	assert.Equal(t, "AlertB", config.ScaleAlertAggregator.ScaleAlerts[1].Name)
 	assert.Equal(t, float32(-1.5), config.ScaleAlertAggregator.ScaleAlerts[1].Weight)
 	assert.Equal(t, "Down alert", config.ScaleAlertAggregator.ScaleAlerts[1].Description)
+
+	// capacity_planner
+	assert.Equal(t, time.Second*80, config.CapacityPlanner.DownScaleCooldownPeriod)
+	assert.Equal(t, time.Second*60, config.CapacityPlanner.UpScaleCooldownPeriod)
 }
 
 func Test_NewConfigFromYAML_Full(t *testing.T) {
@@ -173,6 +184,10 @@ func Test_NewConfigFromYAML_Full(t *testing.T) {
 	assert.Equal(t, "AlertB", config.ScaleAlertAggregator.ScaleAlerts[1].Name)
 	assert.Equal(t, float32(-1.5), config.ScaleAlertAggregator.ScaleAlerts[1].Weight)
 	assert.Equal(t, "Down alert", config.ScaleAlertAggregator.ScaleAlerts[1].Description)
+
+	// capacity_planner
+	assert.Equal(t, time.Second*20, config.CapacityPlanner.DownScaleCooldownPeriod)
+	assert.Equal(t, time.Second*10, config.CapacityPlanner.UpScaleCooldownPeriod)
 
 	spew.Dump(config)
 }

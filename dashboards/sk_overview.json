@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 1,
-  "iteration": 1553431551415,
+  "iteration": 1553789239203,
   "links": [],
   "panels": [
     {
@@ -184,6 +184,14 @@
           "intervalFactor": 1,
           "legendFormat": "Failed Scale Actions",
           "refId": "B"
+        },
+        {
+          "expr": "increase(sokar_cap_skipped_scaling_during_cooldown_total[$interval])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "Skipped Scale Actions (during cooldown)",
+          "refId": "C"
         }
       ],
       "thresholds": [],
@@ -232,7 +240,9 @@
   "refresh": "5s",
   "schemaVersion": 18,
   "style": "dark",
-  "tags": ["sokar"],
+  "tags": [
+    "sokar"
+  ],
   "templating": {
     "list": [
       {
@@ -317,7 +327,17 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
   },
   "timezone": "",
   "title": "Sokar",

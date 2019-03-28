@@ -33,6 +33,10 @@ func NewDefaultConfig() Config {
 			DownScaleThreshold:     -10,
 			ScaleAlerts:            make([]Alert, 0),
 		},
+		CapacityPlanner: CapacityPlanner{
+			DownScaleCooldownPeriod: time.Second * 80,
+			UpScaleCooldownPeriod:   time.Second * 60,
+		},
 	}
 }
 
