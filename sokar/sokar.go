@@ -3,10 +3,13 @@ package sokar
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
+
+var oneDayAgo = time.Now().Add(time.Hour * -24)
 
 // Sokar component that can be used to scale jobs/instances
 type Sokar struct {
@@ -15,6 +18,11 @@ type Sokar struct {
 	scaler            sokarIF.Scaler
 	capacityPlanner   sokarIF.CapacityPlanner
 	scaleEventEmitter sokarIF.ScaleEventEmitter
+
+	// LastScaleAction represents that point in time
+	// when the scaler was triggered to execute a scaling
+	// action the last time
+	lastScaleAction time.Time
 
 	// metrics is a collection of metrics used by the sokar
 	metrics Metrics
@@ -51,6 +59,7 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 		stopChan:          make(chan struct{}, 1),
 		metrics:           metrics,
 		logger:            cfg.Logger,
+		lastScaleAction:   oneDayAgo,
 	}, nil
 }
 
