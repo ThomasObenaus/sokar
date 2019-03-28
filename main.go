@@ -47,8 +47,11 @@ func main() {
 	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
-	capaCfg := capacityPlanner.NewDefaultConfig()
-	capaCfg.Logger = loggingFactory.NewNamedLogger("sokar.capaPlanner")
+	capaCfg := capacityPlanner.Config{
+		Logger:                  loggingFactory.NewNamedLogger("sokar.capaPlanner"),
+		DownScaleCooldownPeriod: cfg.CapacityPlanner.DownScaleCooldownPeriod,
+		UpScaleCooldownPeriod:   cfg.CapacityPlanner.UpScaleCooldownPeriod,
+	}
 	capaPlanner := capaCfg.New()
 
 	logger.Info().Msg("6. Setup: Sokar")

@@ -9,6 +9,7 @@ type Config struct {
 	Logging              Logging              `yaml:"logging,omitempty"`
 	Job                  Job                  `yaml:"job"`
 	ScaleAlertAggregator ScaleAlertAggregator `yaml:"scale_alert_aggregator"`
+	CapacityPlanner      CapacityPlanner      `yaml:"capacity_planner"`
 }
 
 // Nomad represents the configuration for the scaling target nomad
@@ -45,4 +46,10 @@ type Alert struct {
 type Logging struct {
 	Structured  bool `yaml:"structured,omitempty"`
 	UxTimestamp bool `yaml:"unix_ts,omitempty"`
+}
+
+// CapacityPlanner is used for the configuration of the CapacityPlanner
+type CapacityPlanner struct {
+	DownScaleCooldownPeriod time.Duration `yaml:"down_scale_cooldown,omitempty"`
+	UpScaleCooldownPeriod   time.Duration `yaml:"up_scale_cooldown,omitempty"`
 }

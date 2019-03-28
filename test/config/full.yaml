@@ -5,6 +5,9 @@ job:
   name: "fail-service"
   min: 1
   max: 10
+capacity_planner:
+  down_scale_cooldown: 20s
+  up_scale_cooldown: 10s
 scale_alert_aggregator:
   no_alert_damping: 1.0
   up_thresh: 10.0
