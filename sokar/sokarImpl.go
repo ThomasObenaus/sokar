@@ -1,6 +1,8 @@
 package sokar
 
 import (
+	"time"
+
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
@@ -35,6 +37,13 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	}
 	sk.metrics.preScaleJobCount.Set(float64(preScaleJobCount))
 
+	// Don't scale if sokar is in cool down mode
+	if sk.capacityPlanner.IsCoolingDown(sk.lastScaleAction, scaleEvent.ScaleFactor) {
+		sk.metrics.skippedScalingDuringCooldownTotal.Inc()
+		sk.logger.Info().Msg("Skip scale event. Sokar is cooling down.")
+		return
+	}
+
 	// plan
 	plannedJobCount := sk.capacityPlanner.Plan(scaleEvent.ScaleFactor, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
@@ -45,5 +54,7 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 		sk.metrics.failedScalingTotal.Inc()
 		sk.logger.Error().Err(err).Msg("Failed to scale.")
 	}
-	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Msg("Scaling done.")
+
+	sk.lastScaleAction = time.Now()
+	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Msg("Scaling triggered. Scaler will apply the planned count.")
 }

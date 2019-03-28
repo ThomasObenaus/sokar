@@ -8,11 +8,12 @@ import (
 
 // Metrics represents the collection of metrics internally set by sokar.
 type Metrics struct {
-	scaleEventsTotal   m.Counter
-	failedScalingTotal m.Counter
-	preScaleJobCount   m.Gauge
-	plannedJobCount    m.Gauge
-	scaleFactor        m.Gauge
+	scaleEventsTotal                  m.Counter
+	failedScalingTotal                m.Counter
+	skippedScalingDuringCooldownTotal m.Counter
+	preScaleJobCount                  m.Gauge
+	plannedJobCount                   m.Gauge
+	scaleFactor                       m.Gauge
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -28,6 +29,13 @@ func NewMetrics() Metrics {
 		Namespace: "sokar",
 		Name:      "failed_scaling_total",
 		Help:      "Number of failed scaling actions in total.",
+	})
+
+	skippedScalingDuringCooldownTotal := promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: "sokar",
+		Subsystem: "cap",
+		Name:      "skipped_scaling_during_cooldown_total",
+		Help:      "Number of scalings that where not executed since sokar was cooling down.",
 	})
 
 	preScaleJobCount := promauto.NewGauge(prometheus.GaugeOpts{
@@ -52,10 +60,11 @@ func NewMetrics() Metrics {
 	})
 
 	return Metrics{
-		scaleEventsTotal:   scaleEventsTotal,
-		failedScalingTotal: failedScalingTotal,
-		preScaleJobCount:   preScaleJobCount,
-		plannedJobCount:    plannedJobCount,
-		scaleFactor:        scaleFactor,
+		scaleEventsTotal:                  scaleEventsTotal,
+		failedScalingTotal:                failedScalingTotal,
+		skippedScalingDuringCooldownTotal: skippedScalingDuringCooldownTotal,
+		preScaleJobCount:                  preScaleJobCount,
+		plannedJobCount:                   plannedJobCount,
+		scaleFactor:                       scaleFactor,
 	}
 }
