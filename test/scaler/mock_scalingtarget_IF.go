@@ -34,6 +34,7 @@ func (m *MockScalingTarget) EXPECT() *MockScalingTargetMockRecorder {
 
 // SetJobCount mocks base method
 func (m *MockScalingTarget) SetJobCount(jobname string, count uint) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetJobCount", jobname, count)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -41,11 +42,13 @@ func (m *MockScalingTarget) SetJobCount(jobname string, count uint) error {
 
 // SetJobCount indicates an expected call of SetJobCount
 func (mr *MockScalingTargetMockRecorder) SetJobCount(jobname, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetJobCount", reflect.TypeOf((*MockScalingTarget)(nil).SetJobCount), jobname, count)
 }
 
 // GetJobCount mocks base method
 func (m *MockScalingTarget) GetJobCount(jobname string) (uint, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetJobCount", jobname)
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
@@ -54,11 +57,13 @@ func (m *MockScalingTarget) GetJobCount(jobname string) (uint, error) {
 
 // GetJobCount indicates an expected call of GetJobCount
 func (mr *MockScalingTargetMockRecorder) GetJobCount(jobname interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobCount", reflect.TypeOf((*MockScalingTarget)(nil).GetJobCount), jobname)
 }
 
 // IsJobDead mocks base method
 func (m *MockScalingTarget) IsJobDead(jobname string) (bool, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsJobDead", jobname)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
@@ -67,5 +72,6 @@ func (m *MockScalingTarget) IsJobDead(jobname string) (bool, error) {
 
 // IsJobDead indicates an expected call of IsJobDead
 func (mr *MockScalingTargetMockRecorder) IsJobDead(jobname interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsJobDead", reflect.TypeOf((*MockScalingTarget)(nil).IsJobDead), jobname)
 }

@@ -7,6 +7,7 @@ package mock_sokar
 import (
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	time "time"
 )
 
 // MockCapacityPlanner is a mock of CapacityPlanner interface
@@ -34,6 +35,7 @@ func (m *MockCapacityPlanner) EXPECT() *MockCapacityPlannerMockRecorder {
 
 // Plan mocks base method
 func (m *MockCapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Plan", scaleFactor, currentScale)
 	ret0, _ := ret[0].(uint)
 	return ret0
@@ -41,5 +43,20 @@ func (m *MockCapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint 
 
 // Plan indicates an expected call of Plan
 func (mr *MockCapacityPlannerMockRecorder) Plan(scaleFactor, currentScale interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockCapacityPlanner)(nil).Plan), scaleFactor, currentScale)
+}
+
+// IsCoolingDown mocks base method
+func (m *MockCapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleFactor float32) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsCoolingDown", timeOfLastScale, scaleFactor)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsCoolingDown indicates an expected call of IsCoolingDown
+func (mr *MockCapacityPlannerMockRecorder) IsCoolingDown(timeOfLastScale, scaleFactor interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCoolingDown", reflect.TypeOf((*MockCapacityPlanner)(nil).IsCoolingDown), timeOfLastScale, scaleFactor)
 }
