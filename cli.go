@@ -9,10 +9,12 @@ import (
 
 const pNomadServerAddress = "nomad-server-address"
 const pCfgFile = "config-file"
+const pDryMode = "dry-run"
 
 type cliArgs struct {
 	NomadServerAddr string
 	CfgFile         string
+	DryRunMode      bool
 
 	flagSet *flag.FlagSet
 }
@@ -42,11 +44,13 @@ func parseArgs(args []string) (cliArgs, error) {
 
 	var nomadServerAddr = flagSet.String(pNomadServerAddress, "", "Specifies the address of the nomad server.")
 	var cfgFile = flagSet.String(pCfgFile, "", "Specifies the full path and name of the configuration file for sokar.")
+	var dryRun = flagSet.Bool(pDryMode, false, "If true, then sokar won't execute the planned scaling action. Only scaling actions triggered via ScaleBy end-point will be executed.")
 
 	err := flagSet.Parse(args[1:])
 	return cliArgs{
 		NomadServerAddr: *nomadServerAddr,
 		CfgFile:         *cfgFile,
+		DryRunMode:      *dryRun,
 		flagSet:         flagSet,
 	}, err
 }

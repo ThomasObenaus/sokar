@@ -12,6 +12,8 @@ import (
 )
 
 var fullConfig = `
+port: 1234
+dry_run_mode: true
 nomad:
   srv_addr: "http://localhost:4646"
 job:
@@ -66,6 +68,9 @@ func Test_NewconfigFromYAMLFile(t *testing.T) {
 	config, err = NewConfigFromYAMLFile("../test/config/full.yaml")
 	assert.NoError(t, err)
 
+	// dry_run_mode
+	assert.Equal(t, false, config.DryRunMode)
+
 	// port
 	assert.Equal(t, 11000, config.Port)
 
@@ -114,6 +119,12 @@ func Test_NewConfigFromYAML_Partial(t *testing.T) {
 
 	config, err := NewConfigFromYAML(reader)
 	require.NoError(t, err)
+
+	// dry_run_mode
+	assert.Equal(t, false, config.DryRunMode)
+
+	// port
+	assert.Equal(t, 11000, config.Port)
 
 	// nomad
 	assert.Equal(t, "http://localhost:4646", config.Nomad.ServerAddr)
@@ -195,6 +206,7 @@ func Test_NewConfigFromYAML_Full(t *testing.T) {
 func Test_NewDefaultConfig(t *testing.T) {
 	config := NewDefaultConfig()
 	assert.Equal(t, 11000, config.Port)
+	assert.Equal(t, false, config.DryRunMode)
 	assert.Equal(t, float32(1), config.ScaleAlertAggregator.NoAlertScaleDamping)
 	assert.Equal(t, float32(10), config.ScaleAlertAggregator.UpScaleThreshold)
 	assert.Equal(t, float32(-10), config.ScaleAlertAggregator.DownScaleThreshold)

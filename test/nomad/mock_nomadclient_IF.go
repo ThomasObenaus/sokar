@@ -35,7 +35,6 @@ func (m *MockNomadJobs) EXPECT() *MockNomadJobsMockRecorder {
 
 // Info mocks base method
 func (m *MockNomadJobs) Info(jobID string, q *api.QueryOptions) (*api.Job, *api.QueryMeta, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", jobID, q)
 	ret0, _ := ret[0].(*api.Job)
 	ret1, _ := ret[1].(*api.QueryMeta)
@@ -45,13 +44,11 @@ func (m *MockNomadJobs) Info(jobID string, q *api.QueryOptions) (*api.Job, *api.
 
 // Info indicates an expected call of Info
 func (mr *MockNomadJobsMockRecorder) Info(jobID, q interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockNomadJobs)(nil).Info), jobID, q)
 }
 
 // Register mocks base method
 func (m *MockNomadJobs) Register(job *api.Job, q *api.WriteOptions) (*api.JobRegisterResponse, *api.WriteMeta, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", job, q)
 	ret0, _ := ret[0].(*api.JobRegisterResponse)
 	ret1, _ := ret[1].(*api.WriteMeta)
@@ -61,7 +58,6 @@ func (m *MockNomadJobs) Register(job *api.Job, q *api.WriteOptions) (*api.JobReg
 
 // Register indicates an expected call of Register
 func (mr *MockNomadJobsMockRecorder) Register(job, q interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockNomadJobs)(nil).Register), job, q)
 }
 
@@ -90,7 +86,6 @@ func (m *MockNomadDeployments) EXPECT() *MockNomadDeploymentsMockRecorder {
 
 // Info mocks base method
 func (m *MockNomadDeployments) Info(deploymentID string, q *api.QueryOptions) (*api.Deployment, *api.QueryMeta, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", deploymentID, q)
 	ret0, _ := ret[0].(*api.Deployment)
 	ret1, _ := ret[1].(*api.QueryMeta)
@@ -100,7 +95,6 @@ func (m *MockNomadDeployments) Info(deploymentID string, q *api.QueryOptions) (*
 
 // Info indicates an expected call of Info
 func (mr *MockNomadDeploymentsMockRecorder) Info(deploymentID, q interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockNomadDeployments)(nil).Info), deploymentID, q)
 }
 
@@ -129,7 +123,6 @@ func (m *MockNomadEvaluations) EXPECT() *MockNomadEvaluationsMockRecorder {
 
 // Info mocks base method
 func (m *MockNomadEvaluations) Info(evalID string, q *api.QueryOptions) (*api.Evaluation, *api.QueryMeta, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", evalID, q)
 	ret0, _ := ret[0].(*api.Evaluation)
 	ret1, _ := ret[1].(*api.QueryMeta)
@@ -139,6 +132,5 @@ func (m *MockNomadEvaluations) Info(evalID string, q *api.QueryOptions) (*api.Ev
 
 // Info indicates an expected call of Info
 func (mr *MockNomadEvaluationsMockRecorder) Info(evalID, q interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockNomadEvaluations)(nil).Info), evalID, q)
 }
