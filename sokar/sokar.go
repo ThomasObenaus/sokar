@@ -31,11 +31,15 @@ type Sokar struct {
 	stopChan chan struct{}
 
 	wg sync.WaitGroup
+
+	dryRunMode bool
 }
 
 // Config cfg for sokar
 type Config struct {
 	Logger zerolog.Logger
+
+	DryRunMode bool
 }
 
 // New creates a new instance of sokar
@@ -60,6 +64,7 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 		metrics:           metrics,
 		logger:            cfg.Logger,
 		lastScaleAction:   oneDayAgo,
+		dryRunMode:        cfg.DryRunMode,
 	}, nil
 }
 

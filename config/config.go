@@ -5,6 +5,7 @@ import "time"
 // Config is a structure containing the configuration for sokar
 type Config struct {
 	Port                 int                  `yaml:"port"`
+	DryRunMode           bool                 `yaml:"dry_run_mode"`
 	Nomad                Nomad                `yaml:"nomad"`
 	Logging              Logging              `yaml:"logging,omitempty"`
 	Job                  Job                  `yaml:"job"`

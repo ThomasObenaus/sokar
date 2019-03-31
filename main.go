@@ -55,7 +55,7 @@ func main() {
 	capaPlanner := capaCfg.New()
 
 	logger.Info().Msg("6. Setup: Sokar")
-	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger)).(*sokar.Sokar)
+	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
@@ -105,6 +105,11 @@ func cliAndConfig(args []string) (*config.Config, error) {
 	// Prefer CLI parameter for the nomadServerAddress
 	if len(parsedArgs.NomadServerAddr) > 0 {
 		cfg.Nomad.ServerAddr = parsedArgs.NomadServerAddr
+	}
+
+	// Prefer CLI parameter
+	if parsedArgs.DryRunMode {
+		cfg.DryRunMode = parsedArgs.DryRunMode
 	}
 
 	if len(cfg.Nomad.ServerAddr) == 0 {
@@ -172,9 +177,10 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 	return scaleAlertEmitters, nil
 }
 
-func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api *api.API, logger zerolog.Logger) (*sokar.Sokar, error) {
+func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api *api.API, logger zerolog.Logger, dryRunMode bool) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
-		Logger: logger,
+		Logger:     logger,
+		DryRunMode: dryRunMode,
 	}
 	sokarInst, err := cfg.New(scaleEventEmitter, capacityPlanner, scaler, sokar.NewMetrics())
 	if err != nil {
@@ -182,6 +188,10 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	}
 
 	api.Router.GET(sokar.PathHealth, sokarInst.Health)
+
+	if cfg.DryRunMode {
+		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them automatically.")
+	}
 
 	return sokarInst, err
 }

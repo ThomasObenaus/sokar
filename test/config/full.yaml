@@ -1,3 +1,4 @@
+dry_run_mode: false
 port: 11000
 nomad:
   srv_addr: "http://localhost:4646"
