@@ -8,5 +8,5 @@ const (
 	PathMetrics = "/metrics"
 
 	// PathAlertmanager path for receiving alerts from the alertmanager
-	PathAlertmanager = "/alerts"
+	PathAlertmanager = "/api/alerts"
 )

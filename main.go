@@ -59,6 +59,7 @@ func main() {
 
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
+	logger.Info().Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
 
 	// Define runnables and their execution order
 	var orderedRunnables []Runnable
@@ -165,11 +166,13 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 	}
 
 	// Alertmanger Connector
+	logger := logF.NewNamedLogger("sokar.alertmanager")
 	amCfg := alertmanager.Config{
-		Logger: logF.NewNamedLogger("sokar.alertmanager"),
+		Logger: logger,
 	}
 	amConnector := amCfg.New()
 	api.Router.POST(sokar.PathAlertmanager, amConnector.HandleScaleAlerts)
+	logger.Info().Msgf("Connector for alerts from prometheus/alertmanager setup successfully. Will listen for alerts on %s", sokar.PathAlertmanager)
 
 	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
@@ -188,6 +191,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	}
 
 	api.Router.GET(sokar.PathHealth, sokarInst.Health)
+	logger.Info().Msgf("Health end-point set up at %s", sokar.PathHealth)
 
 	if cfg.DryRunMode {
 		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them automatically.")
