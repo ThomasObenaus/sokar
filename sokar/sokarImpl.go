@@ -23,8 +23,8 @@ func (sk *Sokar) scaleEventProcessor(scaleEventChannel <-chan sokarIF.ScaleEvent
 	}
 }
 
-func scaleFactorToScaleDir(scaleFactor float32) (scaleDown bool) {
-	if scaleFactor < 0 {
+func scaleValueToScaleDir(scaleValue float32) (scaleDown bool) {
+	if scaleValue < 0 {
 		return true
 	}
 	return false
@@ -34,10 +34,16 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	sk.logger.Info().Msgf("Scale Event received: %v", scaleEvent)
 
 	scaleFactor := scaleEvent.ScaleFactor
-	scaleDown := scaleFactorToScaleDir(scaleFactor)
 
 	sk.metrics.scaleEventsTotal.Inc()
 	sk.metrics.scaleFactor.Set(float64(scaleFactor))
+
+	sk.triggerScale(sk.dryRunMode, scaleFactor, sk.capacityPlanner.Plan)
+}
+
+func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) {
+
+	scaleDown := scaleValueToScaleDir(scaleValue)
 
 	preScaleJobCount, err := sk.scaler.GetCount()
 	if err != nil {
@@ -55,10 +61,10 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	}
 
 	// plan
-	plannedJobCount := sk.capacityPlanner.Plan(scaleFactor, preScaleJobCount)
+	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
 
-	if sk.dryRunMode {
+	if dryRunOnly {
 		sk.logger.Info().Msg("Skip scale event. Sokar is in dry run mode.")
 	} else {
 		err = sk.scaler.ScaleTo(plannedJobCount)

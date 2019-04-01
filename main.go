@@ -200,7 +200,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	logger.Info().Msgf("ScaleBy end-point (value) set up at %s", sokar.PathScaleByValue)
 
 	if cfg.DryRunMode {
-		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them automatically.")
+		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them. This applies only for auto scaling events.")
 	}
 
 	return sokarInst, err

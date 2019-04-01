@@ -17,3 +17,8 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	sk.logger.Info().Msgf("SCALE-BY VALUE: %s", ps.ByName(PathPartValue))
 }
+
+func planScaleByPercentage(scaleValue float32, currentScale uint) uint {
+
+	return 0
+}

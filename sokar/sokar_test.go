@@ -71,75 +71,6 @@ func Test_HandleScaleEvent(t *testing.T) {
 	sokar.handleScaleEvent(event)
 }
 
-func Test_HandleScaleEventOnCooldown(t *testing.T) {
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
-	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
-	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
-	metrics, metricMocks := NewMockedMetrics(mockCtrl)
-
-	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
-	require.NotNil(t, sokar)
-	require.NoError(t, err)
-
-	currentScale := uint(0)
-	scaleFactor := float32(1)
-	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
-	gomock.InOrder(
-		metricMocks.scaleEventsTotal.EXPECT().Inc().Times(1),
-		metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor)),
-		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true),
-		metricMocks.skippedScalingDuringCooldownTotal.EXPECT().Inc(),
-	)
-	sokar.handleScaleEvent(event)
-}
-
-func Test_HandleScaleEvent_Fail(t *testing.T) {
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
-	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
-	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
-	metrics, metricMocks := NewMockedMetrics(mockCtrl)
-
-	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
-	require.NotNil(t, sokar)
-	require.NoError(t, err)
-
-	currentScale := uint(0)
-	scaleFactor := float32(1)
-	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
-	scalerIF.EXPECT().GetCount().Return(currentScale, fmt.Errorf("Unable to obtain count"))
-	metricMocks.scaleEventsTotal.EXPECT().Inc()
-	metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor))
-	metricMocks.failedScalingTotal.EXPECT().Inc()
-
-	sokar.handleScaleEvent(event)
-
-	scaleTo := uint(1)
-	gomock.InOrder(
-		metricMocks.scaleEventsTotal.EXPECT().Inc(),
-		metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor)),
-		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
-		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
-		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("ERROR")),
-		metricMocks.failedScalingTotal.EXPECT().Inc(),
-	)
-	sokar.handleScaleEvent(event)
-}
-
 func Test_Run(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
@@ -159,8 +90,169 @@ func Test_Run(t *testing.T) {
 	sokar.Run()
 }
 
-func Test_ScaleFactorToScaleDir(t *testing.T) {
-	assert.True(t, scaleFactorToScaleDir(-1))
-	assert.False(t, scaleFactorToScaleDir(1))
-	assert.False(t, scaleFactorToScaleDir(0))
+func Test_ScaleValueToScaleDir(t *testing.T) {
+	assert.True(t, scaleValueToScaleDir(-1))
+	assert.False(t, scaleValueToScaleDir(1))
+	assert.False(t, scaleValueToScaleDir(0))
+}
+
+func Test_TriggerScale_Scale(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
+		scalerIF.EXPECT().ScaleTo(scaleTo).Return(nil),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(false, scaleFactor, planFunc)
+}
+
+func Test_TriggerScale_DryRun(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(true, scaleFactor, planFunc)
+}
+
+func Test_TriggerScale_Cooldown(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true),
+		metricMocks.skippedScalingDuringCooldownTotal.EXPECT().Inc(),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(false, scaleFactor, planFunc)
+}
+
+func Test_TriggerScale_ErrGettingJobCount(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, fmt.Errorf("Unable to obtain count")),
+		metricMocks.failedScalingTotal.EXPECT().Inc(),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(false, scaleFactor, planFunc)
+}
+
+func Test_TriggerScale_ErrScaleTo(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
+		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("Unable to scale")),
+		metricMocks.failedScalingTotal.EXPECT().Inc(),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(false, scaleFactor, planFunc)
 }
