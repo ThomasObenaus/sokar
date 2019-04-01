@@ -1,6 +1,7 @@
 package sokar
 
 import (
+	"fmt"
 	"time"
 
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
@@ -38,18 +39,20 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	sk.metrics.scaleEventsTotal.Inc()
 	sk.metrics.scaleFactor.Set(float64(scaleFactor))
 
-	sk.triggerScale(sk.dryRunMode, scaleFactor, sk.capacityPlanner.Plan)
+	err := sk.triggerScale(sk.dryRunMode, scaleFactor, sk.capacityPlanner.Plan)
+	if err != nil {
+		sk.logger.Error().Err(err).Msg("Failed to scale.")
+	}
 }
 
-func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) {
+func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) error {
 
 	scaleDown := scaleValueToScaleDir(scaleValue)
 
 	preScaleJobCount, err := sk.scaler.GetCount()
 	if err != nil {
 		sk.metrics.failedScalingTotal.Inc()
-		sk.logger.Error().Err(err).Msg("Scaling ignored. Failed to obtain current count.")
-		return
+		return fmt.Errorf("Failed to obtain current count. %s", err.Error())
 	}
 	sk.metrics.preScaleJobCount.Set(float64(preScaleJobCount))
 
@@ -57,12 +60,14 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	if sk.capacityPlanner.IsCoolingDown(sk.lastScaleAction, scaleDown) {
 		sk.metrics.skippedScalingDuringCooldownTotal.Inc()
 		sk.logger.Info().Msg("Skip scale event. Sokar is cooling down.")
-		return
+		return nil
 	}
 
 	// plan
 	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
+
+	sk.lastScaleAction = time.Now()
 
 	if dryRunOnly {
 		sk.logger.Info().Msg("Skip scale event. Sokar is in dry run mode.")
@@ -72,10 +77,10 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 		// HACK: For now we ignore all rejected scaling tickets
 		if err != nil {
 			sk.metrics.failedScalingTotal.Inc()
-			sk.logger.Error().Err(err).Msg("Failed to scale.")
+			return err
 		}
 	}
 
-	sk.lastScaleAction = time.Now()
 	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Msg("Scaling triggered. Scaler will apply the planned count.")
+	return nil
 }
