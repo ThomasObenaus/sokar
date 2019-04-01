@@ -193,6 +193,12 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	api.Router.GET(sokar.PathHealth, sokarInst.Health)
 	logger.Info().Msgf("Health end-point set up at %s", sokar.PathHealth)
 
+	api.Router.PUT(sokar.PathScaleByPercentage, sokarInst.ScaleByPercentage)
+	logger.Info().Msgf("ScaleBy end-point (percentage) set up at %s", sokar.PathScaleByPercentage)
+
+	api.Router.PUT(sokar.PathScaleByValue, sokarInst.ScaleByValue)
+	logger.Info().Msgf("ScaleBy end-point (value) set up at %s", sokar.PathScaleByValue)
+
 	if cfg.DryRunMode {
 		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them automatically.")
 	}
