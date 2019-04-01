@@ -25,17 +25,17 @@ func Test_IsCoolingDown(t *testing.T) {
 	require.NotNil(t, capa)
 
 	lastScale := time.Now()
-	result := capa.IsCoolingDown(lastScale, 1)
+	result := capa.IsCoolingDown(lastScale, false)
 	assert.True(t, result)
 
-	result = capa.IsCoolingDown(lastScale, -1)
+	result = capa.IsCoolingDown(lastScale, true)
 	assert.True(t, result)
 
 	lastScale = time.Now().Add(time.Second * -11)
-	result = capa.IsCoolingDown(lastScale, 1)
+	result = capa.IsCoolingDown(lastScale, false)
 	assert.False(t, result)
 
 	lastScale = time.Now().Add(time.Second * -21)
-	result = capa.IsCoolingDown(lastScale, -1)
+	result = capa.IsCoolingDown(lastScale, true)
 	assert.False(t, result)
 }
