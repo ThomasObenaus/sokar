@@ -86,7 +86,7 @@ pkill consul && sudo pkill nomad && pkill alertmanager
 
 ```bash
 curl -X POST \
-  http://localhost:11000/alerts \
+  http://localhost:11000/api/alerts \
   -d '{
   "receiver": "PM",
   "status": "firing",
