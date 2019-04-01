@@ -18,11 +18,11 @@ func (cp *CapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
 
 // IsCoolingDown returns true if the CapacityPlanner thinks that currently a new scaling
 // would not be a good idea.
-func (cp *CapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleFactor float32) bool {
+func (cp *CapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) bool {
 	now := time.Now()
 
 	dur := cp.upScaleCooldownPeriod
-	if scaleFactor < 0 {
+	if scaleDown {
 		dur = cp.upScaleCooldownPeriod
 	}
 

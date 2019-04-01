@@ -59,7 +59,7 @@ func Test_HandleScaleEvent(t *testing.T) {
 	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), scaleFactor).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
 		scalerIF.EXPECT().ScaleTo(scaleTo),
 	)
@@ -94,7 +94,7 @@ func Test_HandleScaleEventOnCooldown(t *testing.T) {
 		metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor)),
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), scaleFactor).Return(true),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true),
 		metricMocks.skippedScalingDuringCooldownTotal.EXPECT().Inc(),
 	)
 	sokar.handleScaleEvent(event)
@@ -131,7 +131,7 @@ func Test_HandleScaleEvent_Fail(t *testing.T) {
 		metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor)),
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), scaleFactor).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("ERROR")),
@@ -157,4 +157,10 @@ func Test_Run(t *testing.T) {
 
 	evEmitterIF.EXPECT().Subscribe(gomock.Any())
 	sokar.Run()
+}
+
+func Test_ScaleFactorToScaleDir(t *testing.T) {
+	assert.True(t, scaleFactorToScaleDir(-1))
+	assert.False(t, scaleFactorToScaleDir(1))
+	assert.False(t, scaleFactorToScaleDir(0))
 }
