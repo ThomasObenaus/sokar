@@ -167,3 +167,49 @@ func TestScaleBy_trueIfNil(t *testing.T) {
 	_, ok = trueIfNil(scaler)
 	assert.False(t, ok)
 }
+
+func TestScale_UpDryRun(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	jobname := "any"
+	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, metrics)
+	require.NoError(t, err)
+
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(1))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge)
+
+	// scale up
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	result := scaler.scale(2, 0, true)
+	assert.NotEqual(t, scaleFailed, result.state)
+}
+
+func TestScale_DownDryRun(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	jobname := "any"
+	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, metrics)
+	require.NoError(t, err)
+
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(1))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge)
+
+	// scale down
+	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	result := scaler.scale(1, 4, true)
+	assert.NotEqual(t, scaleFailed, result.state)
+}

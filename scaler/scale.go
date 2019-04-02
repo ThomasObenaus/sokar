@@ -141,17 +141,23 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	if dryRun {
 		s.logger.Info().Str("job", jobName).Msgf("Skip scale %s by %d to %d (DryRun).", scaleTypeStr, diff, newCount)
 		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(1)
-	} else {
-		s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
-		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
-		// Set the new job count
-		err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
-		if err != nil {
-			return scaleResult{
-				state:            scaleFailed,
-				stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
-			}
+		return scaleResult{
+			state:            scaleIgnored,
+			stateDescription: "Scaling skipped - dry run mode.",
+			newCount:         currentCount,
+		}
+	}
+
+	s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
+	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
+
+	// Set the new job count
+	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
+	if err != nil {
+		return scaleResult{
+			state:            scaleFailed,
+			stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
 		}
 	}
 

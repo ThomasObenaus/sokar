@@ -67,7 +67,9 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
 
-	sk.lastScaleAction = time.Now()
+	if !dryRunOnly {
+		sk.lastScaleAction = time.Now()
+	}
 	err = sk.scaler.ScaleTo(plannedJobCount, dryRunOnly)
 
 	// HACK: For now we ignore all rejected scaling tickets
