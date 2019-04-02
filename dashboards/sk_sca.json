@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1553459982510,
+  "iteration": 1554240546355,
   "links": [],
   "panels": [
     {
@@ -286,7 +286,7 @@
       }
     }
   ],
-  "refresh": "30s",
+  "refresh": "5s",
   "schemaVersion": 18,
   "style": "dark",
   "tags": ["sokar"],

@@ -53,6 +53,7 @@ func NewMetrics() Metrics {
 	direction := []string{"direction"}
 	plannedButSkippedScalingOpen := m.NewWrappedGaugeVec(prometheus.GaugeOpts{
 		Namespace: "sokar",
+		Subsystem: "sca",
 		Name:      "planned_but_skipped_scaling_open",
 		Help:      "Is a helper metric which is only used in dry run mode. It is set to 1 in case there was a automatic scaling planned but not exectued due to dry-run mode. It is reset to 0 if then a scaling was applied.",
 	}, direction)
