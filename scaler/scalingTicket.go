@@ -18,18 +18,23 @@ type ScalingTicket struct {
 	// (failed or successful)
 	completedAt *time.Time
 
+	// If this flag is true, then no scaling is executed in the end.
+	// The scaler just checks against the scaling policy if a scaling would be needed.
+	dryRun bool
+
 	desiredCount uint
 	state        scaleState
 }
 
 // NewScalingTicket creates and opens/ issues a new ScalingTicket
-func NewScalingTicket(desiredCount uint) ScalingTicket {
+func NewScalingTicket(desiredCount uint, dryRun bool) ScalingTicket {
 	return ScalingTicket{
 		issuedAt:     time.Now(),
 		startedAt:    nil,
 		completedAt:  nil,
 		desiredCount: desiredCount,
 		state:        scaleNotStarted,
+		dryRun:       dryRun,
 	}
 }
 

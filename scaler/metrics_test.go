@@ -9,10 +9,11 @@ import (
 )
 
 type MetricsMocks struct {
-	scalingPolicyViolated  *mock_metrics.MockCounterVec
-	scalingTicketCount     *mock_metrics.MockCounterVec
-	scaleResultCounter     *mock_metrics.MockCounterVec
-	scalingDurationSeconds *mock_metrics.MockHistogram
+	scalingPolicyViolated        *mock_metrics.MockCounterVec
+	scalingTicketCount           *mock_metrics.MockCounterVec
+	scaleResultCounter           *mock_metrics.MockCounterVec
+	scalingDurationSeconds       *mock_metrics.MockHistogram
+	plannedButSkippedScalingOpen *mock_metrics.MockGaugeVec
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -28,17 +29,20 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mScalingTicketCount := mock_metrics.NewMockCounterVec(mockCtrl)
 	mScaleResultCounter := mock_metrics.NewMockCounterVec(mockCtrl)
 	mScalingDurationSeconds := mock_metrics.NewMockHistogram(mockCtrl)
+	mPlannedButSkippedScalingOpen := mock_metrics.NewMockGaugeVec(mockCtrl)
 	metrics := Metrics{
-		scalingPolicyViolated:  mScalingPolicyViolated,
-		scalingTicketCount:     mScalingTicketCount,
-		scaleResultCounter:     mScaleResultCounter,
-		scalingDurationSeconds: mScalingDurationSeconds,
+		scalingPolicyViolated:        mScalingPolicyViolated,
+		scalingTicketCount:           mScalingTicketCount,
+		scaleResultCounter:           mScaleResultCounter,
+		scalingDurationSeconds:       mScalingDurationSeconds,
+		plannedButSkippedScalingOpen: mPlannedButSkippedScalingOpen,
 	}
 	mocks := MetricsMocks{
-		scalingPolicyViolated:  mScalingPolicyViolated,
-		scalingTicketCount:     mScalingTicketCount,
-		scaleResultCounter:     mScaleResultCounter,
-		scalingDurationSeconds: mScalingDurationSeconds,
+		scalingPolicyViolated:        mScalingPolicyViolated,
+		scalingTicketCount:           mScalingTicketCount,
+		scaleResultCounter:           mScaleResultCounter,
+		scalingDurationSeconds:       mScalingDurationSeconds,
+		plannedButSkippedScalingOpen: mPlannedButSkippedScalingOpen,
 	}
 	return metrics, mocks
 }
@@ -49,4 +53,5 @@ func Test_NewMetrics(t *testing.T) {
 	assert.NotNil(t, metrics.scalingTicketCount)
 	assert.NotNil(t, metrics.scaleResultCounter)
 	assert.NotNil(t, metrics.scalingDurationSeconds)
+	assert.NotNil(t, metrics.plannedButSkippedScalingOpen)
 }

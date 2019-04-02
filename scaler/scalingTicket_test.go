@@ -9,16 +9,19 @@ import (
 )
 
 func TestNewScalingTicket(t *testing.T) {
-	sj := NewScalingTicket(0)
+	sj := NewScalingTicket(0, false)
 	assert.WithinDuration(t, time.Now(), sj.issuedAt, time.Millisecond*100)
 	assert.Equal(t, scaleNotStarted, sj.state)
 	assert.Equal(t, uint(0), sj.desiredCount)
 	assert.Nil(t, sj.startedAt)
 	assert.Nil(t, sj.completedAt)
+	assert.False(t, sj.dryRun)
+	sj = NewScalingTicket(0, true)
+	assert.True(t, sj.dryRun)
 }
 
 func Test_Start(t *testing.T) {
-	sj := NewScalingTicket(10)
+	sj := NewScalingTicket(10, false)
 	sj.start()
 	require.NotNil(t, sj.startedAt)
 	assert.WithinDuration(t, time.Now(), *sj.startedAt, time.Millisecond*100)
@@ -27,7 +30,7 @@ func Test_Start(t *testing.T) {
 }
 
 func Test_Complete(t *testing.T) {
-	sj := NewScalingTicket(10)
+	sj := NewScalingTicket(10, false)
 	sj.complete(scaleDone)
 	require.NotNil(t, sj.completedAt)
 	assert.WithinDuration(t, time.Now(), *sj.completedAt, time.Millisecond*100)
@@ -35,7 +38,7 @@ func Test_Complete(t *testing.T) {
 }
 
 func Test_InProgress(t *testing.T) {
-	sj := NewScalingTicket(1)
+	sj := NewScalingTicket(1, false)
 
 	assert.False(t, sj.isInProgress())
 	sj.start()
@@ -45,13 +48,13 @@ func Test_InProgress(t *testing.T) {
 }
 
 func Test_TicketAge(t *testing.T) {
-	sj := NewScalingTicket(1)
+	sj := NewScalingTicket(1, false)
 	sj.issuedAt = time.Now().Add(time.Second * -10)
 	assert.InDelta(t, time.Second*10, sj.ticketAge(), float64(time.Microsecond*100))
 }
 
 func Test_LeadDuration(t *testing.T) {
-	sj := NewScalingTicket(1)
+	sj := NewScalingTicket(1, false)
 
 	_, err := sj.leadDuration()
 	assert.Error(t, err)
@@ -65,7 +68,7 @@ func Test_LeadDuration(t *testing.T) {
 }
 
 func Test_ProcessingDuration(t *testing.T) {
-	sj := NewScalingTicket(1)
+	sj := NewScalingTicket(1, false)
 
 	_, err := sj.processingDuration()
 	assert.Error(t, err)

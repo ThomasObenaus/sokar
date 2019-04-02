@@ -26,12 +26,12 @@ func TestScale_JobDead(t *testing.T) {
 
 	// dead job - error
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, fmt.Errorf("internal error"))
-	result := scaler.scale(2, 0)
+	result := scaler.scale(2, 0, false)
 	assert.Equal(t, scaleFailed, result.state)
 
 	// dead job
 	scaTgt.EXPECT().IsJobDead(jobname).Return(true, nil)
-	result = scaler.scale(2, 0)
+	result = scaler.scale(2, 0, false)
 	assert.Equal(t, scaleIgnored, result.state)
 }
 
@@ -48,10 +48,14 @@ func TestScale_Up(t *testing.T) {
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0)).Times(2)
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge).Times(2)
+
 	// scale up
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
-	result := scaler.scale(2, 0)
+	result := scaler.scale(2, 0, false)
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - max hit
@@ -60,7 +64,7 @@ func TestScale_Up(t *testing.T) {
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("max").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
-	result = scaler.scale(6, 0)
+	result = scaler.scale(6, 0, false)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 
@@ -77,10 +81,14 @@ func TestScale_Down(t *testing.T) {
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0)).Times(2)
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge).Times(2)
+
 	// scale down
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
-	result := scaler.scale(1, 4)
+	result := scaler.scale(1, 4, false)
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - min hit
@@ -89,7 +97,7 @@ func TestScale_Down(t *testing.T) {
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("min").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
 	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
-	result = scaler.scale(0, 2)
+	result = scaler.scale(0, 2, false)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 
@@ -108,7 +116,7 @@ func TestScale_NoScale(t *testing.T) {
 
 	// scale down
 	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	result := scaler.scale(2, 2)
+	result := scaler.scale(2, 2, false)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 

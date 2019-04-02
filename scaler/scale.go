@@ -87,7 +87,7 @@ func trueIfNil(s *Scaler) (result scaleResult, ok bool) {
 
 // scale scales the job from currentCount to desiredCount.
 // Internally it is checked if a scaling is needed and if the scaling policy is valid.
-func (s *Scaler) scale(desiredCount uint, currentCount uint) scaleResult {
+func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleResult {
 	if r, ok := trueIfNil(s); ok {
 		return r
 	}
@@ -137,14 +137,21 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint) scaleResult {
 	}
 
 	scaleTypeStr := amountToScaleType(diff)
-	s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
 
-	// Set the new job count
-	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
-	if err != nil {
-		return scaleResult{
-			state:            scaleFailed,
-			stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
+	if dryRun {
+		s.logger.Info().Str("job", jobName).Msgf("Skip scale %s by %d to %d (DryRun).", scaleTypeStr, diff, newCount)
+		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(1)
+	} else {
+		s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
+		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
+
+		// Set the new job count
+		err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
+		if err != nil {
+			return scaleResult{
+				state:            scaleFailed,
+				stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
+			}
 		}
 	}
 

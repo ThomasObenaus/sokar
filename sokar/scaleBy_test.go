@@ -10,7 +10,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
 )
 
@@ -93,13 +92,10 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	scaleTo := uint(2)
 	//scaleFactor := float32(0.1)
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
-	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
-	plannedButSkippedGauge.EXPECT().Set(float64(0))
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo).Return(nil),
-		metricMocks.plannedButSkippedScaling.EXPECT().WithLabelValues("up").Return(plannedButSkippedGauge),
+		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -133,7 +129,7 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
@@ -195,13 +191,10 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	scaleTo := uint(11)
 	//scaleFactor := float32(0.1)
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
-	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
-	plannedButSkippedGauge.EXPECT().Set(float64(0))
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo).Return(nil),
-		metricMocks.plannedButSkippedScaling.EXPECT().WithLabelValues("up").Return(plannedButSkippedGauge),
+		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -235,7 +228,7 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))

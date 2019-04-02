@@ -35,12 +35,10 @@ func (m *MockScaleEventEmitter) EXPECT() *MockScaleEventEmitterMockRecorder {
 
 // Subscribe mocks base method
 func (m *MockScaleEventEmitter) Subscribe(eventChannel chan iface.ScaleEvent) {
-	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Subscribe", eventChannel)
 }
 
 // Subscribe indicates an expected call of Subscribe
 func (mr *MockScaleEventEmitterMockRecorder) Subscribe(eventChannel interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockScaleEventEmitter)(nil).Subscribe), eventChannel)
 }

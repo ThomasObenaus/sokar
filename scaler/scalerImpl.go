@@ -43,7 +43,7 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 // applyScaleTicket applies the given ScalingTicket by issuing and tracking the scaling action.
 func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.start()
-	result := s.scaleTo(ticket.desiredCount)
+	result := s.scaleTo(ticket.desiredCount, ticket.dryRun)
 	ticket.complete(result.state)
 	s.numOpenScalingTickets--
 
@@ -75,7 +75,7 @@ func updateScaleResultMetric(result scaleResult, scaleResultCounter m.CounterVec
 }
 
 // openScalingTicket opens based on the desired count a ScalingTicket
-func (s *Scaler) openScalingTicket(desiredCount uint) error {
+func (s *Scaler) openScalingTicket(desiredCount uint, dryRun bool) error {
 
 	if s.numOpenScalingTickets > s.maxOpenScalingTickets {
 		s.metrics.scalingTicketCount.WithLabelValues("rejected").Inc()
@@ -87,11 +87,11 @@ func (s *Scaler) openScalingTicket(desiredCount uint) error {
 	s.metrics.scalingTicketCount.WithLabelValues("added").Inc()
 	// TODO: Add metric "open scaling tickets"
 	s.numOpenScalingTickets++
-	s.scaleTicketChan <- NewScalingTicket(desiredCount)
+	s.scaleTicketChan <- NewScalingTicket(desiredCount, dryRun)
 	return nil
 }
 
-func (s *Scaler) scaleTo(desiredCount uint) scaleResult {
+func (s *Scaler) scaleTo(desiredCount uint, dryRun bool) scaleResult {
 	jobName := s.job.jobName
 	currentCount, err := s.scalingTarget.GetJobCount(jobName)
 	if err != nil {
@@ -101,5 +101,5 @@ func (s *Scaler) scaleTo(desiredCount uint) scaleResult {
 		}
 	}
 
-	return s.scale(desiredCount, currentCount)
+	return s.scale(desiredCount, currentCount, dryRun)
 }

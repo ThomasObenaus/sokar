@@ -8,10 +8,11 @@ import (
 
 // Metrics represents the collection of metrics internally set by scaler.
 type Metrics struct {
-	scalingPolicyViolated  m.CounterVec
-	scalingTicketCount     m.CounterVec
-	scaleResultCounter     m.CounterVec
-	scalingDurationSeconds m.Histogram
+	scalingPolicyViolated        m.CounterVec
+	scalingTicketCount           m.CounterVec
+	scaleResultCounter           m.CounterVec
+	scalingDurationSeconds       m.Histogram
+	plannedButSkippedScalingOpen m.GaugeVec
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -49,10 +50,18 @@ func NewMetrics() Metrics {
 		Buckets:   []float64{0.2, 0.5, 1, 2, 5, 8, 15, 20, 25, 30, 40, 50, 75, 100},
 	})
 
+	direction := []string{"direction"}
+	plannedButSkippedScalingOpen := m.NewWrappedGaugeVec(prometheus.GaugeOpts{
+		Namespace: "sokar",
+		Name:      "planned_but_skipped_scaling_open",
+		Help:      "Is a helper metric which is only used in dry run mode. It is set to 1 in case there was a automatic scaling planned but not exectued due to dry-run mode. It is reset to 0 if then a scaling was applied.",
+	}, direction)
+
 	return Metrics{
-		scalingPolicyViolated:  scalingPolicyViolated,
-		scalingTicketCount:     scalingTicketCount,
-		scaleResultCounter:     scaleResultCounter,
-		scalingDurationSeconds: scalingDurationSeconds,
+		scalingPolicyViolated:        scalingPolicyViolated,
+		scalingTicketCount:           scalingTicketCount,
+		scaleResultCounter:           scaleResultCounter,
+		scalingDurationSeconds:       scalingDurationSeconds,
+		plannedButSkippedScalingOpen: plannedButSkippedScalingOpen,
 	}
 }

@@ -121,13 +121,13 @@ func Test_OpenScalingTicket(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc().Times(2)
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
-	err = scaler.openScalingTicket(0)
+	err = scaler.openScalingTicket(0, false)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), scaler.numOpenScalingTickets)
 	assert.Len(t, scaler.scaleTicketChan, 1)
 
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
-	err = scaler.openScalingTicket(0)
+	err = scaler.openScalingTicket(0, false)
 	assert.Error(t, err)
 
 	ticket := <-scaler.scaleTicketChan
@@ -156,7 +156,7 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
 	mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any())
 
-	ticket := NewScalingTicket(0)
+	ticket := NewScalingTicket(0, false)
 	scaler.applyScaleTicket(ticket)
 }
 
@@ -181,14 +181,14 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(ticketCounter)
 
 	for i := uint(0); i <= scaler.maxOpenScalingTickets; i++ {
-		err = scaler.openScalingTicket(0)
+		err = scaler.openScalingTicket(0, false)
 		assert.NoError(t, err)
 	}
 
 	// open new ticket --> should fail
 	scalingTicketCounter.EXPECT().Inc().Times(1)
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("rejected").Return(scalingTicketCounter)
-	err = scaler.openScalingTicket(0)
+	err = scaler.openScalingTicket(0, false)
 	assert.Error(t, err)
 
 	// apply/ close as many tickets as are open
@@ -206,6 +206,6 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	// open new ticket --> should NOT fail
 	scalingTicketCounter.EXPECT().Inc().Times(1)
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(1)
-	err = scaler.openScalingTicket(0)
+	err = scaler.openScalingTicket(0, false)
 	assert.NoError(t, err)
 }
