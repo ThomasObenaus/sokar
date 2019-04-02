@@ -14,6 +14,7 @@ type Metrics struct {
 	preScaleJobCount                  m.Gauge
 	plannedJobCount                   m.Gauge
 	scaleFactor                       m.Gauge
+	plannedButSkippedScaling          m.GaugeVec
 }
 
 // NewMetrics returns the metrics collection needed for the SAA.
@@ -59,6 +60,13 @@ func NewMetrics() Metrics {
 		Help:      "The scale factor (gradient) as it was received with a ScalingEvent.",
 	})
 
+	direction := []string{"direction"}
+	plannedButSkippedScaling := m.NewWrappedGaugeVec(prometheus.GaugeOpts{
+		Namespace: "sokar",
+		Name:      "planned_but_skipped_scaling",
+		Help:      "Is a helper metric which is only used in dry run mode. It is set to 1 in case there was a automatic scaling planned but not exectued due to dry-run mode. It is reset to 0 if then a scaling was applied.",
+	}, direction)
+
 	return Metrics{
 		scaleEventsTotal:                  scaleEventsTotal,
 		failedScalingTotal:                failedScalingTotal,
@@ -66,5 +74,6 @@ func NewMetrics() Metrics {
 		preScaleJobCount:                  preScaleJobCount,
 		plannedJobCount:                   plannedJobCount,
 		scaleFactor:                       scaleFactor,
+		plannedButSkippedScaling:          plannedButSkippedScaling,
 	}
 }

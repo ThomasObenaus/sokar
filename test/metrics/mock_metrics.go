@@ -35,21 +35,25 @@ func (m *MockCounter) EXPECT() *MockCounterMockRecorder {
 
 // Inc mocks base method
 func (m *MockCounter) Inc() {
+	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Inc")
 }
 
 // Inc indicates an expected call of Inc
 func (mr *MockCounterMockRecorder) Inc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Inc", reflect.TypeOf((*MockCounter)(nil).Inc))
 }
 
 // Add mocks base method
 func (m *MockCounter) Add(arg0 float64) {
+	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Add", arg0)
 }
 
 // Add indicates an expected call of Add
 func (mr *MockCounterMockRecorder) Add(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockCounter)(nil).Add), arg0)
 }
 
@@ -78,21 +82,25 @@ func (m *MockGauge) EXPECT() *MockGaugeMockRecorder {
 
 // Set mocks base method
 func (m *MockGauge) Set(arg0 float64) {
+	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Set", arg0)
 }
 
 // Set indicates an expected call of Set
 func (mr *MockGaugeMockRecorder) Set(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockGauge)(nil).Set), arg0)
 }
 
 // Add mocks base method
 func (m *MockGauge) Add(arg0 float64) {
+	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Add", arg0)
 }
 
 // Add indicates an expected call of Add
 func (mr *MockGaugeMockRecorder) Add(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockGauge)(nil).Add), arg0)
 }
 
@@ -121,6 +129,7 @@ func (m *MockGaugeVec) EXPECT() *MockGaugeVecMockRecorder {
 
 // WithLabelValues mocks base method
 func (m *MockGaugeVec) WithLabelValues(lvs ...string) metrics.Gauge {
+	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range lvs {
 		varargs = append(varargs, a)
@@ -132,6 +141,7 @@ func (m *MockGaugeVec) WithLabelValues(lvs ...string) metrics.Gauge {
 
 // WithLabelValues indicates an expected call of WithLabelValues
 func (mr *MockGaugeVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockGaugeVec)(nil).WithLabelValues), lvs...)
 }
 
@@ -160,6 +170,7 @@ func (m *MockCounterVec) EXPECT() *MockCounterVecMockRecorder {
 
 // WithLabelValues mocks base method
 func (m *MockCounterVec) WithLabelValues(lvs ...string) metrics.Counter {
+	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range lvs {
 		varargs = append(varargs, a)
@@ -171,6 +182,7 @@ func (m *MockCounterVec) WithLabelValues(lvs ...string) metrics.Counter {
 
 // WithLabelValues indicates an expected call of WithLabelValues
 func (mr *MockCounterVecMockRecorder) WithLabelValues(lvs ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithLabelValues", reflect.TypeOf((*MockCounterVec)(nil).WithLabelValues), lvs...)
 }
 
@@ -199,10 +211,12 @@ func (m *MockHistogram) EXPECT() *MockHistogramMockRecorder {
 
 // Observe mocks base method
 func (m *MockHistogram) Observe(arg0 float64) {
+	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Observe", arg0)
 }
 
 // Observe indicates an expected call of Observe
 func (mr *MockHistogramMockRecorder) Observe(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Observe", reflect.TypeOf((*MockHistogram)(nil).Observe), arg0)
 }

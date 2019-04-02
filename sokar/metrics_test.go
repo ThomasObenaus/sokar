@@ -15,6 +15,7 @@ type MetricsMocks struct {
 	preScaleJobCount                  *mock_metrics.MockGauge
 	plannedJobCount                   *mock_metrics.MockGauge
 	scaleFactor                       *mock_metrics.MockGauge
+	plannedButSkippedScaling          *mock_metrics.MockGaugeVec
 }
 
 // NewMockedMetrics creates and returns mocked metrics that can be used
@@ -32,6 +33,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mPlannedJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mPreScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
+	mPlannedButSkippedScaling := mock_metrics.NewMockGaugeVec(mockCtrl)
 	metrics := Metrics{
 		scaleEventsTotal:                  mScaleEventsTotal,
 		failedScalingTotal:                mFailedScalingTotal,
@@ -39,6 +41,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 		plannedJobCount:                   mPlannedJobCount,
 		preScaleJobCount:                  mPreScaleJobCount,
 		scaleFactor:                       mScaleFactor,
+		plannedButSkippedScaling:          mPlannedButSkippedScaling,
 	}
 	mocks := MetricsMocks{
 		scaleEventsTotal:                  mScaleEventsTotal,
@@ -47,6 +50,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 		preScaleJobCount:                  mPreScaleJobCount,
 		plannedJobCount:                   mPlannedJobCount,
 		scaleFactor:                       mScaleFactor,
+		plannedButSkippedScaling:          mPlannedButSkippedScaling,
 	}
 	return metrics, mocks
 }
@@ -59,4 +63,5 @@ func Test_NewMetrics(t *testing.T) {
 	assert.NotNil(t, metrics.preScaleJobCount)
 	assert.NotNil(t, metrics.plannedJobCount)
 	assert.NotNil(t, metrics.scaleFactor)
+	assert.NotNil(t, metrics.plannedButSkippedScaling)
 }

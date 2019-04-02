@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
 )
 
@@ -57,6 +58,8 @@ func Test_HandleScaleEvent(t *testing.T) {
 	currentScale := uint(0)
 	scaleFactor := float32(1)
 	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
@@ -67,6 +70,7 @@ func Test_HandleScaleEvent(t *testing.T) {
 	metricMocks.scaleFactor.EXPECT().Set(float64(scaleFactor))
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	metricMocks.plannedButSkippedScaling.EXPECT().WithLabelValues("up").Return(plannedButSkippedGauge)
 
 	sokar.handleScaleEvent(event)
 }
@@ -114,12 +118,15 @@ func Test_TriggerScale_Scale(t *testing.T) {
 	currentScale := uint(0)
 	scaleFactor := float32(1)
 	scaleTo := uint(1)
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo).Return(nil),
+		metricMocks.plannedButSkippedScaling.EXPECT().WithLabelValues("up").Return(plannedButSkippedGauge),
 	)
 
 	planFunc := func(scaleValue float32, currentScale uint) uint {
@@ -147,11 +154,14 @@ func Test_TriggerScale_DryRun(t *testing.T) {
 	currentScale := uint(0)
 	scaleFactor := float32(1)
 	scaleTo := uint(1)
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(1))
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
+		metricMocks.plannedButSkippedScaling.EXPECT().WithLabelValues("up").Return(plannedButSkippedGauge),
 	)
 
 	planFunc := func(scaleValue float32, currentScale uint) uint {

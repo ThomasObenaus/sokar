@@ -48,6 +48,10 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) error {
 
 	scaleDown := scaleValueToScaleDir(scaleValue)
+	scaleDirStr := "up"
+	if scaleDown {
+		scaleDirStr = "down"
+	}
 
 	preScaleJobCount, err := sk.scaler.GetCount()
 	if err != nil {
@@ -67,11 +71,11 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
 
-	sk.lastScaleAction = time.Now()
-
 	if dryRunOnly {
 		sk.logger.Info().Msg("Skip scale event. Sokar is in dry run mode.")
+		sk.metrics.plannedButSkippedScaling.WithLabelValues(scaleDirStr).Set(1)
 	} else {
+		sk.lastScaleAction = time.Now()
 		err = sk.scaler.ScaleTo(plannedJobCount)
 
 		// HACK: For now we ignore all rejected scaling tickets
@@ -79,6 +83,8 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 			sk.metrics.failedScalingTotal.Inc()
 			return err
 		}
+
+		sk.metrics.plannedButSkippedScaling.WithLabelValues(scaleDirStr).Set(0)
 	}
 
 	sk.logger.Info().Uint("preScaleCnt", preScaleJobCount).Uint("plannedCnt", plannedJobCount).Msg("Scaling triggered. Scaler will apply the planned count.")
