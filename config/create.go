@@ -5,6 +5,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,7 +22,8 @@ func NewConfigFromYAML(reader io.Reader) (Config, error) {
 // NewDefaultConfig returns a default configuration without any alerts (mappings)
 // or server configuration defined.
 func NewDefaultConfig() Config {
-	return Config{
+
+	cfg := Config{
 		Port:       11000,
 		DryRunMode: false,
 		Nomad:      Nomad{},
@@ -39,6 +43,11 @@ func NewDefaultConfig() Config {
 			UpScaleCooldownPeriod:   time.Second * 60,
 		},
 	}
+
+	cfg.pFlagSet = pflag.NewFlagSet("sokar-config", pflag.ContinueOnError)
+	cfg.viper = viper.New()
+
+	return cfg
 }
 
 // NewConfigFromYAMLFile reads the configuration from a file

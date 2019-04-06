@@ -25,6 +25,10 @@ import (
 
 func main() {
 
+	config.InitMe(os.Args)
+
+	os.Exit(0)
+
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 
