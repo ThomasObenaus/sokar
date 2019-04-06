@@ -1,6 +1,11 @@
 package config
 
-import "time"
+import (
+	"time"
+
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+)
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
@@ -11,6 +16,9 @@ type Config struct {
 	Job                  Job                  `yaml:"job"`
 	ScaleAlertAggregator ScaleAlertAggregator `yaml:"scale_alert_aggregator"`
 	CapacityPlanner      CapacityPlanner      `yaml:"capacity_planner"`
+
+	pFlagSet *pflag.FlagSet
+	viper    *viper.Viper
 }
 
 // Nomad represents the configuration for the scaling target nomad
