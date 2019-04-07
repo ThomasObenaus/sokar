@@ -46,6 +46,7 @@ func NewDefaultConfig() Config {
 
 	cfg.pFlagSet = pflag.NewFlagSet("sokar-config", pflag.ContinueOnError)
 	cfg.viper = viper.New()
+	cfg.configEntries = configEntries
 
 	return cfg
 }

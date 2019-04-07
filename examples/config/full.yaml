@@ -1,22 +1,24 @@
-dry_run_mode: false
-port: 11000
+dry-run: true
+port: 12345
 nomad:
-  srv_addr: "http://192.168.0.236:4646"
+  server-address: "http://192.168.0.236:4646"
 job:
   name: "fail-service"
-  min: 1
-  max: 10
-capacity_planner:
-  down_scale_cooldown: 20s
-  up_scale_cooldown: 10s
-scale_alert_aggregator:
-  no_alert_damping: 1.0
-  up_thresh: 10.0
-  down_thresh: -10.0
-  eval_cycle: 1s
-  eval_period_factor: 10
-  cleanup_cycle: 60s
-  scale_alerts:
+  min: 2
+  max: 20
+# CapacityPlanner
+cap:
+  down-scale-cooldown: 21s
+  up-scale-cooldown: 12s
+# ScaleAlertAggregator:
+saa:
+  no-alert-damping: 11.0
+  up-thresh: 12.0
+  down-thresh: -13.0
+  eval-cycle: 14s
+  eval-period-factor: 15
+  cleanup-cycle: 16s
+  scale-alerts:
     - name: "AlertA"
       weight: 1.5
       description: "Up alert"
@@ -24,5 +26,5 @@ scale_alert_aggregator:
       weight: -1.5
       description: "Down alert"
 logging:
-  structured: false
-  unix_ts: false
+  structured: true
+  unix-ts: true

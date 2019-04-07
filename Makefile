@@ -60,7 +60,7 @@ gen-mocks: sep
 
 run: sep build
 	@echo "--> Run ${name}"
-	./${name} --config-file="examples/config/minimal.yaml" --nomad-server-address="http://${LOCAL_IP}:4646"
+	./${name} --config-file="examples/config/minimal.yaml" --nomad.server-address="http://${LOCAL_IP}:4646"
 
 monitoring.up:
 	make -C examples/monitoring up

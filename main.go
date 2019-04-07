@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,17 +19,17 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
-
-	config.InitMe(os.Args)
-
-	os.Exit(0)
-
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
+
+	spew.Dump(cfg.Port, cfg.DryRunMode)
+	spew.Dump(cfg.CapacityPlanner, cfg.Job, cfg.Logging, cfg.ScaleAlertAggregator)
+	os.Exit(0)
 
 	// set up logging
 	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
@@ -91,38 +90,13 @@ func main() {
 func cliAndConfig(args []string) (*config.Config, error) {
 
 	// parse commandline args and consume environment variables
-	parsedArgs, err := parseArgs(args)
+	// and read config
+	cfg := config.NewDefaultConfig()
+	err := cfg.ReadConfig(args)
 	if err != nil {
 		return nil, err
 	}
 
-	if !parsedArgs.validateArgs() {
-		parsedArgs.printDefaults()
-		return nil, fmt.Errorf("Invalid cli parameters")
-	}
-
-	log.Println("Read configuration...")
-	cfg, err := config.NewConfigFromYAMLFile(parsedArgs.CfgFile)
-	if err != nil {
-		log.Printf("Error reading configuration: %s. Using the default config instead.", err.Error())
-	}
-
-	// Prefer CLI parameter for the nomadServerAddress
-	if len(parsedArgs.NomadServerAddr) > 0 {
-		cfg.Nomad.ServerAddr = parsedArgs.NomadServerAddr
-	}
-
-	// Prefer CLI parameter
-	if parsedArgs.DryRunMode {
-		cfg.DryRunMode = parsedArgs.DryRunMode
-	}
-
-	if len(cfg.Nomad.ServerAddr) == 0 {
-		parsedArgs.printDefaults()
-		return nil, fmt.Errorf("Nomad Server address not specified")
-	}
-
-	log.Println("Read configuration...done")
 	return &cfg, nil
 }
 

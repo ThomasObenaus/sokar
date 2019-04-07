@@ -1,0 +1,28 @@
+dry-run: false
+port: 11000
+nomad:
+  server-address: "http://192.168.0.236:4646"
+job:
+  name: "fail-service"
+  min: 1
+  max: 10
+capacity_planner:
+  down_scale_cooldown: 20s
+  up_scale_cooldown: 10s
+scale_alert_aggregator:
+  no_alert_damping: 1.0
+  up_thresh: 10.0
+  down_thresh: -10.0
+  eval_cycle: 1s
+  eval_period_factor: 10
+  cleanup_cycle: 60s
+  scale_alerts:
+    - name: "AlertA"
+      weight: 1.5
+      description: "Up alert"
+    - name: "AlertB"
+      weight: -1.5
+      description: "Down alert"
+logging:
+  structured: false
+  unix_ts: false

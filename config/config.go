@@ -17,6 +17,8 @@ type Config struct {
 	ScaleAlertAggregator ScaleAlertAggregator `yaml:"scale_alert_aggregator"`
 	CapacityPlanner      CapacityPlanner      `yaml:"capacity_planner"`
 
+	configEntries []configEntry
+
 	pFlagSet *pflag.FlagSet
 	viper    *viper.Viper
 }
