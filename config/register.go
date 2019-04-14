@@ -1,28 +1,42 @@
 package config
 
-import "strings"
+import (
+	"strings"
+)
 
-func (cfg *Config) registerEnvParams() {
+func (cfg *Config) registerEnvParams() error {
 	replacer := strings.NewReplacer("-", "_", ".", "_")
 	cfg.viper.SetEnvKeyReplacer(replacer)
 
 	for _, entry := range cfg.configEntries {
-		registerEnv(cfg.viper, entry)
+		if err := registerEnv(cfg.viper, entry); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (cfg *Config) registerAndParseFlags(args []string) {
+func (cfg *Config) registerAndParseFlags(args []string) error {
 
 	for _, entry := range cfg.configEntries {
-		registerFlag(cfg.pFlagSet, entry)
+		if err := registerFlag(cfg.pFlagSet, entry); err != nil {
+			return err
+		}
 	}
 
-	cfg.pFlagSet.Parse(args)
+	if err := cfg.pFlagSet.Parse(args); err != nil {
+		return err
+	}
 	cfg.viper.BindPFlags(cfg.pFlagSet)
+
+	return nil
 }
 
-func (cfg *Config) setDefaults() {
+func (cfg *Config) setDefaults() error {
 	for _, entry := range cfg.configEntries {
-		setDefault(cfg.viper, entry)
+		if err := setDefault(cfg.viper, entry); err != nil {
+			return err
+		}
 	}
+	return nil
 }
