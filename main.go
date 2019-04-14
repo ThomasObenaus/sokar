@@ -19,17 +19,12 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
-
-	spew.Dump(cfg.Port, cfg.DryRunMode)
-	spew.Dump(cfg.CapacityPlanner, cfg.Job, cfg.Logging, cfg.ScaleAlertAggregator)
-	os.Exit(0)
 
 	// set up logging
 	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
