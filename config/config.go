@@ -9,13 +9,13 @@ import (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port                 int                  `yaml:"port"`
-	DryRunMode           bool                 `yaml:"dry_run_mode"`
-	Nomad                Nomad                `yaml:"nomad"`
-	Logging              Logging              `yaml:"logging,omitempty"`
-	Job                  Job                  `yaml:"job"`
-	ScaleAlertAggregator ScaleAlertAggregator `yaml:"scale_alert_aggregator"`
-	CapacityPlanner      CapacityPlanner      `yaml:"capacity_planner"`
+	Port                 int
+	DryRunMode           bool
+	Nomad                Nomad
+	Logging              Logging
+	Job                  Job
+	ScaleAlertAggregator ScaleAlertAggregator
+	CapacityPlanner      CapacityPlanner
 
 	configEntries []configEntry
 
@@ -25,42 +25,74 @@ type Config struct {
 
 // Nomad represents the configuration for the scaling target nomad
 type Nomad struct {
-	ServerAddr string `yaml:"srv_addr"`
+	ServerAddr string
 }
 
 // Job represents the definition for the job that should be scaled.
 type Job struct {
-	Name     string `yaml:"name"`
-	MinCount uint   `yaml:"min"`
-	MaxCount uint   `yaml:"max"`
+	Name     string
+	MinCount uint
+	MaxCount uint
 }
 
 // ScaleAlertAggregator is the configuration part for the ScaleAlertAggregator
 type ScaleAlertAggregator struct {
-	NoAlertScaleDamping    float32       `yaml:"no_alert_damping,omitempty"`
-	UpScaleThreshold       float32       `yaml:"up_thresh,omitempty"`
-	DownScaleThreshold     float32       `yaml:"down_thresh,omitempty"`
-	ScaleAlerts            []Alert       `yaml:"scale_alerts,omitempty"`
-	EvaluationCycle        time.Duration `yaml:"eval_cycle,omitempty"`
-	EvaluationPeriodFactor uint          `yaml:"eval_period_factor,omitempty"`
-	CleanupCycle           time.Duration `yaml:"cleanup_cycle,omitempty"`
+	NoAlertScaleDamping    float32
+	UpScaleThreshold       float32
+	DownScaleThreshold     float32
+	ScaleAlerts            []Alert
+	EvaluationCycle        time.Duration
+	EvaluationPeriodFactor uint
+	CleanupCycle           time.Duration
 }
 
 // Alert represents an alert defined by its name and weight
 type Alert struct {
-	Name        string  `yaml:"name"`
-	Weight      float32 `yaml:"weight"`
-	Description string  `yaml:"description,omitempty"`
+	Name        string
+	Weight      float32
+	Description string
 }
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured  bool `yaml:"structured,omitempty"`
-	UxTimestamp bool `yaml:"unix_ts,omitempty"`
+	Structured  bool
+	UxTimestamp bool
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
 type CapacityPlanner struct {
-	DownScaleCooldownPeriod time.Duration `yaml:"down_scale_cooldown,omitempty"`
-	UpScaleCooldownPeriod   time.Duration `yaml:"up_scale_cooldown,omitempty"`
+	DownScaleCooldownPeriod time.Duration
+	UpScaleCooldownPeriod   time.Duration
+}
+
+// NewDefaultConfig returns a default configuration without any alerts (mappings)
+// or server configuration defined.
+func NewDefaultConfig() Config {
+
+	cfg := Config{
+		Port:       11000,
+		DryRunMode: false,
+		Nomad:      Nomad{},
+		Logging:    Logging{Structured: false, UxTimestamp: false},
+		Job:        Job{},
+		ScaleAlertAggregator: ScaleAlertAggregator{
+			EvaluationCycle:        time.Second * 1,
+			EvaluationPeriodFactor: 10,
+			CleanupCycle:           time.Second * 60,
+			NoAlertScaleDamping:    1,
+			UpScaleThreshold:       10,
+			DownScaleThreshold:     -10,
+			ScaleAlerts:            make([]Alert, 0),
+		},
+		CapacityPlanner: CapacityPlanner{
+			DownScaleCooldownPeriod: time.Second * 80,
+			UpScaleCooldownPeriod:   time.Second * 60,
+		},
+	}
+
+	cfg.pFlagSet = pflag.NewFlagSet("sokar-config", pflag.ContinueOnError)
+	cfg.viper = viper.New()
+	cfg.configEntries = configEntries
+
+	return cfg
 }

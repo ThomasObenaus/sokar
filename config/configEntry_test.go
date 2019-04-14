@@ -68,17 +68,16 @@ func Test_RegisterEnv_OK(t *testing.T) {
 	}
 	err := registerEnv(vp, cfgE)
 	assert.NoError(t, err)
-	os.Setenv(strings.ToUpper(cfgE.name), "test")
+	os.Setenv(EnvPrefix+"_"+strings.ToUpper(cfgE.name), "test")
 	assert.NotEmpty(t, vp.Get(cfgE.name))
 
 	cfgE = configEntry{
-		name:      "flag",
-		bindEnv:   true,
-		envPrefix: "sk",
+		name:    "flag",
+		bindEnv: true,
 	}
 	err = registerEnv(vp, cfgE)
 	assert.NoError(t, err)
-	os.Setenv(strings.ToUpper(cfgE.envPrefix+"_"+cfgE.name), "test")
+	os.Setenv(strings.ToUpper(EnvPrefix+"_"+cfgE.name), "test")
 	assert.NotEmpty(t, vp.Get(cfgE.name))
 }
 

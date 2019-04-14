@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"time"
 )
 
@@ -64,7 +63,7 @@ var jobMax = configEntry{
 }
 
 // ###################### Context: CapacityPlanner#########################################
-var capaDownScaleCoolDown = configEntry{
+var capDownScaleCoolDown = configEntry{
 	name:         "cap.down-scale-cooldown",
 	bindEnv:      true,
 	bindFlag:     true,
@@ -72,7 +71,7 @@ var capaDownScaleCoolDown = configEntry{
 	usage:        "The time sokar waits between downscaling actions at min.",
 }
 
-var capaUpScaleCoolDown = configEntry{
+var capUpScaleCoolDown = configEntry{
 	name:         "cap.up-scale-cooldown",
 	bindEnv:      true,
 	bindFlag:     true,
@@ -130,7 +129,7 @@ var saaEvalCylce = configEntry{
 }
 
 var saaEvalPeriodFactor = configEntry{
-	name:         "saa.eval-peridod-factor",
+	name:         "saa.eval-period-factor",
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: 10,
@@ -143,10 +142,6 @@ var saaCleanupCylce = configEntry{
 	bindFlag:     true,
 	defaultValue: time.Second * 60,
 	usage:        "Cycle/ frequency the ScaleAlertAggregator removes expired alerts.",
-}
-
-var bla = map[string]string{
-	"n": "lsdfk",
 }
 
 var saaScaleAlerts = configEntry{
@@ -165,8 +160,8 @@ var configEntries = []configEntry{
 	jobName,
 	jobMin,
 	jobMax,
-	capaDownScaleCoolDown,
-	capaUpScaleCoolDown,
+	capDownScaleCoolDown,
+	capUpScaleCoolDown,
 	loggingStructured,
 	loggingUXTS,
 	saaNoAlertDamping,
@@ -176,75 +171,4 @@ var configEntries = []configEntry{
 	saaEvalPeriodFactor,
 	saaCleanupCylce,
 	saaScaleAlerts,
-}
-
-func (cfg *Config) fillCfgValues() {
-	// Context: main
-	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
-	cfg.Port = cfg.viper.GetInt(port.name)
-
-	// Context: Nomad
-	cfg.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
-
-	// Context: job
-	cfg.Job.Name = cfg.viper.GetString(jobName.name)
-	min := cfg.viper.GetInt(jobMin.name)
-	if min < 0 {
-		min = 0
-	}
-	cfg.Job.MinCount = uint(min)
-
-	max := cfg.viper.GetInt(jobMax.name)
-	if max < 0 {
-		max = 0
-	}
-	cfg.Job.MaxCount = uint(max)
-
-	// Context: CapacityPlanner
-	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capaDownScaleCoolDown.name)
-	cfg.CapacityPlanner.UpScaleCooldownPeriod = cfg.viper.GetDuration(capaUpScaleCoolDown.name)
-
-	// Context: Logging
-	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)
-	cfg.Logging.UxTimestamp = cfg.viper.GetBool(loggingUXTS.name)
-
-	// Context: ScaleAlertAggregator
-	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(cfg.viper.GetFloat64(saaNoAlertDamping.name))
-	cfg.ScaleAlertAggregator.UpScaleThreshold = float32(cfg.viper.GetFloat64(saaUpThresh.name))
-	cfg.ScaleAlertAggregator.DownScaleThreshold = float32(cfg.viper.GetFloat64(saaDownThresh.name))
-	cfg.ScaleAlertAggregator.EvaluationCycle = cfg.viper.GetDuration(saaEvalCylce.name)
-
-	evalPeriodFactor := cfg.viper.GetInt(saaEvalPeriodFactor.name)
-	if evalPeriodFactor < 0 {
-		evalPeriodFactor = 1
-	}
-	cfg.ScaleAlertAggregator.EvaluationPeriodFactor = uint(evalPeriodFactor)
-	cfg.ScaleAlertAggregator.CleanupCycle = cfg.viper.GetDuration(saaCleanupCylce.name)
-
-	var alerts []Alert
-	alertStr := cfg.viper.GetString(saaScaleAlerts.name)
-	if len(alertStr) > 0 {
-		alerts, _ = strToAlerts(alertStr)
-	} else {
-
-		alerts = make([]Alert, 0)
-
-		sub := cfg.viper.Get(saaScaleAlerts.name)
-		if sub != nil {
-			log.Printf("SSS %v", sub)
-		}
-	}
-
-	cfg.ScaleAlertAggregator.ScaleAlerts = alerts
-
-	log.Printf("SCAAA %s", cfg.ScaleAlertAggregator.ScaleAlerts)
-
-}
-
-func strToAlerts(alertsStr string) ([]Alert, error) {
-
-	log.Printf("STR %s", alertsStr)
-	var alerts = make([]Alert, 0)
-
-	return alerts, nil
 }

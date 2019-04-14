@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -18,6 +19,9 @@ type configEntry struct {
 
 	bindEnv bool
 }
+
+// EnvPrefix is the prefix used for sokars environment variables
+const EnvPrefix = "SK"
 
 func checkViper(vp *viper.Viper, cfgEntry configEntry) error {
 	if vp == nil {
@@ -55,6 +59,10 @@ func registerFlag(flagSet *pflag.FlagSet, cfgEntry configEntry) error {
 		flagSet.IntP(cfgEntry.name, cfgEntry.flagShortName, cfgEntry.defaultValue.(int), cfgEntry.usage)
 	case bool:
 		flagSet.BoolP(cfgEntry.name, cfgEntry.flagShortName, cfgEntry.defaultValue.(bool), cfgEntry.usage)
+	case time.Duration:
+		flagSet.DurationP(cfgEntry.name, cfgEntry.flagShortName, cfgEntry.defaultValue.(time.Duration), cfgEntry.usage)
+	case float64:
+		flagSet.Float64P(cfgEntry.name, cfgEntry.flagShortName, cfgEntry.defaultValue.(float64), cfgEntry.usage)
 	default:
 		return fmt.Errorf("Type %s is not yet supported", reflect.TypeOf(cfgEntry.defaultValue))
 	}
@@ -82,5 +90,6 @@ func registerEnv(vp *viper.Viper, cfgEntry configEntry) error {
 		return err
 	}
 
+	vp.SetEnvPrefix(EnvPrefix)
 	return vp.BindEnv(cfgEntry.name)
 }

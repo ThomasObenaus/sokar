@@ -15,19 +15,24 @@ func (cfg *Config) ReadConfig(args []string) error {
 		return fmt.Errorf("Viper is nil")
 	}
 
-	cfg.setDefaults()
+	if err := cfg.setDefaults(); err != nil {
+		return err
+	}
 
-	cfg.registerAndParseFlags(args)
+	if err := cfg.registerAndParseFlags(args); err != nil {
+		return err
+	}
 
 	cfgFile := cfg.viper.GetString(configFile.name)
 	if err := cfg.readCfgFile(cfgFile); err != nil {
 		return err
 	}
 
-	cfg.registerEnvParams()
+	if err := cfg.registerEnvParams(); err != nil {
+		return err
+	}
 
-	cfg.fillCfgValues()
-	return nil
+	return cfg.fillCfgValues()
 }
 
 func (cfg *Config) readCfgFile(cfgFileName string) error {

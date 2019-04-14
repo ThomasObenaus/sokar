@@ -15,9 +15,9 @@ import (
 func Test_CliAndConfig(t *testing.T) {
 
 	nomadSrvAddr := "http://nomad.example.com:4646"
-	cfgFile := "cfg.yaml"
+	cfgFile := "examples/config/full.yaml"
 
-	args := []string{"./sokar-bin", "--config-file=" + cfgFile, "--nomad-server-address=" + nomadSrvAddr}
+	args := []string{"./sokar-bin", "--config-file=" + cfgFile, "--nomad.server-address=" + nomadSrvAddr}
 	cfg, err := cliAndConfig(args)
 
 	require.NoError(t, err)
@@ -31,13 +31,8 @@ func Test_CliAndConfig(t *testing.T) {
 
 	args = []string{"./sokar-bin"}
 	cfg, err = cliAndConfig(args)
-	assert.Error(t, err)
-	assert.Nil(t, cfg)
-
-	args = []string{"./sokar-bin", "--config-file=" + cfgFile}
-	cfg, err = cliAndConfig(args)
-	assert.Error(t, err)
-	assert.Nil(t, cfg)
+	assert.NoError(t, err)
+	assert.NotNil(t, cfg)
 }
 
 func Test_SetupLogging(t *testing.T) {

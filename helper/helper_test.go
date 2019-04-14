@@ -69,3 +69,23 @@ func Test_Must(t *testing.T) {
 	assert.NotEmpty(t, result)
 	assert.Panics(t, func() { Must(willFail(true)) })
 }
+
+func Test_CastToStringMapSlice(t *testing.T) {
+	mapStrings, err := CastToStringMapSliceE(nil)
+	assert.Empty(t, mapStrings)
+	assert.Error(t, err)
+
+	mapStrings, err = CastToStringMapSliceE("invalid input")
+	assert.Empty(t, mapStrings)
+	assert.Error(t, err)
+
+	m1 := make(map[string]string, 0)
+	m1["a"] = "A"
+	mapStringList := make([]map[string]string, 0)
+	mapStringList = append(mapStringList, m1)
+	mapStrings, err = CastToStringMapSliceE(mapStringList)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, mapStrings)
+	assert.Len(t, mapStrings, 1)
+	assert.Equal(t, m1, mapStrings[0])
+}

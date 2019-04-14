@@ -1,11 +1,11 @@
 nomad:
-  srv_addr: "http://localhost:4646"
+  server-address: "http://localhost:4646"
 job:
   name: "fail-service"
   min: 1
   max: 10
-scale_alert_aggregator:
-  scale_alerts:
+saa:
+  scale-alerts:
     - name: "AlertA"
       weight: 1.5
     - name: "AlertB"
