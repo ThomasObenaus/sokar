@@ -2,6 +2,7 @@ package config
 
 import "fmt"
 
+// ReadConfig parses commandline arguments, reads parameters from config and from environment
 func (cfg *Config) ReadConfig(args []string) error {
 	if args == nil || len(args) == 0 {
 		return fmt.Errorf("Args are missing")
