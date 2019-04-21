@@ -117,7 +117,9 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	lCfg := logging.Config{
 		UseStructuredLogging:       cfg.Logging.Structured,
 		UseUnixTimestampForLogging: cfg.Logging.UxTimestamp,
+		NoColoredLogOutput:         cfg.Logging.NoColoredLogOutput,
 	}
+
 	loggingFactory := lCfg.New()
 	return loggingFactory, nil
 }

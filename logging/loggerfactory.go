@@ -15,6 +15,7 @@ type LoggerFactory interface {
 type Config struct {
 	UseStructuredLogging       bool
 	UseUnixTimestampForLogging bool
+	NoColoredLogOutput         bool
 }
 
 func (cfg Config) New() LoggerFactory {
@@ -27,11 +28,12 @@ func (cfg Config) New() LoggerFactory {
 		zerolog.TimeFieldFormat = time.StampMilli //time.RFC3339
 	}
 
-	return &loggerFactoryImpl{UseStructuredLogging: cfg.UseStructuredLogging}
+	return &loggerFactoryImpl{UseStructuredLogging: cfg.UseStructuredLogging, NoColoredLogOutput: cfg.NoColoredLogOutput}
 }
 
 type loggerFactoryImpl struct {
 	UseStructuredLogging bool
+	NoColoredLogOutput   bool
 }
 
 func (lf *loggerFactoryImpl) NewNamedLogger(name string) zerolog.Logger {
@@ -40,7 +42,7 @@ func (lf *loggerFactoryImpl) NewNamedLogger(name string) zerolog.Logger {
 	if lf.UseStructuredLogging {
 		logger = zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
 	} else {
-		logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str("logger", name).Logger()
+		logger = log.Output(zerolog.ConsoleWriter{NoColor: lf.NoColoredLogOutput, Out: os.Stderr}).With().Timestamp().Str("logger", name).Logger()
 	}
 
 	return logger

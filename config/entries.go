@@ -96,6 +96,14 @@ var loggingUXTS = configEntry{
 	usage:        "Use Unix-Timestamp representation for log entries.",
 }
 
+var loggingNoColor = configEntry{
+	name:         "logging.no-color",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: false,
+	usage:        "If true colors in log out-put will be disabled.",
+}
+
 // ###################### Context: ScaleAlertAggregator ###################################
 var saaNoAlertDamping = configEntry{
 	name:         "saa.no-alert-damping",
@@ -164,6 +172,7 @@ var configEntries = []configEntry{
 	capUpScaleCoolDown,
 	loggingStructured,
 	loggingUXTS,
+	loggingNoColor,
 	saaNoAlertDamping,
 	saaUpThresh,
 	saaDownThresh,

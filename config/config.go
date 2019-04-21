@@ -55,8 +55,9 @@ type Alert struct {
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured  bool
-	UxTimestamp bool
+	Structured         bool
+	UxTimestamp        bool
+	NoColoredLogOutput bool
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
