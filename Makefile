@@ -85,6 +85,10 @@ docker.run: sep
 docker.push: sep
 	@echo "--> Tag image to thobe/sokar:$(tag)"
 	@docker tag thobe/sokar:latest thobe/sokar:$(tag)
+	@echo "--> Push image thobe/sokar:latest"
+	@docker push thobe/sokar:latest 
+	@echo "--> Push image thobe/sokar:$(tag)"
+	@docker push thobe/sokar:$(tag)
 
 monitoring.up:
 	make -C examples/monitoring up
