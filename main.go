@@ -22,7 +22,21 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+var version string
+var buildTime string
+var revision string
+var branch string
+
 func main() {
+
+	buildInfo := BuildInfo{
+		Version:   version,
+		BuildTime: buildTime,
+		Revision:  revision,
+		Branch:    branch,
+	}
+	buildInfo.ToStdOut()
+
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 

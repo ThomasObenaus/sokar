@@ -1,6 +1,14 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
 
+build_time := $(shell date '+%Y-%m-%d_%H-%M-%S')
+rev  := $(shell git rev-parse --short HEAD)
+flag := $(shell git diff-index --quiet HEAD -- || echo "_dirty";)
+tag := $(shell git describe --tags)
+branch := $(shell git branch | grep \* | cut -d ' ' -f2)
+revision := $(rev)$(flag)
+build_info := $(build_time)_$(revision)
+
 all: tools test build finish
 
 help:
@@ -28,9 +36,13 @@ cover-upload: sep
 	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
 	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
 
-build: sep
+build.old: sep
 	@echo "--> Build the $(name)"
 	@go build -o $(name) .
+
+build: sep
+	@echo "--> Build the $(name)"
+	@go build -v -ldflags "-X main.version=$(tag) -X main.buildTime=$(build_time) -X main.revision=$(revision) -X main.branch=$(branch)" -o $(name) .
 
 deps-update: sep
 	@echo "--> updating dependencies. Trying to find newer versions as they are listed in Gopkg.lock"
