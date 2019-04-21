@@ -21,7 +21,7 @@ COPY . /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
 # Build and test
-RUN make test build build_destination=/work name=${BINARY_NAME}
+RUN make build build_destination=/work name=${BINARY_NAME}
 
 ## The Run Image
 FROM alpine:latest
