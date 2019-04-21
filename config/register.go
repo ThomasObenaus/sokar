@@ -1,7 +1,10 @@
 package config
 
 import (
+	"os"
 	"strings"
+
+	"github.com/spf13/pflag"
 )
 
 func (cfg *Config) registerEnvParams() error {
@@ -25,6 +28,10 @@ func (cfg *Config) registerAndParseFlags(args []string) error {
 	}
 
 	if err := cfg.pFlagSet.Parse(args); err != nil {
+
+		if err == pflag.ErrHelp {
+			os.Exit(0)
+		}
 		return err
 	}
 	cfg.viper.BindPFlags(cfg.pFlagSet)

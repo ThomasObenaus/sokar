@@ -1,5 +1,8 @@
 .DEFAULT_GOAL				:= all
 name 								:= "sokar-bin"
+build_destination := "."
+sokar_file_name := $(build_destination)/$(name)
+docker_image := "thobe/sokar:latest"
 
 build_time := $(shell date '+%Y-%m-%d_%H-%M-%S')
 rev  := $(shell git rev-parse --short HEAD)
@@ -8,6 +11,7 @@ tag := $(shell git describe --tags)
 branch := $(shell git branch | grep \* | cut -d ' ' -f2)
 revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
+nomad_server := "http://${LOCAL_IP}:4646"
 
 all: tools test build finish
 
@@ -36,13 +40,9 @@ cover-upload: sep
 	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
 	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
 
-build.old: sep
-	@echo "--> Build the $(name)"
-	@go build -o $(name) .
-
 build: sep
-	@echo "--> Build the $(name)"
-	@go build -v -ldflags "-X main.version=$(tag) -X main.buildTime=$(build_time) -X main.revision=$(revision) -X main.branch=$(branch)" -o $(name) .
+	@echo "--> Build the $(name) in $(build_destination)"
+	@go build -v -ldflags "-X main.version=$(tag) -X main.buildTime=$(build_time) -X main.revision=$(revision) -X main.branch=$(branch)" -o $(sokar_file_name) .
 
 deps-update: sep
 	@echo "--> updating dependencies. Trying to find newer versions as they are listed in Gopkg.lock"
@@ -71,8 +71,20 @@ gen-mocks: sep
 	@mockgen -source=runnable.go -destination test/mock_runnable.go
 
 run: sep build
-	@echo "--> Run ${name}"
-	./${name} --config-file="examples/config/full.yaml" --nomad.server-address="http://${LOCAL_IP}:4646"
+	@echo "--> Run $(sokar_file_name)"
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --nomad.server-address=$(nomad_server)
+
+docker.build: sep
+	@echo "--> Build docker image thobe/sokar"
+	@docker build -t thobe/sokar -f ci/Dockerfile .
+
+docker.run: sep
+	@echo "--> Run docker image $(docker_image)"
+	@docker run --rm --name=sokar $(docker_image) --nomad.server-address=$(nomad_server)
+
+docker.push: sep
+	@echo "--> Tag image to thobe/sokar:$(tag)"
+	@docker tag thobe/sokar:latest thobe/sokar:$(tag)
 
 monitoring.up:
 	make -C examples/monitoring up

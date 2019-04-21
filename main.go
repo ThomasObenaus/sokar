@@ -29,6 +29,9 @@ var branch string
 
 func main() {
 
+	// read config
+	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
+
 	buildInfo := BuildInfo{
 		Version:   version,
 		BuildTime: buildTime,
@@ -36,9 +39,6 @@ func main() {
 		Branch:    branch,
 	}
 	buildInfo.ToStdOut()
-
-	// read config
-	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 
 	// set up logging
 	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
