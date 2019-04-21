@@ -38,6 +38,7 @@ func (cfg *Config) fillCfgValues() error {
 	// Context: Logging
 	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)
 	cfg.Logging.UxTimestamp = cfg.viper.GetBool(loggingUXTS.name)
+	cfg.Logging.NoColoredLogOutput = cfg.viper.GetBool(loggingNoColor.name)
 
 	// Context: ScaleAlertAggregator
 	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(cfg.viper.GetFloat64(saaNoAlertDamping.name))

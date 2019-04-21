@@ -131,6 +131,17 @@
 | flag    | --logging.unix-ts                                  |
 | env     | SK_LOGGING_UNIX_TS                                 |
 
+### NoColor
+
+|         |                                                 |
+| ------- | ----------------------------------------------- |
+| name    | logging.no-color                                |
+| usage   | If true colors in log out-put will be disabled. |
+| type    | bool                                            |
+| default | false                                           |
+| flag    | --logging.no-color                              |
+| env     | SK_LOGGING_NO_COLOR                             |
+
 ## ScaleAlertAggregator
 
 ### No Alert Damping
