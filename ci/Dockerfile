@@ -34,5 +34,7 @@ WORKDIR /app
 COPY --from=golang /work/${BINARY_NAME} ${BINARY_NAME}
 COPY --from=golang /work/src/${PROJECT_PATH}/ci/config.yaml config.yaml
 
+EXPOSE 11000
+
 ENTRYPOINT [ "./sokar","--config-file=config.yaml" ]
 CMD [ "--help" ]

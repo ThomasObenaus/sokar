@@ -80,7 +80,7 @@ docker.build: sep
 
 docker.run: sep
 	@echo "--> Run docker image $(docker_image)"
-	@docker run --rm --name=sokar $(docker_image) --nomad.server-address=$(nomad_server)
+	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --nomad.server-address=$(nomad_server)
 
 docker.push: sep
 	@echo "--> Tag image to thobe/sokar:$(tag)"
