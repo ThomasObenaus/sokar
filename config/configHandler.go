@@ -1,7 +1,7 @@
 package config
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -15,9 +15,16 @@ type ConfigHandler struct {
 
 // ConfigEndpoint represents the config end-point of sokar
 func (ch *ConfigHandler) ConfigEndpoint(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	ch.Logger.Info().Msg("Config end-point called.")
 	code := http.StatusOK
-	//sk.logger.Info().Str("health", http.StatusText(code)).Msg("Health Check called.")
 
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
-	io.WriteString(w, "Sokar is Healthy")
+
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(ch.Config); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ch.Logger.Error().Err(err).Msg("Error encoding config.")
+		return
+	}
 }
