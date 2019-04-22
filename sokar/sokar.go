@@ -15,9 +15,15 @@ var oneDayAgo = time.Now().Add(time.Hour * -24)
 type Sokar struct {
 	logger zerolog.Logger
 
-	scaler            sokarIF.Scaler
-	capacityPlanner   sokarIF.CapacityPlanner
+	// scaleEventEmitter is the component that provides the scale alerts to sokar
 	scaleEventEmitter sokarIF.ScaleEventEmitter
+
+	// capacityPlanner is the component that plans the amount of instances to be scaled
+	capacityPlanner sokarIF.CapacityPlanner
+
+	// scaler is the component that does the actual scaling by sending
+	// the needed commands to the scaling target (i.e. nomad)
+	scaler sokarIF.Scaler
 
 	// LastScaleAction represents that point in time
 	// when the scaler was triggered to execute a scaling
@@ -32,6 +38,8 @@ type Sokar struct {
 
 	wg sync.WaitGroup
 
+	// dryRunMode is a flag that defines if sokar will execute its planned
+	// scale actions or not. If the flag is true, sokar won't do anything beside planning.
 	dryRunMode bool
 }
 
