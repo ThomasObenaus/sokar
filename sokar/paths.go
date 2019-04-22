@@ -21,4 +21,7 @@ const (
 
 	// PathBuildInfo specifies the path where to get the build information about sokar
 	PathBuildInfo = "/api/build"
+
+	// PathConfig specifies the path where to get the config information used by sokar
+	PathConfig = "/api/config"
 )
