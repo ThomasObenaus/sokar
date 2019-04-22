@@ -1,8 +1,8 @@
 dry-run: false
 port: 11000
 cap:
-  down-scale-cooldown: 20s
-  up-scale-cooldown: 10s
+  down-scale-cooldown: 120s
+  up-scale-cooldown: 60s
 saa:
   no-alert-damping: 1.0
   up-thresh: 10.0
