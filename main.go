@@ -78,11 +78,11 @@ func main() {
 	logger.Info().Str("end-point", "build info").Msgf("Build Info end-point set up at %s", sokar.PathBuildInfo)
 
 	// Register config end-point
-	cfgHandler := config.ConfigHandler{
+	cfgEndPoint := config.EndPoint{
 		Config: *cfg,
 		Logger: logger,
 	}
-	api.Router.GET(sokar.PathConfig, cfgHandler.ConfigEndpoint)
+	api.Router.GET(sokar.PathConfig, cfgEndPoint.ConfigEndpoint)
 	logger.Info().Str("end-point", "config").Msgf("Config end-point set up at %s", sokar.PathConfig)
 
 	// Define runnables and their execution order

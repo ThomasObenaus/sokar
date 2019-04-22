@@ -17,7 +17,7 @@ func Test_ServeConfig(t *testing.T) {
 
 	cfg := Config{}
 
-	cfgHandler := ConfigHandler{
+	cfgHandler := EndPoint{
 		Config: cfg,
 	}
 	require.NotNil(t, cfgHandler)
