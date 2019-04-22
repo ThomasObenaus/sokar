@@ -37,6 +37,14 @@ export NOMAD_ADDR=http://$LOCAL_IP:4646 && export CONSUL_HTTP_ADDR=http://LOCAL_
 xdg-open $NOMAD_ADDR
 ```
 
+Deploy fabio
+
+- First inside `$COS/examples/devmode/fabio_docker.nomad` the `data_center` and `host-ip-address` have to be replaced with according values.
+
+```bash
+nomad run $COS/examples/devmode/fabio_docker.nomad
+```
+
 Deploy sample job
 
 ```bash
@@ -56,6 +64,12 @@ One Shot
 
 ```bash
 $SK/sokar-bin -oneshot -nomad-server-address=$NOMAD_ADDR -job-name="fail-service" -scale-by=1
+```
+
+Deploy Sokar in Nomad (dev mode)
+
+```bash
+nomad run $SK/examples/sokar.nomad
 ```
 
 ### Alertmanager
@@ -83,6 +97,8 @@ pkill consul && sudo pkill nomad && pkill alertmanager
 ```
 
 ### Alerts via Curl
+
+If fabio is deployed in a local setup (cos-devmode) the url would be: `http://${LOCAL_IP}:9999/sokar/api/alerts`.
 
 ```bash
 curl -X POST \

@@ -44,6 +44,7 @@ job "sokar" {
         port_map = {
           http = 11000
         }
+        # Needed to overwrite the --help (default argument of the sokar docker container)
         args = [
           "",
         ]
@@ -53,6 +54,14 @@ job "sokar" {
       env {
         SK_NOMAD_SERVER_ADDRESS="http://${attr.unique.network.ip-address}:4646"
         SK_LOGGING_NO_COLOR="true"
+
+        # This is just an example to show, how the needed job-configuration
+        # for the fail-service job could look like.
+        # You have to adjust all values according to your needs.
+        SK_JOB_NAME="fail-service"
+        SK_JOB_MIN=1
+        SK_JOB_MAX=10
+        SK_SAA_SCALE_ALERTS="AlertA:1.0:A upscaling alert;AlertB:-1.0:A downscaling alert"
       }
 
       # https://www.nomadproject.io/docs/job-specification/service.html
