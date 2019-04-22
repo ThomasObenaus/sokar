@@ -8,14 +8,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// ConfigHandler provides the implementation for the configuration end-point
-type ConfigHandler struct {
+// EndPoint provides the implementation for the configuration end-point
+type EndPoint struct {
 	Logger zerolog.Logger
 	Config Config
 }
 
 // ConfigEndpoint represents the config end-point of sokar
-func (ch *ConfigHandler) ConfigEndpoint(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (ch *EndPoint) ConfigEndpoint(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	ch.Logger.Info().Msg("Config end-point called.")
 	code := http.StatusOK
 
