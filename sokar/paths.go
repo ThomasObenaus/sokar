@@ -18,4 +18,7 @@ const (
 
 	// PathPartValue represents a path part that takes a value
 	PathPartValue = "value"
+
+	// PathBuildInfo specifies the path where to get the build information about sokar
+	PathBuildInfo = "/api/build"
 )
