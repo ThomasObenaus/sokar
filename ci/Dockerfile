@@ -24,7 +24,7 @@ WORKDIR /work/src/${PROJECT_PATH}
 RUN make build build_destination=/work name=${BINARY_NAME}
 
 ## The Run Image
-FROM alpine:latest
+FROM alpine:3.9
 LABEL maintainer="Thomas Obenaus"
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar
