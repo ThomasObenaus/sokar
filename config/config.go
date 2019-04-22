@@ -9,13 +9,13 @@ import (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port                 int
-	DryRunMode           bool
-	Nomad                Nomad
-	Logging              Logging
-	Job                  Job
-	ScaleAlertAggregator ScaleAlertAggregator
-	CapacityPlanner      CapacityPlanner
+	Port                 int                  `json:"port,omitempty"`
+	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
+	Nomad                Nomad                `json:"nomad,omitempty"`
+	Logging              Logging              `json:"logging,omitempty"`
+	Job                  Job                  `json:"job,omitempty"`
+	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator,omitempty"`
+	CapacityPlanner      CapacityPlanner      `json:"capacity_planner,omitempty"`
 
 	configEntries []configEntry
 
@@ -25,45 +25,45 @@ type Config struct {
 
 // Nomad represents the configuration for the scaling target nomad
 type Nomad struct {
-	ServerAddr string
+	ServerAddr string `json:"server_addr,omitempty"`
 }
 
 // Job represents the definition for the job that should be scaled.
 type Job struct {
-	Name     string
-	MinCount uint
-	MaxCount uint
+	Name     string `json:"name,omitempty"`
+	MinCount uint   `json:"min_count,omitempty"`
+	MaxCount uint   `json:"max_count,omitempty"`
 }
 
 // ScaleAlertAggregator is the configuration part for the ScaleAlertAggregator
 type ScaleAlertAggregator struct {
-	NoAlertScaleDamping    float32
-	UpScaleThreshold       float32
-	DownScaleThreshold     float32
-	ScaleAlerts            []Alert
-	EvaluationCycle        time.Duration
-	EvaluationPeriodFactor uint
-	CleanupCycle           time.Duration
+	NoAlertScaleDamping    float32       `json:"no_alert_scale_damping,omitempty"`
+	UpScaleThreshold       float32       `json:"up_scale_threshold,omitempty"`
+	DownScaleThreshold     float32       `json:"down_scale_threshold,omitempty"`
+	ScaleAlerts            []Alert       `json:"scale_alerts,omitempty"`
+	EvaluationCycle        time.Duration `json:"evaluation_cycle,omitempty"`
+	EvaluationPeriodFactor uint          `json:"evaluation_period_factor,omitempty"`
+	CleanupCycle           time.Duration `json:"cleanup_cycle,omitempty"`
 }
 
 // Alert represents an alert defined by its name and weight
 type Alert struct {
-	Name        string
-	Weight      float32
-	Description string
+	Name        string  `json:"name,omitempty"`
+	Weight      float32 `json:"weight,omitempty"`
+	Description string  `json:"description,omitempty"`
 }
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured         bool
-	UxTimestamp        bool
-	NoColoredLogOutput bool
+	Structured         bool `json:"structured,omitempty"`
+	UxTimestamp        bool `json:"ux_timestamp,omitempty"`
+	NoColoredLogOutput bool `json:"no_colored_log_output,omitempty"`
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
 type CapacityPlanner struct {
-	DownScaleCooldownPeriod time.Duration
-	UpScaleCooldownPeriod   time.Duration
+	DownScaleCooldownPeriod time.Duration `json:"down_scale_cooldown_period,omitempty"`
+	UpScaleCooldownPeriod   time.Duration `json:"up_scale_cooldown_period,omitempty"`
 }
 
 // NewDefaultConfig returns a default configuration without any alerts (mappings)
