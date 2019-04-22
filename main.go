@@ -73,9 +73,17 @@ func main() {
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
 	logger.Info().Str("end-point", "metrics").Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
 
-	// Register build info endpoint
+	// Register build info end-point
 	api.Router.GET(sokar.PathBuildInfo, buildInfo.BuildInfo)
 	logger.Info().Str("end-point", "build info").Msgf("Build Info end-point set up at %s", sokar.PathBuildInfo)
+
+	// Register config end-point
+	cfgHandler := config.ConfigHandler{
+		Config: *cfg,
+		Logger: logger,
+	}
+	api.Router.GET(sokar.PathConfig, cfgHandler.ConfigEndpoint)
+	logger.Info().Str("end-point", "config").Msgf("Config end-point set up at %s", sokar.PathConfig)
 
 	// Define runnables and their execution order
 	var orderedRunnables []Runnable
