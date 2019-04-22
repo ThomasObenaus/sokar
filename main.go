@@ -32,13 +32,13 @@ func main() {
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 
-	buildInfo := BuildInfo{
+	buildInfo := sokar.BuildInfo{
 		Version:   version,
 		BuildTime: buildTime,
 		Revision:  revision,
 		Branch:    branch,
 	}
-	buildInfo.ToStdOut()
+	buildInfo.Print(fmt.Printf)
 
 	// set up logging
 	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
