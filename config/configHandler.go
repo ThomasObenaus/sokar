@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// ConfigHandler provides the implementation for the configuration end-point
 type ConfigHandler struct {
 	Logger zerolog.Logger
 	Config Config
