@@ -88,8 +88,12 @@ type leaderState struct {
 // setLeader is used to modify the current leader of the cluster
 func (r *Raft) setLeader(leader ServerAddress) {
 	r.leaderLock.Lock()
+	oldLeader := r.leader
 	r.leader = leader
 	r.leaderLock.Unlock()
+	if oldLeader != leader {
+		r.observe(LeaderObservation{leader: leader})
+	}
 }
 
 // requestConfigChange is a helper for the above functions that make
@@ -440,6 +444,7 @@ func (r *Raft) startStopReplication() {
 				currentTerm: r.getCurrentTerm(),
 				nextIndex:   lastIdx + 1,
 				lastContact: time.Now(),
+				notify:      make(map[*verifyFuture]struct{}),
 				notifyCh:    make(chan struct{}, 1),
 				stepDown:    r.leaderState.stepDown,
 			}
@@ -515,6 +520,9 @@ func (r *Raft) leaderLoop() {
 				}
 			}
 
+			var numProcessed int
+			start := time.Now()
+
 			for {
 				e := r.leaderState.inflight.Front()
 				if e == nil {
@@ -527,9 +535,18 @@ func (r *Raft) leaderLoop() {
 				}
 				// Measure the commit time
 				metrics.MeasureSince([]string{"raft", "commitTime"}, commitLog.dispatch)
+
 				r.processLogs(idx, commitLog)
+
 				r.leaderState.inflight.Remove(e)
+				numProcessed++
 			}
+
+			// Measure the time to enqueue batch of logs for FSM to apply
+			metrics.MeasureSince([]string{"raft", "fsm", "enqueue"}, start)
+
+			// Count the number of logs enqueued
+			metrics.SetGauge([]string{"raft", "commitNumLogs"}, float32(numProcessed))
 
 			if stepDown {
 				if r.conf.ShutdownOnRemove {
@@ -551,11 +568,17 @@ func (r *Raft) leaderLoop() {
 				r.logger.Printf("[WARN] raft: New leader elected, stepping down")
 				r.setState(Follower)
 				delete(r.leaderState.notify, v)
+				for _, repl := range r.leaderState.replState {
+					repl.cleanNotify(v)
+				}
 				v.respond(ErrNotLeader)
 
 			} else {
 				// Quorum of members agree, we are still leader
 				delete(r.leaderState.notify, v)
+				for _, repl := range r.leaderState.replState {
+					repl.cleanNotify(v)
+				}
 				v.respond(nil)
 			}
 
@@ -635,7 +658,7 @@ func (r *Raft) verifyLeader(v *verifyFuture) {
 	// Trigger immediate heartbeats
 	for _, repl := range r.leaderState.replState {
 		repl.notifyLock.Lock()
-		repl.notify = append(repl.notify, v)
+		repl.notify[v] = struct{}{}
 		repl.notifyLock.Unlock()
 		asyncNotifyCh(repl.notifyCh)
 	}
@@ -837,7 +860,10 @@ func (r *Raft) dispatchLogs(applyLogs []*logFuture) {
 
 	term := r.getCurrentTerm()
 	lastIndex := r.getLastIndex()
-	logs := make([]*Log, len(applyLogs))
+
+	n := len(applyLogs)
+	logs := make([]*Log, n)
+	metrics.SetGauge([]string{"raft", "leader", "dispatchNumLogs"}, float32(n))
 
 	for idx, applyLog := range applyLogs {
 		applyLog.dispatch = now
@@ -868,10 +894,10 @@ func (r *Raft) dispatchLogs(applyLogs []*logFuture) {
 	}
 }
 
-// processLogs is used to apply all the committed entires that haven't been
+// processLogs is used to apply all the committed entries that haven't been
 // applied up to the given index limit.
 // This can be called from both leaders and followers.
-// Followers call this from AppendEntires, for n entires at a time, and always
+// Followers call this from AppendEntries, for n entries at a time, and always
 // pass future=nil.
 // Leaders call this once per inflight when entries are committed. They pass
 // the future from inflights.
@@ -888,7 +914,6 @@ func (r *Raft) processLogs(index uint64, future *logFuture) {
 		// Get the log, either from the future or from our log store
 		if future != nil && future.log.Index == idx {
 			r.processLog(&future.log, future)
-
 		} else {
 			l := new(Log)
 			if err := r.logs.GetLog(idx, l); err != nil {
