@@ -71,3 +71,8 @@
 [[constraint]]
   name = "github.com/spf13/pflag"
   version = "1.0.3"
+
+# Fixed to revision c88ee250d0221a57af388746f5cf03768c21d6e2 because of build issues inside github.com/hashicorp/nomad
+[[override]]
+  name = "github.com/ugorji/go"
+  revision = "c88ee250d0221a57af388746f5cf03768c21d6e2"
