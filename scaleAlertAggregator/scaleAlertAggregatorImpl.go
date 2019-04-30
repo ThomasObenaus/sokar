@@ -3,7 +3,7 @@ package scaleAlertAggregator
 import (
 	"time"
 
-	"github.com/thomasobenaus/sokar/sokar/iface"
+	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // Subscribe is used to register for receiving ScaleEvents
@@ -67,6 +67,10 @@ func (sc *ScaleAlertAggregator) Run() {
 
 func (sc *ScaleAlertAggregator) handleScaleAlerts(emitter string, scaPckg ScaleAlertPacket) {
 	sc.logger.Info().Msgf("%d Alerts received from %s.", len(scaPckg.ScaleAlerts), emitter)
+	for _, alert := range scaPckg.ScaleAlerts {
+		sc.logger.Debug().Msgf("Received Alert: %s, %t,%v", alert.Name, alert.Firing, alert.StartedAt)
+	}
+
 	sc.scaleAlertPool.update(emitter, scaPckg.ScaleAlerts, sc.weightMap)
 
 	updateAlertMetrics(&sc.scaleAlertPool, &sc.metrics)
