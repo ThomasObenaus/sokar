@@ -43,7 +43,7 @@ type ScaleAlertPoolEntry struct {
 // NewScaleAlertPool creates a new empty pool
 func NewScaleAlertPool() ScaleAlertPool {
 	return ScaleAlertPool{
-		ttl:     time.Second * 60,
+		ttl:     time.Minute * 60,
 		entries: make(map[uint32]ScaleAlertPoolEntry),
 	}
 }
