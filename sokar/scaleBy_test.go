@@ -99,6 +99,7 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	sokar.dryRunMode = true
 	sokar.ScaleByPercentage(w, req, params)
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -134,6 +135,7 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	sokar.dryRunMode = true
 	sokar.ScaleByPercentage(w, req, params)
 	resp := w.Result()
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
@@ -163,6 +165,7 @@ func Test_ScaleByValue_HTTPHandler_InvalidParam(t *testing.T) {
 
 	// invalid param -> BadRequest
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "invalid"}}
+	sokar.dryRunMode = true
 	sokar.ScaleByValue(w, req, params)
 	resp = w.Result()
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -198,6 +201,7 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	sokar.dryRunMode = true
 	sokar.ScaleByValue(w, req, params)
 	resp := w.Result()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -233,6 +237,7 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
+	sokar.dryRunMode = true
 	sokar.ScaleByValue(w, req, params)
 	resp := w.Result()
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)

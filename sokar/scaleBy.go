@@ -22,6 +22,11 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
+	if !sk.dryRunMode {
+		http.Error(w, "The scale by endpoint is only supported if sokar is running in dry-run mode.", http.StatusBadRequest)
+		return
+	}
+
 	percentageFract := float32(percentage) / 100.00
 	err = sk.triggerScale(false, percentageFract, planScaleByPercentage)
 	if err != nil {
@@ -42,6 +47,11 @@ func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprou
 	value, err := strconv.ParseInt(valueStr, 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Value parameter is invalid: %s", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	if !sk.dryRunMode {
+		http.Error(w, "The scale by endpoint is only supported if sokar is running in dry-run mode.", http.StatusBadRequest)
 		return
 	}
 
