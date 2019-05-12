@@ -10,7 +10,7 @@ job "fail-service" {
       
 
   group "fail-service-grp-A" {
-    count = 1
+    count = 2
     task "fail-service" {
       driver = "docker"
       config {
