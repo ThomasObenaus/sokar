@@ -19,7 +19,9 @@ func (s *Scaler) jobWatcher(cycle time.Duration) {
 			s.logger.Info().Msg("JobWatcher Closed.")
 			return
 		case <-jobWatcherTicker.C:
-			s.logger.Error().Msg("Check job state (not implemented yet).")
+			if err := s.ensureJobCount(); err != nil {
+				s.logger.Error().Msgf("Check job state failed: %s", err.Error())
+			}
 		}
 	}
 }
