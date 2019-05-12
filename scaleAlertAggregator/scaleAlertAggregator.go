@@ -87,6 +87,10 @@ type Config struct {
 	EvaluationCycle        time.Duration
 	EvaluationPeriodFactor uint
 	CleanupCycle           time.Duration
+
+	// AlertExpirationTime defines after which time an alert will be pruned if he did not
+	// get updated again by the ScaleAlertEmitter, assuming that the alert is not relevant any more.
+	AlertExpirationTime time.Duration
 }
 
 // NewDefaultConfig creates an empty default configuration
@@ -99,6 +103,7 @@ func NewDefaultConfig() Config {
 		EvaluationCycle:        time.Second * 1,
 		EvaluationPeriodFactor: 10,
 		CleanupCycle:           time.Second * 60,
+		AlertExpirationTime:    time.Minute * 10,
 	}
 }
 
@@ -108,7 +113,7 @@ func (cfg Config) New(emitters []ScaleAlertEmitter, metrics Metrics) *ScaleAlert
 		logger:                 cfg.Logger,
 		emitters:               emitters,
 		stopChan:               make(chan struct{}, 1),
-		scaleAlertPool:         NewScaleAlertPool(),
+		scaleAlertPool:         NewScaleAlertPool(cfg.AlertExpirationTime),
 		evaluationCycle:        cfg.EvaluationCycle,
 		evaluationPeriodFactor: cfg.EvaluationPeriodFactor,
 		cleanupCycle:           cfg.CleanupCycle,

@@ -58,6 +58,7 @@ func (cfg *Config) fillCfgValues() error {
 		return err
 	}
 	cfg.ScaleAlertAggregator.ScaleAlerts = alerts
+	cfg.ScaleAlertAggregator.AlertExpirationTime = cfg.viper.GetDuration(saaAlertExpirationTime.name)
 
 	return nil
 }

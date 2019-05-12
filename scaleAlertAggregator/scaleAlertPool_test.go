@@ -10,12 +10,12 @@ import (
 )
 
 func TestNewPool(t *testing.T) {
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 	assert.NotNil(t, scap.entries)
 }
 
 func Test_Cleanup(t *testing.T) {
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 
 	now := time.Now()
 	expired := now.Add(time.Minute * -1)
@@ -36,7 +36,7 @@ func Test_Cleanup(t *testing.T) {
 }
 
 func Test_Update(t *testing.T) {
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 
 	var scaleAlerts []ScaleAlert
 
@@ -77,7 +77,7 @@ func Test_Update(t *testing.T) {
 }
 
 func Test_Sync(t *testing.T) {
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 
 	weightMap := make(ScaleAlertWeightMap, 0)
 	weightMap["Alert1"] = 1
@@ -122,7 +122,7 @@ func Test_Sync(t *testing.T) {
 }
 
 func Test_Iterate(t *testing.T) {
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 
 	var scaleAlerts []ScaleAlert
 

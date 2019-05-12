@@ -144,6 +144,17 @@
 
 ## ScaleAlertAggregator
 
+### Alert Expiration Time
+
+|         |                                                                                                                                                              |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| name    | alert-expiration-time                                                                                                                                        |
+| usage   | Defines after which time an alert will be pruned if he did not get updated again by the ScaleAlertEmitter, assuming that the alert is not relevant any more. |
+| type    | Duration                                                                                                                                                     |
+| default | 10m                                                                                                                                                          |
+| flag    | --saa.alert-expiration-time                                                                                                                                  |
+| env     | SK_SAA_ALERT_EXPIRATION_TIME                                                                                                                                 |
+
 ### No Alert Damping
 
 |         |                                                                                          |
@@ -190,14 +201,14 @@
 
 ### Evaluation Period Factor
 
-|         |                                                                                                                                  |
-| ------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| name    | eval-period-factor                                                                                                               |
-| usage   | EvaluationPeriodFactor is used to calculate the evaluation period (evaluationPeriod = evaluationCycle * evaluationPeriodFactor). |
-| type    | uint                                                                                                                             |
-| default | 10                                                                                                                               |
-| flag    | --saa.eval-period-factor                                                                                                         |
-| env     | SK_SAA_EVAL_PERIOD_FACTOR                                                                                                        |
+|         |                                                                                                                                   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| name    | eval-period-factor                                                                                                                |
+| usage   | EvaluationPeriodFactor is used to calculate the evaluation period (evaluationPeriod = evaluationCycle \* evaluationPeriodFactor). |
+| type    | uint                                                                                                                              |
+| default | 10                                                                                                                                |
+| flag    | --saa.eval-period-factor                                                                                                          |
+| env     | SK_SAA_EVAL_PERIOD_FACTOR                                                                                                         |
 
 ### Cleanup Cycle
 

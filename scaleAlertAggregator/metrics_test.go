@@ -2,6 +2,7 @@ package scaleAlertAggregator
 
 import (
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -69,7 +70,7 @@ func Test_UpdateAlertMetrics(t *testing.T) {
 		mocks.alerts.EXPECT().WithLabelValues("neutral").Return(gaugeNeutral),
 	)
 
-	scap := NewScaleAlertPool()
+	scap := NewScaleAlertPool(time.Second * 60)
 	scap.entries[1] = ScaleAlertPoolEntry{weight: 1}
 	scap.entries[2] = ScaleAlertPoolEntry{weight: -1}
 	scap.entries[3] = ScaleAlertPoolEntry{weight: -100}

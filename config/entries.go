@@ -105,6 +105,14 @@ var loggingNoColor = configEntry{
 }
 
 // ###################### Context: ScaleAlertAggregator ###################################
+var saaAlertExpirationTime = configEntry{
+	name:         "saa.alert-expiration-time",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: time.Minute * 10,
+	usage:        "Defines after which time an alert will be pruned if he did not get updated again by the ScaleAlertEmitter, assuming that the alert is not relevant any more.",
+}
+
 var saaNoAlertDamping = configEntry{
 	name:         "saa.no-alert-damping",
 	bindEnv:      true,
@@ -180,4 +188,5 @@ var configEntries = []configEntry{
 	saaEvalPeriodFactor,
 	saaCleanupCylce,
 	saaScaleAlerts,
+	saaAlertExpirationTime,
 }
