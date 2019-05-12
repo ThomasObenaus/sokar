@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.0.5 (2019-05-12)
+
+- Config: The expiration time used to prune scale alerts that are not updated for a long time is now configurable (--saa.alert-expiration-time, default: 10m).
+- API: The scale-by end-points are enabled for dry-run mode only. This means in case sokar runs not in dry-run mode these and-points will respond an error and won't do any action.
+- Robustness: Sokar now immediately adjusts the scale count at startup in case the deployed scale violates the min/ max bounds of the job.
+- Robustness: Sokar now immediately adjusts the scale count to its expected count in case another source has adjusted the job count in between.
+
 ## v0.0.4 (2019-04-22)
 
 - CI/CD: Sokar is now dockerized and available on [docker hub](https://hub.docker.com/r/thobe/sokar). It can be pulled via `docker pull thobe/sokar`.
