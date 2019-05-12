@@ -16,6 +16,7 @@ saa:
   eval-cycle: 1s
   eval-period-factor: 10
   cleanup-cycle: 60s
+  alert-expiration-time: 5m
   scale-alerts:
     - name: "AlertA"
       weight: 1.5

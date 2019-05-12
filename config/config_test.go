@@ -17,6 +17,7 @@ func Test_NewDefaultConfig(t *testing.T) {
 	assert.Equal(t, time.Second*1, config.ScaleAlertAggregator.EvaluationCycle)
 	assert.Equal(t, uint(10), config.ScaleAlertAggregator.EvaluationPeriodFactor)
 	assert.Equal(t, time.Second*60, config.ScaleAlertAggregator.CleanupCycle)
+	assert.Equal(t, time.Minute*10, config.ScaleAlertAggregator.AlertExpirationTime)
 	assert.NotNil(t, config.ScaleAlertAggregator.ScaleAlerts)
 	assert.Empty(t, config.ScaleAlertAggregator.ScaleAlerts)
 }
