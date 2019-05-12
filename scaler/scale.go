@@ -153,6 +153,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
 	// Set the new job count
+	s.desiredScale = &newCount
 	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
 	if err != nil {
 		return scaleResult{
