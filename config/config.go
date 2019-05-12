@@ -44,6 +44,7 @@ type ScaleAlertAggregator struct {
 	EvaluationCycle        time.Duration `json:"evaluation_cycle,omitempty"`
 	EvaluationPeriodFactor uint          `json:"evaluation_period_factor,omitempty"`
 	CleanupCycle           time.Duration `json:"cleanup_cycle,omitempty"`
+	AlertExpirationTime    time.Duration `json:"alert_expiration_time,omitempty"`
 }
 
 // Alert represents an alert defined by its name and weight
@@ -84,6 +85,7 @@ func NewDefaultConfig() Config {
 			UpScaleThreshold:       10,
 			DownScaleThreshold:     -10,
 			ScaleAlerts:            make([]Alert, 0),
+			AlertExpirationTime:    time.Minute * 10,
 		},
 		CapacityPlanner: CapacityPlanner{
 			DownScaleCooldownPeriod: time.Second * 80,

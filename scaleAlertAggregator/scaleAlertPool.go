@@ -41,9 +41,11 @@ type ScaleAlertPoolEntry struct {
 }
 
 // NewScaleAlertPool creates a new empty pool
-func NewScaleAlertPool() ScaleAlertPool {
+// The parameter alertExpirationTime defines after which time an alert will be pruned if he did not
+// get updated again by the ScaleAlertEmitter, assuming that the alert is not relevant any more.
+func NewScaleAlertPool(alertExpirationTime time.Duration) ScaleAlertPool {
 	return ScaleAlertPool{
-		ttl:     time.Minute * 60,
+		ttl:     alertExpirationTime,
 		entries: make(map[uint32]ScaleAlertPoolEntry),
 	}
 }

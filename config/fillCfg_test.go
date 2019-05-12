@@ -30,6 +30,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--saa.cleanup-cycle=104s",
 		"--saa.eval-period-factor=105",
 		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
+		"--saa.alert-expiration-time=5m",
 	}
 
 	err := cfg.ReadConfig(args)
@@ -55,6 +56,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, "alert 1", cfg.ScaleAlertAggregator.ScaleAlerts[0].Name)
 	assert.Equal(t, float32(1.2), cfg.ScaleAlertAggregator.ScaleAlerts[0].Weight)
 	assert.Equal(t, "This is an upscaling alert", cfg.ScaleAlertAggregator.ScaleAlerts[0].Description)
+	assert.Equal(t, time.Minute*5, cfg.ScaleAlertAggregator.AlertExpirationTime)
 }
 
 func Test_AlertMapToAlerts(t *testing.T) {
