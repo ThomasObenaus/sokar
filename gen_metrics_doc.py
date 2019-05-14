@@ -109,7 +109,7 @@ print("# Metrics")
 print("")
 # print metrics table header
 print(column_format.format("Name", "Help", "Type"))
-print("|{:->50s}|{:->80s}|{:->15s}|".format("", "", ""))
+print("|{:-<50s}|{:-<80s}|{:-<15s}|".format(":", ":", ":"))
 
 mFiles = findMetricsFiles(".")
 for mFile in mFiles:
