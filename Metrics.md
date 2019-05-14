@@ -1,7 +1,7 @@
 # Metrics
 
 |Name                                              |Help                                                                            |Type           |
-|--------------------------------------------------|--------------------------------------------------------------------------------|---------------|
+|:-------------------------------------------------|:-------------------------------------------------------------------------------|:--------------|
 |sokar_sca_scaling_policy_violated                 |Counts the number of occurrences the planning of sokar would have violated the scaling policy of the job (upper or lower threshold).|Labelled Counter|
 |sokar_sca_scaling_ticket_counter                  |Counts the number of added, rejected and applied scaling tickets.               |Labelled Counter|
 |sokar_sca_scale_result_counter                    |Counts the result types of a scaling action (success, failed, ignored).         |Labelled Counter|
