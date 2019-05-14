@@ -70,6 +70,11 @@ gen-mocks: sep
 	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
 	@mockgen -source=runnable.go -destination test/mock_runnable.go
 
+gen-metrics-md: sep
+	@echo "--> generate Metrics.md"
+	@python3 gen_metrics_doc.py > Metrics.md
+
+
 run: sep build
 	@echo "--> Run $(sokar_file_name)"
 	$(sokar_file_name) --config-file="examples/config/full.yaml" --nomad.server-address=$(nomad_server)
@@ -89,6 +94,8 @@ docker.push: sep
 	@docker push thobe/sokar:latest 
 	@echo "--> Push image thobe/sokar:$(tag)"
 	@docker push thobe/sokar:$(tag)
+
+
 
 monitoring.up:
 	make -C examples/monitoring up

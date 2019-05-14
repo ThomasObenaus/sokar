@@ -3,12 +3,13 @@ import glob
 import sys
 import os
 
-metric_types = ["NewCounter", "NewGauge"]
-column_format = "|{:50s}|{:80s}|{:15s}|"
+metric_types = ["NewCounter", "NewGauge",
+                "NewWrappedGaugeVec", "NewWrappedCounterVec", "NewHistogram"]
+column_format = "|{:<50s}|{:<80s}|{:<15s}|"
 
 
 def isEndOfMetricDefinition(line):
-    if "})" in line:
+    if "})" in line or "}," in line:
         return True
     else:
         return False
@@ -16,10 +17,12 @@ def isEndOfMetricDefinition(line):
 
 def isStartOfMetricDefinition(line):
     for metric_type in metric_types:
+        #print(metric_type, "->", line)
         if metric_type in line:
             return True
         else:
-            return False
+            continue
+    return False
 
 
 def extractMetricComponent(line):
@@ -43,7 +46,12 @@ def extractMetricType(line):
         return "Counter"
     if "NewGauge" in line:
         return "Gauge"
-
+    if "NewWrappedGaugeVec" in line:
+        return "Labelled Gauge"
+    if "NewWrappedCounterVec" in line:
+        return "Labelled Counter"
+    if "NewHistogram" in line:
+        return "Histogram"
     return "Unkown"
 
 
@@ -103,9 +111,9 @@ print("")
 print(column_format.format("Name", "Help", "Type"))
 print("|{:->50s}|{:->80s}|{:->15s}|".format("", "", ""))
 
-files = findMetricsFiles(".")
-for file in files:
-    file = open("sokar/metrics.go", "r")
+mFiles = findMetricsFiles(".")
+for mFile in mFiles:
+    file = open(mFile, "r")
 
     # read as a array, where each line is one element
     file_content = file.readlines()
