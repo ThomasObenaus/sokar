@@ -1,5 +1,4 @@
 
-import glob
 import sys
 import os
 
@@ -97,7 +96,7 @@ class Metric:
 
 def findMetricsFiles(dir):
     mFiles = list()
-    for r, d, f in os.walk("."):
+    for r, _, f in os.walk("."):
         for file in f:
             full_file_name = os.path.join(r, file)
             if "/metrics.go" in full_file_name and "vendor" not in full_file_name:
