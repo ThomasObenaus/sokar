@@ -23,7 +23,7 @@ func (cp *CapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown bo
 
 	dur := cp.upScaleCooldownPeriod
 	if scaleDown {
-		dur = cp.upScaleCooldownPeriod
+		dur = cp.downScaleCooldownPeriod
 	}
 
 	if timeOfLastScale.Add(dur).After(now) {
