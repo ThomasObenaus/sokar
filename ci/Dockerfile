@@ -8,9 +8,10 @@ ARG BINARY_NAME=sokar
 # Install needed tools
 RUN set -ex &&\ 
   apk update &&\ 
-  apk add --no-cache make git
+  apk add --no-cache make git gcc musl-dev
 
 RUN mkdir -p /work
+RUN mkdir -p /work/bin
 
 ENV GOPATH /work
 ENV GOBIN /work/bin
@@ -20,7 +21,10 @@ ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 COPY . /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
-# Build and test
+# Test
+RUN make tools test
+
+# Build
 RUN make build build_destination=/work name=${BINARY_NAME}
 
 ## The Run Image
