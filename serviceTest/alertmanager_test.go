@@ -40,7 +40,7 @@ func Test_BuildAlertRequest(t *testing.T) {
 
 func Test_New(t *testing.T) {
 
-	am := new("http://localhost", time.Second*2)
+	am := newAlertManager("http://localhost", time.Second*2)
 
 	require.NotNil(t, am.client)
 	assert.Equal(t, time.Second*2, am.client.Timeout)
@@ -76,10 +76,10 @@ func Test_SendAlertmanagerRequest(t *testing.T) {
 	sokarURL := sokarSrv.URL
 	defer sokarSrv.Close()
 
-	am := new(sokarURL, time.Second*2)
+	am := newAlertManager(sokarURL, time.Second*2)
 	s, err := requestToStr(request)
 	require.NoError(t, err)
-	err = am.sendAlertmanagerRequest(s)
+	_, err = am.sendAlertmanagerRequest(s)
 	require.NoError(t, err)
 
 	require.NoError(t, sm.err)

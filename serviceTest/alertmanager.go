@@ -2,10 +2,11 @@ package serviceTest
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/thomasobenaus/sokar/sokar"
 )
 
 type alertmanager struct {
@@ -39,7 +40,7 @@ type alert struct {
 // kvp a key value pair
 type kvp map[string]string
 
-func new(sokarAddress string, timeout time.Duration) alertmanager {
+func newAlertManager(sokarAddress string, timeout time.Duration) alertmanager {
 	return alertmanager{
 		sokarAddress: sokarAddress,
 		client: &http.Client{
@@ -68,20 +69,19 @@ func requestToStr(request request) (string, error) {
 	return string(data[:len(data)]), nil
 }
 
-func (am *alertmanager) sendAlertmanagerRequest(request string) error {
+func (am *alertmanager) sendAlertmanagerRequest(request string) (int, error) {
 
-	req, err := http.NewRequest("POST", am.sokarAddress, strings.NewReader(request))
+	req, err := http.NewRequest("POST", am.sokarAddress+sokar.PathAlertmanager, strings.NewReader(request))
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := am.client.Do(req)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer resp.Body.Close()
-	fmt.Println("response Status:", resp.Status)
-	return nil
+	return resp.StatusCode, nil
 }

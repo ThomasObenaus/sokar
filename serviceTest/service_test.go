@@ -3,11 +3,17 @@ package serviceTest
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+var sokarAddr string
 
 func setup() {
 	fmt.Println("Setup")
@@ -19,10 +25,14 @@ func shutdown() {
 
 func TestMain(m *testing.M) {
 
-	sokarAddr := flag.String("sokar-address", "", "Address of sokar")
+	sokarAddrPtr := flag.String("sokar-address", "", "Address of sokar")
 	flag.Parse()
 
-	fmt.Printf("Sokar Address: %s\n", *sokarAddr)
+	if sokarAddrPtr != nil {
+		sokarAddr = *sokarAddrPtr
+	}
+
+	fmt.Printf("Sokar Address: %s\n", sokarAddr)
 
 	setup()
 	code := m.Run()
@@ -30,12 +40,34 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestScale_JobDead(t *testing.T) {
-
-	assert.Equal(t, "expected", "expected")
+func Test_AlertmanagerRequest(t *testing.T) {
+	// Invalid request from Alertmanager
+	am := newAlertManager(sokarAddr, time.Second*2)
+	code, err := am.sendAlertmanagerRequest("INVALID")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, code)
 }
 
-func TestScale_JobCheck(t *testing.T) {
+func Test_Alert(t *testing.T) {
+	//gock.New("http://localhost:12000").
 
-	assert.Equal(t, "expected", "expected")
+	nm := &nomadMock{}
+
+	http.Handle("/", nm)
+
+	go log.Fatal(http.ListenAndServe(":12000", nil))
+
+	am := newAlertManager(sokarAddr, time.Second*2)
+
+	alerts := make([]alert, 0)
+	alerts = append(alerts, alert{
+		Labels: map[string]string{"alertname": "Alert A"},
+	})
+
+	request, err := requestToStr(buildAlertRequest(alerts))
+	require.NoError(t, err)
+
+	code, err := am.sendAlertmanagerRequest(request)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, code)
 }
