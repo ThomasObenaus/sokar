@@ -1,4 +1,4 @@
-package nomadworker
+package nomadWorker
 
 import (
 	"testing"

@@ -14,6 +14,7 @@ import (
 	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
+	"github.com/thomasobenaus/sokar/nomadWorker"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -214,13 +215,27 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 		return nil, fmt.Errorf("Logging factory is nil")
 	}
 
-	// Set up the nomad connector
-	nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)
-	nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
-	nomad, err := nomadConfig.New()
-	if err != nil {
-		return nil, fmt.Errorf("Failed setting up nomad connector: %s", err)
+	var scalingTarget scaler.ScalingTarget
+
+	if true {
+		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker")}
+		nomadWorker, err := cfg.New()
+		if err != nil {
+			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
+		}
+		scalingTarget = nomadWorker
+	} else {
+		nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)
+		nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
+		nomad, err := nomadConfig.New()
+		if err != nil {
+			return nil, fmt.Errorf("Failed setting up nomad connector: %s", err)
+		}
+
+		scalingTarget = nomad
 	}
+
+	// Set up the nomad connector
 
 	scaCfg := scaler.Config{
 		JobName:  jobName,
@@ -229,7 +244,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 		Logger:   logF.NewNamedLogger("sokar.scaler"),
 	}
 
-	scaler, err := scaCfg.New(nomad, scaler.NewMetrics())
+	scaler, err := scaCfg.New(scalingTarget, scaler.NewMetrics())
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s", err)
 	}
