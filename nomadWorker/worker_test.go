@@ -10,7 +10,7 @@ import (
 func TestSetJobCount(t *testing.T) {
 
 	cfg := Config{}
-	connector, err := cfg.New()
+	connector, err := cfg.New(0)
 
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -22,7 +22,7 @@ func TestSetJobCount(t *testing.T) {
 func TestGetJobCount(t *testing.T) {
 
 	cfg := Config{}
-	connector, err := cfg.New()
+	connector, err := cfg.New(100)
 
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -40,7 +40,7 @@ func TestGetJobCount(t *testing.T) {
 func TestIsJobDead(t *testing.T) {
 
 	cfg := Config{}
-	connector, err := cfg.New()
+	connector, err := cfg.New(0)
 
 	require.NotNil(t, connector)
 	require.NoError(t, err)
