@@ -3,13 +3,14 @@ package nomadWorker
 // SetJobCount will scale the nomad workers to the desired count (amount of instances)
 func (c *Connector) SetJobCount(datacenter string, count uint) error {
 	c.log.Warn().Msgf("nomadworker.Connector.SetJobCount(%s, %d) not implemented yet.", datacenter, count)
+	c.currentCount = count
 	return nil
 }
 
 // GetJobCount will return the count of the nomad workers
 func (c *Connector) GetJobCount(datacenter string) (uint, error) {
-	c.log.Warn().Msgf("nomadworker.Connector.GetJobCount(%s) not implemented yet. Will return 0.", datacenter)
-	return 0, nil
+	c.log.Warn().Msgf("nomadworker.Connector.GetJobCount(%s) not implemented yet. Will return %d.", datacenter, c.currentCount)
+	return c.currentCount, nil
 }
 
 // IsJobDead will return if the nomad workers of the actual data-center are still available.

@@ -29,7 +29,12 @@ func TestGetJobCount(t *testing.T) {
 
 	count, err := connector.GetJobCount("public-services")
 	assert.NoError(t, err)
-	assert.Equal(t, uint(0), count)
+	assert.Equal(t, uint(100), count)
+
+	connector.SetJobCount("public-services", 10)
+	count, err = connector.GetJobCount("public-services")
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), count)
 }
 
 func TestIsJobDead(t *testing.T) {
