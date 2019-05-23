@@ -1,4 +1,4 @@
-package nomadworker
+package nomadWorker
 
 // SetJobCount will scale the nomad workers to the desired count (amount of instances)
 func (c *Connector) SetJobCount(datacenter string, count uint) error {
