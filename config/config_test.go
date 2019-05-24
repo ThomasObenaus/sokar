@@ -10,6 +10,7 @@ import (
 func Test_NewDefaultConfig(t *testing.T) {
 	config := NewDefaultConfig()
 	assert.Equal(t, 11000, config.Port)
+	assert.Equal(t, false, config.DummyScalingTarget)
 	assert.Equal(t, false, config.DryRunMode)
 	assert.Equal(t, float32(1), config.ScaleAlertAggregator.NoAlertScaleDamping)
 	assert.Equal(t, float32(10), config.ScaleAlertAggregator.UpScaleThreshold)

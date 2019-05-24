@@ -14,6 +14,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	cfg := NewDefaultConfig()
 	args := []string{
 		"--dry-run",
+		"--dummy-scaling-target",
 		"--port=1000",
 		"--nomad.server-address=http://nomad",
 		"--job.name=job",
@@ -35,6 +36,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
+	assert.True(t, cfg.DummyScalingTarget)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
 	assert.Equal(t, "http://nomad", cfg.Nomad.ServerAddr)

@@ -28,6 +28,14 @@ var port = configEntry{
 	usage:        "Port where sokar is listening.",
 }
 
+var dummyScalingTarget = configEntry{
+	name:         "dummy-scaling-target",
+	bindFlag:     true,
+	bindEnv:      true,
+	defaultValue: false,
+	usage:        "If true a dummy scaling target will be used instead of nomad.",
+}
+
 // ###################### Context: nomad ####################################################
 var nomadServerAddress = configEntry{
 	name:         "nomad.server-address",
@@ -172,6 +180,7 @@ var configEntries = []configEntry{
 	configFile,
 	port,
 	dryRun,
+	dummyScalingTarget,
 	nomadServerAddress,
 	jobName,
 	jobMin,

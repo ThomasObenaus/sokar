@@ -35,6 +35,17 @@
 | flag    | --port                         |
 | env     | SK_PORT                        |
 
+### DummyScalingTarget
+
+|         |                                                               |
+| ------- | ------------------------------------------------------------- |
+| name    | dummy-scaling-target                                          |
+| usage   | If true a dummy scaling target will be used instead of nomad. |
+| type    | bool                                                          |
+| default | false                                                         |
+| flag    | --dummy-scaling-target                                        |
+| env     | SK_DUMMY_SCALING_TARGET                                       |
+
 ## Nomad
 
 ### Server-Address
