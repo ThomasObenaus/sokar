@@ -57,7 +57,7 @@ func main() {
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
 	logger.Info().Msg("4. Setup: Scaler")
-	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, loggingFactory)).(*scaler.Scaler)
+	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, cfg.DummyScalingTarget, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
 	capaCfg := capacityPlanner.Config{
@@ -209,7 +209,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 }
 
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
-func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, useDummyScalingTarget bool, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
@@ -217,7 +217,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, logF l
 
 	var scalingTarget scaler.ScalingTarget
 
-	if true {
+	if useDummyScalingTarget {
 
 		// HACK: Take max/2 as initial count fot the dummy implementation of the nomadWorker
 		initialCount := max / 2
