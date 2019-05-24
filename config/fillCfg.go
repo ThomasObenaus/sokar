@@ -11,6 +11,7 @@ import (
 
 func (cfg *Config) fillCfgValues() error {
 	// Context: main
+	cfg.DummyScalingTarget = cfg.viper.GetBool(dummyScalingTarget.name)
 	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
 	cfg.Port = cfg.viper.GetInt(port.name)
 

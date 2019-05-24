@@ -10,6 +10,7 @@ import (
 // Config is a structure containing the configuration for sokar
 type Config struct {
 	Port                 int                  `json:"port,omitempty"`
+	DummyScalingTarget   bool                 `json:"dummy_scaling_target,omitempty"`
 	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
 	Nomad                Nomad                `json:"nomad,omitempty"`
 	Logging              Logging              `json:"logging,omitempty"`
