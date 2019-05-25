@@ -23,3 +23,25 @@ func getTagValue(key string, tags []*autoscaling.TagDescription) (string, error)
 	// not found
 	return "", fmt.Errorf("Tag with key %s was not found", key)
 }
+
+func filterAutoScalingGroupByKey(key string, value string, autoScalingGroups []*autoscaling.Group) *autoscaling.Group {
+
+	for _, asg := range autoScalingGroups {
+		if asg == nil {
+			continue
+		}
+
+		tags := asg.Tags
+		tagVal, err := getTagValue(key, tags)
+
+		if err != nil {
+			continue
+		}
+
+		if value == tagVal {
+			return asg
+		}
+	}
+
+	return nil
+}
