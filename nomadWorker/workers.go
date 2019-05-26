@@ -15,8 +15,23 @@ func (c *Connector) SetJobCount(datacenter string, count uint) error {
 
 // GetJobCount will return the count of the nomad workers
 func (c *Connector) GetJobCount(datacenter string) (uint, error) {
-	c.log.Warn().Msgf("nomadworker.Connector.GetJobCount(%s) not implemented yet. Will return %d.", datacenter, c.currentCount)
-	return c.currentCount, nil
+	sess, err := c.createSession()
+	if err != nil {
+		return 0, err
+	}
+	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
+
+	asgQuery := autoScalingGroupQuery{
+		asgIF:    autoScalingIF,
+		tagKey:   c.tagKey,
+		tagValue: datacenter,
+	}
+	min, desired, max, err := asgQuery.getScaleNumbers()
+	if err != nil {
+		return 0, err
+	}
+	c.log.Info().Msgf("Current scale numbers min=%d, desired=%d, max=%d.", min, desired, max)
+	return desired, nil
 }
 
 // IsJobDead will return if the nomad workers of the actual data-center are still available.
