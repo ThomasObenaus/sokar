@@ -35,7 +35,9 @@
 | flag    | --port                         |
 | env     | SK_PORT                        |
 
-### DummyScalingTarget
+### [DEPRECATED] DummyScalingTarget
+
+* Will be replaced by Scaler.ScalingTarget
 
 |         |                                                               |
 | ------- | ------------------------------------------------------------- |
@@ -45,6 +47,20 @@
 | default | false                                                         |
 | flag    | --dummy-scaling-target                                        |
 | env     | SK_DUMMY_SCALING_TARGET                                       |
+
+## Scaler
+
+### ScalingTarget
+
+|         |                                                                                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| name    | mode                                                                                                                                                                                                                     |
+| usage   | Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
+| type    | string (enum: job \| dc )                                                                                                                                                                                                |
+| default | job                                                                                                                                                                                                                      |
+| flag    | --sca.mode                                                                                                                                                                                                               |
+| env     | SK_SCA_MODE                                                                                                                                                                                                              |
+
 
 ## Nomad
 

@@ -52,17 +52,17 @@ func Test_SetupScaler(t *testing.T) {
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
 
 	// no logging factory
-	scaler, err := setupScaler("any", 0, 1, "nomad-addr", false, nil)
+	scaler, err := setupScaler("any", 0, 1, "nomad-addr", config.ScalerModeJob, nil)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
-	scaler, err = setupScaler("any", 0, 1, "", false, logF)
+	scaler, err = setupScaler("any", 0, 1, "", config.ScalerModeJob, logF)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(2)
-	scaler, err = setupScaler("any", 0, 1, "https://nomad.com", false, logF)
+	scaler, err = setupScaler("any", 0, 1, "https://nomad.com", config.ScalerModeJob, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scaler)
 

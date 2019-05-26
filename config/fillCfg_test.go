@@ -15,6 +15,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	args := []string{
 		"--dry-run",
 		"--dummy-scaling-target",
+		"--sca.mode=dc",
 		"--port=1000",
 		"--nomad.server-address=http://nomad",
 		"--job.name=job",
@@ -36,6 +37,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Mode)
 	assert.True(t, cfg.DummyScalingTarget)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
@@ -195,4 +197,18 @@ func Test_ExtractAlertsFromViper(t *testing.T) {
 	alerts, err = extractAlertsFromViper(vp)
 	assert.Empty(t, alerts)
 	assert.NoError(t, err)
+}
+
+func Test_StrToScalerMode(t *testing.T) {
+	mode, err := strToScalerMode("")
+	assert.Empty(t, mode)
+	assert.Error(t, err)
+
+	mode, err = strToScalerMode("JOB")
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeJob, mode)
+
+	mode, err = strToScalerMode("Dc")
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeDataCenter, mode)
 }
