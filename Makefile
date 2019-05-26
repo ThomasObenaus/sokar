@@ -62,6 +62,7 @@ gen-mocks: sep
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
 	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go 
+	@mockgen -source=nomadWorker/awsAsg_IF.go -destination test/nomadWorker/mock_awsAsg_IF.go 
 	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
