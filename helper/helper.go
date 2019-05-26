@@ -107,3 +107,19 @@ func CastToStringMapSlice(iface interface{}) []map[string]string {
 	result, _ := CastToStringMapSliceE(iface)
 	return result
 }
+
+// CastInt64ToUint safely casts the given int64 pointer value to uint value.
+// If the input is nil then an error will be returned.
+// If the input is < 0 then 0 is returned.
+func CastInt64ToUint(in *int64) (uint, error) {
+	if in == nil {
+		return 0, fmt.Errorf("In is nil")
+	}
+
+	// avoid underflow
+	if *in <= 0 {
+		return 0, nil
+	}
+
+	return uint(*in), nil
+}
