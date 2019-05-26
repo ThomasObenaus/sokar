@@ -7,6 +7,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_CastInt64ToUint(t *testing.T) {
+	result, err := CastInt64ToUint(nil)
+	assert.Error(t, err)
+	assert.Equal(t, uint(0), result)
+
+	in := int64(10)
+	result, err = CastInt64ToUint(&in)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), result)
+
+	in = int64(-10)
+	result, err = CastInt64ToUint(&in)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(0), result)
+}
+
 func Test_SubUint(t *testing.T) {
 	r := SubUint(1, 1)
 	assert.Equal(t, 0, r)
