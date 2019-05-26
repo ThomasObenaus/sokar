@@ -40,7 +40,7 @@ type Config struct {
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New(initialDummyCount uint) (*Connector, error) {
+func (cfg *Config) New() (*Connector, error) {
 
 	nc := &Connector{
 		log:                        cfg.Logger,
