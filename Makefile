@@ -33,7 +33,7 @@ help:
 .PHONY: test
 test: sep gen-mocks
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./ -covermode=count -coverprofile=coverage.out
+	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./nomadWorker ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep
 	# for this to get working you have to export the repo_token for your repo at coveralls.io

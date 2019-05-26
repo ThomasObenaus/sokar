@@ -9,7 +9,7 @@ import (
 func TestNewConnector(t *testing.T) {
 
 	cfg := Config{}
-	connector, err := cfg.New(0)
+	connector, err := cfg.New()
 
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)

@@ -45,7 +45,7 @@ func Test_CreateSession(t *testing.T) {
 func TestSetJobCount(t *testing.T) {
 
 	cfg := Config{}
-	connector, err := cfg.New(0)
+	connector, err := cfg.New()
 
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func TestGetJobCount(t *testing.T) {
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
 	cfg := Config{}
-	connector, err := cfg.New(0)
+	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -111,21 +111,16 @@ func Test_IsJobDead(t *testing.T) {
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
 	cfg := Config{}
-	connector, err := cfg.New(0)
+	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
-
-	// no error, dead
-	dead, err := connector.IsJobDead("invalid")
-	assert.NoError(t, err)
-	assert.True(t, dead)
 
 	connector.autoScalingFactory = asgFactory
 
 	// error, no asgs
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	dead, err = connector.IsJobDead("public-services")
+	dead, err := connector.IsJobDead("public-services")
 	assert.Error(t, err)
 	assert.True(t, dead)
 
