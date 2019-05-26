@@ -219,10 +219,8 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, useDum
 
 	if useDummyScalingTarget {
 
-		// HACK: Take max/2 as initial count fot the dummy implementation of the nomadWorker
-		initialCount := max / 2
 		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker")}
-		nomadWorker, err := cfg.New(initialCount)
+		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
 		}
