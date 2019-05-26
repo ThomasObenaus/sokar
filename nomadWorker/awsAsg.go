@@ -18,6 +18,8 @@ type autoScalingGroupQuery struct {
 	tagValue string
 }
 
+// getScaleNumbers returns the numbers reflecting the scale of the AutoScalingGroup specified by the
+// autoScalingGroupQuery.
 func (asgQ *autoScalingGroupQuery) getScaleNumbers() (minCount uint, desiredCount uint, maxCount uint, err error) {
 
 	asgs, err := getAutoScalingGroups(asgQ.asgIF)
