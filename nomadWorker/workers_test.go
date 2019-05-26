@@ -55,21 +55,51 @@ func TestSetJobCount(t *testing.T) {
 }
 
 func TestGetJobCount(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
+	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
 	cfg := Config{}
-	connector, err := cfg.New(100)
-
+	connector, err := cfg.New(0)
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
-	count, err := connector.GetJobCount("public-services")
-	assert.NoError(t, err)
-	assert.Equal(t, uint(100), count)
+	connector.autoScalingFactory = asgFactory
 
-	connector.SetJobCount("public-services", 10)
-	count, err = connector.GetJobCount("public-services")
+	// error, no numbers
+	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
+	count, err := connector.GetJobCount("invalid")
+	assert.Error(t, err)
+	assert.Equal(t, uint(0), count)
+
+	// no error
+	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
+	minCount := int64(1)
+	desiredCount := int64(123)
+	maxCount := int64(3)
+	autoScalingGroups := make([]*autoscaling.Group, 0)
+	key := "datacenter"
+	tagVal := "private-services"
+	asgName := "my-asg"
+	var tags []*autoscaling.TagDescription
+	td := autoscaling.TagDescription{Key: &key, Value: &tagVal}
+	tags = append(tags, &td)
+	asgIn := autoscaling.Group{
+		Tags:                 tags,
+		AutoScalingGroupName: &asgName,
+		MinSize:              &minCount,
+		MaxSize:              &maxCount,
+		DesiredCapacity:      &desiredCount,
+	}
+	autoScalingGroups = append(autoScalingGroups, &asgIn)
+	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
+	count, err = connector.GetJobCount(tagVal)
 	assert.NoError(t, err)
-	assert.Equal(t, uint(10), count)
+	assert.Equal(t, uint(123), count)
 }
 
 func Test_IsJobDead(t *testing.T) {
