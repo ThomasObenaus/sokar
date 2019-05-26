@@ -3,14 +3,28 @@ package nomadWorker
 import (
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws/session"
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/thomasobenaus/sokar/helper"
+	iface "github.com/thomasobenaus/sokar/nomadWorker/iface"
 )
+
+type autoScalingFactoryImpl struct {
+}
+
+func (asf *autoScalingFactoryImpl) CreateAutoScaling(session *session.Session) iface.AutoScaling {
+
+	if session == nil {
+		return nil
+	}
+
+	return aws.New(session)
+}
 
 type autoScalingGroupQuery struct {
 
 	// asgIF is the interface to aws used to query information about AutoScalingGroup's
-	asgIF AutoScaling
+	asgIF iface.AutoScaling
 
 	// tagKey is the name of the tag that should be used to find the ASG
 	tagKey string
@@ -94,7 +108,7 @@ func filterAutoScalingGroupByTag(tagKey string, tagValue string, autoScalingGrou
 }
 
 // getAutoScalingGroups obtains all AutoScalingGroup's
-func getAutoScalingGroups(autoScaling AutoScaling) ([]*aws.Group, error) {
+func getAutoScalingGroups(autoScaling iface.AutoScaling) ([]*aws.Group, error) {
 	input := aws.DescribeAutoScalingGroupsInput{}
 	result, err := autoScaling.DescribeAutoScalingGroups(&input)
 	if err != nil {

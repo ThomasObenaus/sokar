@@ -11,6 +11,20 @@ import (
 	"github.com/thomasobenaus/sokar/test/nomadWorker"
 )
 
+func Test_CreateAutoScaling(t *testing.T) {
+
+	asgF := autoScalingFactoryImpl{}
+
+	// nil, no session
+	as := asgF.CreateAutoScaling(nil)
+	assert.Nil(t, as)
+
+	//  no session
+	sess, _ := newAWSSession()
+	as = asgF.CreateAutoScaling(sess)
+	assert.NotNil(t, as)
+}
+
 func TestGetTagValue(t *testing.T) {
 
 	// not found, empty

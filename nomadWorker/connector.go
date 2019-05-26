@@ -1,7 +1,9 @@
 package nomadWorker
 
 import (
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rs/zerolog"
+	iface "github.com/thomasobenaus/sokar/nomadWorker/iface"
 )
 
 // Connector is a object that allows to interact with nomad worker
@@ -9,6 +11,23 @@ type Connector struct {
 	log zerolog.Logger
 
 	currentCount uint
+
+	// tagKey is the name of the tag that is used to find the instances/ autoscalinggroup/ node
+	// of the nomad worker that should be scaled.
+	tagKey string
+
+	autoScalingFactory iface.AutoScalingFactory
+
+	// fnCreateSession is the function that should be used to create the aws session
+	// which is needed to access the aws resources.
+	fnCreateSession func() (*session.Session, error)
+
+	// fnCreateSessionFromProfile is the function that should be used to create the aws session
+	// which is needed to access the aws resources.
+	// Here a given aws profile name is regarded.
+	fnCreateSessionFromProfile func(profile string) (*session.Session, error)
+
+	awsProfile string
 }
 
 // Config contains the main configuration for the nomad worker connector
@@ -22,7 +41,13 @@ func (cfg *Config) New(initialDummyCount uint) (*Connector, error) {
 	nc := &Connector{
 		log: cfg.Logger,
 		// HACK: Set it to initialDummyCount for now to ensure at startup that a scale is possible (i.e. with a value 0 a initial downscale would be ignored)
-		currentCount: initialDummyCount,
+		currentCount:               initialDummyCount,
+		tagKey:                     "datacenter",
+		fnCreateSession:            newAWSSession,
+		fnCreateSessionFromProfile: newAWSSessionFromProfile,
+		// FIXME: This has to be handed in via parameter. Should not be hardcoded
+		awsProfile:         "integration",
+		autoScalingFactory: &autoScalingFactoryImpl{},
 	}
 
 	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
