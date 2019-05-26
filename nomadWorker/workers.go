@@ -9,7 +9,6 @@ import (
 // SetJobCount will scale the nomad workers to the desired count (amount of instances)
 func (c *Connector) SetJobCount(datacenter string, count uint) error {
 	c.log.Warn().Msgf("nomadworker.Connector.SetJobCount(%s, %d) not implemented yet.", datacenter, count)
-	c.currentCount = count
 	return nil
 }
 
