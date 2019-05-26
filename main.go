@@ -57,7 +57,11 @@ func main() {
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
 	logger.Info().Msg("4. Setup: Scaler")
-	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, cfg.DummyScalingTarget, loggingFactory)).(*scaler.Scaler)
+	scalerMode := cfg.Scaler.Mode
+	if cfg.DummyScalingTarget {
+		scalerMode = config.ScalerModeDataCenter
+	}
+	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, scalerMode, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
 	capaCfg := capacityPlanner.Config{
@@ -209,7 +213,7 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 }
 
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
-func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, useDummyScalingTarget bool, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, mode config.ScalerMode, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
@@ -217,7 +221,7 @@ func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, useDum
 
 	var scalingTarget scaler.ScalingTarget
 
-	if useDummyScalingTarget {
+	if mode == config.ScalerModeDataCenter {
 
 		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker")}
 		nomadWorker, err := cfg.New()

@@ -7,9 +7,20 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ScalerMode represents the mode the Scaler can be set to
+type ScalerMode string
+
+const (
+	// ScalerModeJob that the number of allocations of a job will be scaled
+	ScalerModeJob ScalerMode = "job"
+	// ScalerModeDataCenter that the number of instances/ workers of a data-center will be scaled
+	ScalerModeDataCenter ScalerMode = "dc"
+)
+
 // Config is a structure containing the configuration for sokar
 type Config struct {
 	Port                 int                  `json:"port,omitempty"`
+	Scaler               Scaler               `json:"scaler,omitempty"`
 	DummyScalingTarget   bool                 `json:"dummy_scaling_target,omitempty"`
 	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
 	Nomad                Nomad                `json:"nomad,omitempty"`
@@ -22,6 +33,11 @@ type Config struct {
 
 	pFlagSet *pflag.FlagSet
 	viper    *viper.Viper
+}
+
+// Scaler represents the config for the scaler/ ScalingTarget
+type Scaler struct {
+	Mode ScalerMode `json:"mode,omitempty"`
 }
 
 // Nomad represents the configuration for the scaling target nomad

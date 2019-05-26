@@ -15,6 +15,13 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
 	cfg.Port = cfg.viper.GetInt(port.name)
 
+	// Context: Scaler
+	scaMode, err := strToScalerMode(cfg.viper.GetString(scalerMode.name))
+	if err != nil {
+		return err
+	}
+	cfg.Scaler.Mode = scaMode
+
 	// Context: Nomad
 	cfg.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
 
@@ -142,4 +149,22 @@ func alertStrToAlerts(alertsAsStr string) ([]Alert, error) {
 	}
 
 	return alerts, nil
+}
+
+func strToScalerMode(mode string) (ScalerMode, error) {
+
+	mode = strings.TrimSpace(mode)
+	if len(mode) == 0 {
+		return "", fmt.Errorf("Can't parse ScalerMode since input is empty")
+	}
+
+	mode = strings.ToLower(mode)
+	if mode == string(ScalerModeJob) {
+		return ScalerModeJob, nil
+	}
+	if mode == string(ScalerModeDataCenter) {
+		return ScalerModeDataCenter, nil
+	}
+
+	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
 }

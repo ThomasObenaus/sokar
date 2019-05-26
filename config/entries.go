@@ -36,6 +36,15 @@ var dummyScalingTarget = configEntry{
 	usage:        "If true a dummy scaling target will be used instead of nomad.",
 }
 
+// ###################### Context: scaler ####################################################
+var scalerMode = configEntry{
+	name:         "sca.mode",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "job",
+	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
+}
+
 // ###################### Context: nomad ####################################################
 var nomadServerAddress = configEntry{
 	name:         "nomad.server-address",
@@ -180,6 +189,7 @@ var configEntries = []configEntry{
 	configFile,
 	port,
 	dryRun,
+	scalerMode,
 	dummyScalingTarget,
 	nomadServerAddress,
 	jobName,
