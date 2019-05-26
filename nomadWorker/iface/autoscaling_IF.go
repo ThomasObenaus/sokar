@@ -10,6 +10,7 @@ type AutoScaling interface {
 	DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
 }
 
+// AutoScalingFactory is an interface to create the AutoScaling type based on the given session.
 type AutoScalingFactory interface {
 	CreateAutoScaling(session *session.Session) AutoScaling
 }
