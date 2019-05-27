@@ -37,7 +37,7 @@
 
 ### [DEPRECATED] DummyScalingTarget
 
-* Will be replaced by Scaler.ScalingTarget
+- Will be replaced by Scaler.ScalingTarget
 
 |         |                                                               |
 | ------- | ------------------------------------------------------------- |
@@ -61,7 +61,6 @@
 | flag    | --sca.mode                                                                                                                                                                                                               |
 | env     | SK_SCA_MODE                                                                                                                                                                                                              |
 
-
 ## Nomad
 
 ### Server-Address
@@ -75,9 +74,9 @@
 | flag    | --nomad.server-address                     |
 | env     | SK_NOMAD_SERVER_ADDRESS                    |
 
-## Job
+## [DEPRECATED] Job
 
-### Name
+### [DEPRECATED] Name
 
 |         |                                   |
 | ------- | --------------------------------- |
@@ -88,7 +87,7 @@
 | flag    | --job.name                        |
 | env     | SK_JOB_NAME                       |
 
-### Min
+### [DEPRECATED] Min
 
 |         |                               |
 | ------- | ----------------------------- |
@@ -99,7 +98,7 @@
 | flag    | --job.min                     |
 | env     | SK_JOB_MIN                    |
 
-### Max
+### [DEPRECATED] Max
 
 |         |                               |
 | ------- | ----------------------------- |
@@ -109,6 +108,41 @@
 | default | 10                            |
 | flag    | --job.max                     |
 | env     | SK_JOB_MAX                    |
+
+## ScaleObject
+
+### Name
+
+|         |                                      |
+| ------- | ------------------------------------ |
+| name    | name                                 |
+| usage   | The name of the object to be scaled. |
+| type    | string                               |
+| default | ""                                   |
+| flag    | --scale-object.name                  |
+| env     | SK_SCALE_OBJECT_NAME                 |
+
+### Min
+
+|         |                                               |
+| ------- | --------------------------------------------- |
+| name    | min                                           |
+| usage   | The minimum count of the object to be scaled. |
+| type    | uint                                          |
+| default | 1                                             |
+| flag    | --scale-object.min                            |
+| env     | SK_SCALE_OBJECT_MIN                           |
+
+### Max
+
+|         |                                               |
+| ------- | --------------------------------------------- |
+| name    | max                                           |
+| usage   | The maximum count of the object to be scaled. |
+| type    | uint                                          |
+| default | 10                                            |
+| flag    | --scale-object.max                            |
+| env     | SK_SCALE_OBJECT_MAX                           |
 
 ## CapacityPlanner
 
