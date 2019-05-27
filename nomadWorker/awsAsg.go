@@ -32,6 +32,22 @@ type autoScalingGroupQuery struct {
 	tagValue string
 }
 
+// getAutoScalingGroupName returns the name of the AutoScalingGroup specified by the
+// autoScalingGroupQuery.
+func (asgQ *autoScalingGroupQuery) getAutoScalingGroupName() (string, error) {
+	asgs, err := getAutoScalingGroups(asgQ.asgIF)
+	if err != nil {
+		return "", err
+	}
+
+	asg := filterAutoScalingGroupByTag(asgQ.tagKey, asgQ.tagValue, asgs)
+	if asg == nil {
+		return "", fmt.Errorf("No ASG with %s=%s found", asgQ.tagKey, asgQ.tagValue)
+	}
+
+	return *asg.AutoScalingGroupName, nil
+}
+
 // getScaleNumbers returns the numbers reflecting the scale of the AutoScalingGroup specified by the
 // autoScalingGroupQuery.
 func (asgQ *autoScalingGroupQuery) getScaleNumbers() (minCount uint, desiredCount uint, maxCount uint, err error) {

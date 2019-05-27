@@ -195,3 +195,53 @@ func Test_GetScaleNumbers(t *testing.T) {
 	assert.Equal(t, uint(2), desired)
 	assert.Equal(t, uint(3), max)
 }
+
+func Test_GetAutoScalingGroupName(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+
+	asgQ := autoScalingGroupQuery{
+		asgIF:    asgIF,
+		tagKey:   "key",
+		tagValue: "value",
+	}
+
+	// no result, error
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, fmt.Errorf("ERR"))
+	name, err := asgQ.getAutoScalingGroupName()
+	assert.Error(t, err)
+	assert.Empty(t, name)
+
+	asgName := "myASG"
+	tagKey := "datacenter"
+	tagValue := "private-services"
+	tagDesc := autoscaling.TagDescription{Key: &tagKey, Value: &tagValue}
+	tags := make([]*autoscaling.TagDescription, 0)
+	tags = append(tags, &tagDesc)
+	asgOut := make([]*autoscaling.Group, 0)
+	group := autoscaling.Group{
+		Tags:                 tags,
+		AutoScalingGroupName: &asgName,
+	}
+	asgOut = append(asgOut, &group)
+	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: asgOut}
+
+	// no result, tag not match
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
+	name, err = asgQ.getAutoScalingGroupName()
+	assert.Error(t, err)
+	assert.Empty(t, name)
+
+	// result
+	asgQ = autoScalingGroupQuery{
+		asgIF:    asgIF,
+		tagKey:   "datacenter",
+		tagValue: "private-services",
+	}
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
+	name, err = asgQ.getAutoScalingGroupName()
+	assert.NoError(t, err)
+	assert.Equal(t, "myASG", name)
+}
