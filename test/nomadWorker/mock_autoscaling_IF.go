@@ -48,6 +48,19 @@ func (mr *MockAutoScalingMockRecorder) DescribeAutoScalingGroups(input interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeAutoScalingGroups", reflect.TypeOf((*MockAutoScaling)(nil).DescribeAutoScalingGroups), input)
 }
 
+// UpdateAutoScalingGroup mocks base method
+func (m *MockAutoScaling) UpdateAutoScalingGroup(input *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
+	ret := m.ctrl.Call(m, "UpdateAutoScalingGroup", input)
+	ret0, _ := ret[0].(*autoscaling.UpdateAutoScalingGroupOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAutoScalingGroup indicates an expected call of UpdateAutoScalingGroup
+func (mr *MockAutoScalingMockRecorder) UpdateAutoScalingGroup(input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAutoScalingGroup", reflect.TypeOf((*MockAutoScaling)(nil).UpdateAutoScalingGroup), input)
+}
+
 // MockAutoScalingFactory is a mock of AutoScalingFactory interface
 type MockAutoScalingFactory struct {
 	ctrl     *gomock.Controller
