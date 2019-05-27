@@ -8,6 +8,7 @@ import (
 // AutoScaling is the minimal interface needed to interact with aws autoscaling
 type AutoScaling interface {
 	DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
+	UpdateAutoScalingGroup(input *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error)
 }
 
 // AutoScalingFactory is an interface to create the AutoScaling type based on the given session.
