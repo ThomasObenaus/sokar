@@ -5,9 +5,9 @@
 - Data-Center Scaling: With [#65](https://github.com/ThomasObenaus/sokar/issues/60) and [#60](https://github.com/ThomasObenaus/sokar/issues/65) the functionality to scale not only jobs but also a datacenter was added. In the currently implementation an up-scaling and a **hard down-scaling is implemented**. This means **during down-scaling NO node draining will be applied**, the datacenter instances are directly terminated.
 - Config: With [#64](https://github.com/ThomasObenaus/sokar/issues/64) the following config-parameters where replaced by new ones and are thus deprecated from now on:
   - `--dummy-scaling-target` is replaced by `--sca.mode=dc`. With `--sca.mode` the scaler mode can be configured to scale either a job (`--sca.mode=job`) or a datacenter (`--sca.mode=dc`).
-  - `--job.name` is replaced by `scale-object.name`
-  - `--job.min` is replaced by `scale-object.min`
-  - `--job.max` is replaced by `scale-object.max`
+  - `--job.name` is replaced by `--scale-object.name`
+  - `--job.min` is replaced by `--scale-object.min`
+  - `--job.max` is replaced by `--scale-object.max`
 - Docu: With [#54](https://github.com/ThomasObenaus/sokar/issues/54) metrics documentation was added to [Metrics.md](https://github.com/ThomasObenaus/sokar/blob/master/Metrics.md).
 - Fix: With [#57](https://github.com/ThomasObenaus/sokar/issues/57) an issue was fixed that sokar did ignored the down-scaling threshold.
 
