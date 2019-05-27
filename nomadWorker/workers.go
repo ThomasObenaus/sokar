@@ -4,11 +4,44 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
 // SetJobCount will scale the nomad workers to the desired count (amount of instances)
 func (c *Connector) SetJobCount(datacenter string, count uint) error {
-	c.log.Warn().Msgf("nomadworker.Connector.SetJobCount(%s, %d) not implemented yet.", datacenter, count)
+
+	sess, err := c.createSession()
+	if err != nil {
+		return err
+	}
+	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
+
+	asgQuery := autoScalingGroupQuery{
+		asgIF:    autoScalingIF,
+		tagKey:   c.tagKey,
+		tagValue: datacenter,
+	}
+
+	asgName, err := asgQuery.getAutoScalingGroupName()
+	if err != nil {
+		return err
+	}
+
+	size := int64(count)
+
+	input := &autoscaling.UpdateAutoScalingGroupInput{
+		AutoScalingGroupName: &asgName,
+		MaxSize:              &size,
+		MinSize:              &size,
+		DesiredCapacity:      &size,
+	}
+
+	_, err = autoScalingIF.UpdateAutoScalingGroup(input)
+	if err != nil {
+		return err
+	}
+
+	c.log.Info().Msgf("Adjusted min=max=desiredCapacity of %s to %d.", asgName, size)
 	return nil
 }
 
