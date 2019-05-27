@@ -1,6 +1,6 @@
 nomad:
   server-address: "http://localhost:4646"
-job:
+scale-object:
   name: "fail-service"
   min: 1
   max: 10
