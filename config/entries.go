@@ -28,6 +28,7 @@ var port = configEntry{
 	usage:        "Port where sokar is listening.",
 }
 
+// TODO: This is deprecated. Remove it.
 var dummyScalingTarget = configEntry{
 	name:         "dummy-scaling-target",
 	bindFlag:     true,
@@ -54,6 +55,32 @@ var nomadServerAddress = configEntry{
 	usage:        "Specifies the address of the nomad server.",
 }
 
+// ###################### Context: scale-object ####################################################
+var scaleObjectName = configEntry{
+	name:         "scale-object.name",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "",
+	usage:        "The name of the object to be scaled.",
+}
+
+var scaleObjectMin = configEntry{
+	name:         "scale-object.min",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: 1,
+	usage:        "The minimum count of the object to be scaled.",
+}
+
+var scaleObjectMax = configEntry{
+	name:         "scale-object.max",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: 10,
+	usage:        "The maximum count of the object to be scaled.",
+}
+
+// TODO: The whole job-section is deprecated. Remove it.
 // ###################### Context: job ####################################################
 var jobName = configEntry{
 	name:         "job.name",
@@ -67,7 +94,7 @@ var jobMin = configEntry{
 	name:         "job.min",
 	bindEnv:      true,
 	bindFlag:     true,
-	defaultValue: 1,
+	defaultValue: -1,
 	usage:        "The minimum scale of the job.",
 }
 
@@ -75,7 +102,7 @@ var jobMax = configEntry{
 	name:         "job.max",
 	bindEnv:      true,
 	bindFlag:     true,
-	defaultValue: 10,
+	defaultValue: -1,
 	usage:        "The maximum scale of the job.",
 }
 
@@ -190,10 +217,17 @@ var configEntries = []configEntry{
 	port,
 	dryRun,
 	scalerMode,
+	// TODO: Remove it.
 	dummyScalingTarget,
 	nomadServerAddress,
+	scaleObjectName,
+	scaleObjectMin,
+	scaleObjectMax,
+	// TODO: Remove it.
 	jobName,
+	// TODO: Remove it.
 	jobMin,
+	// TODO: Remove it.
 	jobMax,
 	capDownScaleCoolDown,
 	capUpScaleCoolDown,

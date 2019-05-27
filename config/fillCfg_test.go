@@ -15,12 +15,12 @@ func Test_FillCfg_Flags(t *testing.T) {
 	args := []string{
 		"--dry-run",
 		"--dummy-scaling-target",
-		"--sca.mode=dc",
+		"--sca.mode=job",
 		"--port=1000",
 		"--nomad.server-address=http://nomad",
-		"--job.name=job",
-		"--job.min=10",
-		"--job.max=100",
+		"--scale-object.name=job",
+		"--scale-object.min=10",
+		"--scale-object.max=100",
 		"--logging.structured",
 		"--logging.unix-ts",
 		"--cap.down-scale-cooldown=90s",
@@ -38,13 +38,68 @@ func Test_FillCfg_Flags(t *testing.T) {
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
 	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Mode)
-	assert.True(t, cfg.DummyScalingTarget)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
 	assert.Equal(t, "http://nomad", cfg.Nomad.ServerAddr)
-	assert.Equal(t, "job", cfg.Job.Name)
-	assert.Equal(t, uint(10), cfg.Job.MinCount)
-	assert.Equal(t, uint(100), cfg.Job.MaxCount)
+	assert.Equal(t, "job", cfg.ScaleObject.Name)
+	assert.Equal(t, uint(10), cfg.ScaleObject.MinCount)
+	assert.Equal(t, uint(100), cfg.ScaleObject.MaxCount)
+	assert.Equal(t, time.Duration(time.Second*90), cfg.CapacityPlanner.DownScaleCooldownPeriod)
+	assert.Equal(t, time.Duration(time.Second*91), cfg.CapacityPlanner.UpScaleCooldownPeriod)
+	assert.True(t, cfg.Logging.Structured)
+	assert.True(t, cfg.Logging.UxTimestamp)
+	assert.Equal(t, float32(100), cfg.ScaleAlertAggregator.NoAlertScaleDamping)
+	assert.Equal(t, float32(101), cfg.ScaleAlertAggregator.UpScaleThreshold)
+	assert.Equal(t, float32(102), cfg.ScaleAlertAggregator.DownScaleThreshold)
+	assert.Equal(t, time.Duration(time.Second*103), cfg.ScaleAlertAggregator.EvaluationCycle)
+	assert.Equal(t, time.Duration(time.Second*104), cfg.ScaleAlertAggregator.CleanupCycle)
+	assert.Equal(t, uint(105), cfg.ScaleAlertAggregator.EvaluationPeriodFactor)
+
+	require.Len(t, cfg.ScaleAlertAggregator.ScaleAlerts, 1)
+	assert.Equal(t, "alert 1", cfg.ScaleAlertAggregator.ScaleAlerts[0].Name)
+	assert.Equal(t, float32(1.2), cfg.ScaleAlertAggregator.ScaleAlerts[0].Weight)
+	assert.Equal(t, "This is an upscaling alert", cfg.ScaleAlertAggregator.ScaleAlerts[0].Description)
+	assert.Equal(t, time.Minute*5, cfg.ScaleAlertAggregator.AlertExpirationTime)
+}
+
+func Test_Deprecated_Flags(t *testing.T) {
+
+	cfg := NewDefaultConfig()
+	args := []string{
+		"--dry-run",
+		"--dummy-scaling-target",
+		"--sca.mode=job",
+		"--port=1000",
+		"--nomad.server-address=http://nomad",
+		"--job.name=job",
+		"--job.min=10",
+		"--job.max=100",
+		"--scale-object.name=object",
+		"--scale-object.min=11",
+		"--scale-object.max=111",
+		"--logging.structured",
+		"--logging.unix-ts",
+		"--cap.down-scale-cooldown=90s",
+		"--cap.up-scale-cooldown=91s",
+		"--saa.no-alert-damping=100",
+		"--saa.up-thresh=101",
+		"--saa.down-thresh=102",
+		"--saa.eval-cycle=103s",
+		"--saa.cleanup-cycle=104s",
+		"--saa.eval-period-factor=105",
+		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
+		"--saa.alert-expiration-time=5m",
+	}
+
+	err := cfg.ReadConfig(args)
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Mode)
+	assert.True(t, cfg.DryRunMode)
+	assert.Equal(t, 1000, cfg.Port)
+	assert.Equal(t, "http://nomad", cfg.Nomad.ServerAddr)
+	assert.Equal(t, "job", cfg.ScaleObject.Name)
+	assert.Equal(t, uint(10), cfg.ScaleObject.MinCount)
+	assert.Equal(t, uint(100), cfg.ScaleObject.MaxCount)
 	assert.Equal(t, time.Duration(time.Second*90), cfg.CapacityPlanner.DownScaleCooldownPeriod)
 	assert.Equal(t, time.Duration(time.Second*91), cfg.CapacityPlanner.UpScaleCooldownPeriod)
 	assert.True(t, cfg.Logging.Structured)

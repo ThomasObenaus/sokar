@@ -11,7 +11,6 @@ import (
 
 func (cfg *Config) fillCfgValues() error {
 	// Context: main
-	cfg.DummyScalingTarget = cfg.viper.GetBool(dummyScalingTarget.name)
 	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
 	cfg.Port = cfg.viper.GetInt(port.name)
 
@@ -22,22 +21,42 @@ func (cfg *Config) fillCfgValues() error {
 	}
 	cfg.Scaler.Mode = scaMode
 
+	dummyScalingTargetEnabled := cfg.viper.GetBool(dummyScalingTarget.name)
+	if dummyScalingTargetEnabled {
+		cfg.Scaler.Mode = ScalerModeDataCenter
+	}
+
 	// Context: Nomad
 	cfg.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
 
-	// Context: job
-	cfg.Job.Name = cfg.viper.GetString(jobName.name)
-	min := cfg.viper.GetInt(jobMin.name)
+	// Context: scale object
+	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
+	min := cfg.viper.GetInt(scaleObjectMin.name)
 	if min < 0 {
 		min = 0
 	}
-	cfg.Job.MinCount = uint(min)
+	cfg.ScaleObject.MinCount = uint(min)
 
-	max := cfg.viper.GetInt(jobMax.name)
+	max := cfg.viper.GetInt(scaleObjectMax.name)
 	if max < 0 {
 		max = 0
 	}
-	cfg.Job.MaxCount = uint(max)
+	cfg.ScaleObject.MaxCount = uint(max)
+
+	// Context: job
+	objName := cfg.viper.GetString(jobName.name)
+	if len(objName) > 0 {
+		cfg.ScaleObject.Name = objName
+	}
+	min = cfg.viper.GetInt(jobMin.name)
+	if min >= 0 {
+		cfg.ScaleObject.MinCount = uint(min)
+	}
+
+	max = cfg.viper.GetInt(jobMax.name)
+	if max >= 0 {
+		cfg.ScaleObject.MaxCount = uint(max)
+	}
 
 	// Context: CapacityPlanner
 	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)

@@ -58,10 +58,7 @@ func main() {
 
 	logger.Info().Msg("4. Setup: Scaler")
 	scalerMode := cfg.Scaler.Mode
-	if cfg.DummyScalingTarget {
-		scalerMode = config.ScalerModeDataCenter
-	}
-	scaler := helper.Must(setupScaler(cfg.Job.Name, cfg.Job.MinCount, cfg.Job.MaxCount, cfg.Nomad.ServerAddr, scalerMode, loggingFactory)).(*scaler.Scaler)
+	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Nomad.ServerAddr, scalerMode, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
 	capaCfg := capacityPlanner.Config{

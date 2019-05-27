@@ -21,11 +21,10 @@ const (
 type Config struct {
 	Port                 int                  `json:"port,omitempty"`
 	Scaler               Scaler               `json:"scaler,omitempty"`
-	DummyScalingTarget   bool                 `json:"dummy_scaling_target,omitempty"`
 	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
 	Nomad                Nomad                `json:"nomad,omitempty"`
 	Logging              Logging              `json:"logging,omitempty"`
-	Job                  Job                  `json:"job,omitempty"`
+	ScaleObject          ScaleObject          `json:"scale_object,omitempty"`
 	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator,omitempty"`
 	CapacityPlanner      CapacityPlanner      `json:"capacity_planner,omitempty"`
 
@@ -45,8 +44,8 @@ type Nomad struct {
 	ServerAddr string `json:"server_addr,omitempty"`
 }
 
-// Job represents the definition for the job that should be scaled.
-type Job struct {
+// ScaleObject represents the definition for the object that should be scaled.
+type ScaleObject struct {
 	Name     string `json:"name,omitempty"`
 	MinCount uint   `json:"min_count,omitempty"`
 	MaxCount uint   `json:"max_count,omitempty"`
@@ -89,11 +88,12 @@ type CapacityPlanner struct {
 func NewDefaultConfig() Config {
 
 	cfg := Config{
-		Port:       11000,
-		DryRunMode: false,
-		Nomad:      Nomad{},
-		Logging:    Logging{Structured: false, UxTimestamp: false},
-		Job:        Job{},
+		Port:        11000,
+		DryRunMode:  false,
+		Nomad:       Nomad{},
+		Logging:     Logging{Structured: false, UxTimestamp: false},
+		ScaleObject: ScaleObject{},
+		Scaler:      Scaler{Mode: ScalerModeJob},
 		ScaleAlertAggregator: ScaleAlertAggregator{
 			EvaluationCycle:        time.Second * 1,
 			EvaluationPeriodFactor: 10,
