@@ -16,8 +16,8 @@ func newAWSSessionFromProfile(profile string) (*session.Session, error) {
 
 func newAWSSession() (*session.Session, error) {
 	verboseCredErrors := true
-
-	cfg := aws.Config{CredentialsChainVerboseErrors: &verboseCredErrors}
+	region := "eu-central-1"
+	cfg := aws.Config{CredentialsChainVerboseErrors: &verboseCredErrors, Region: &region}
 	sessionOpts := session.Options{Config: cfg, SharedConfigState: session.SharedConfigEnable}
 
 	return session.NewSessionWithOptions(sessionOpts)
