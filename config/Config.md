@@ -35,19 +35,6 @@
 | flag    | --port                         |
 | env     | SK_PORT                        |
 
-### [DEPRECATED] DummyScalingTarget
-
-- Will be replaced by Scaler.ScalingTarget
-
-|         |                                                               |
-| ------- | ------------------------------------------------------------- |
-| name    | dummy-scaling-target                                          |
-| usage   | If true a dummy scaling target will be used instead of nomad. |
-| type    | bool                                                          |
-| default | false                                                         |
-| flag    | --dummy-scaling-target                                        |
-| env     | SK_DUMMY_SCALING_TARGET                                       |
-
 ## Scaler
 
 ### ScalingTarget
@@ -73,41 +60,6 @@
 | default | ""                                         |
 | flag    | --nomad.server-address                     |
 | env     | SK_NOMAD_SERVER_ADDRESS                    |
-
-## [DEPRECATED] Job
-
-### [DEPRECATED] Name
-
-|         |                                   |
-| ------- | --------------------------------- |
-| name    | name                              |
-| usage   | The name of the job to be scaled. |
-| type    | string                            |
-| default | ""                                |
-| flag    | --job.name                        |
-| env     | SK_JOB_NAME                       |
-
-### [DEPRECATED] Min
-
-|         |                               |
-| ------- | ----------------------------- |
-| name    | min                           |
-| usage   | The minimum scale of the job. |
-| type    | uint                          |
-| default | 1                             |
-| flag    | --job.min                     |
-| env     | SK_JOB_MIN                    |
-
-### [DEPRECATED] Max
-
-|         |                               |
-| ------- | ----------------------------- |
-| name    | max                           |
-| usage   | The maximum scale of the job. |
-| type    | uint                          |
-| default | 10                            |
-| flag    | --job.max                     |
-| env     | SK_JOB_MAX                    |
 
 ## ScaleObject
 

@@ -1,5 +1,13 @@
 # Changelog
 
+
+- Config: With [#71](https://github.com/ThomasObenaus/sokar/issues/71) some deprecated config parameters where removed. These are:
+  - `--dummy-scaling-target`
+  - `-job.name` was replaced by `--scale-object.name`
+  - `-job.min` was replaced by `--scale-object.min`
+  - `-job.max` was replaced by `--scale-object.max`
+
+
 ## v0.0.6 (2019-05-27)
 
 - Data-Center Scaling: With [#65](https://github.com/ThomasObenaus/sokar/issues/60) and [#60](https://github.com/ThomasObenaus/sokar/issues/65) the functionality to scale not only jobs but also a datacenter was added. In the currently implementation an up-scaling and a **hard down-scaling is implemented**. This means **during down-scaling NO node draining will be applied**, the datacenter instances are directly terminated.
