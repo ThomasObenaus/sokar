@@ -2,7 +2,7 @@ dry_run_mode: false
 port: 11000
 nomad:
   srv_addr: "http://localhost:4646"
-job:
+scaling_object:
   name: "fail-service"
   min: 1
   max: 10

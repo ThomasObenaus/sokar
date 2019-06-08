@@ -11,7 +11,7 @@ import (
 )
 
 // ScaleByPercentage is the end-point for receiving scale-by events. These are events for a relative
-// scaling of the job. In this case the scaling is made basend on the given percentage value
+// scaling of the scaling-object. In this case the scaling is made basend on the given percentage value
 func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	percentageStr := ps.ByName(PathPartValue)
 
@@ -39,7 +39,7 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 }
 
 // ScaleByValue is the end-point for receiving scale-by events. These are events for a relative
-// scaling of the job. In this case the scaling is made basend on the given value.
+// scaling of the scaling-object. In this case the scaling is made basend on the given value.
 func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	valueStr := ps.ByName(PathPartValue)
 

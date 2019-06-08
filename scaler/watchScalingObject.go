@@ -4,7 +4,7 @@ import "strconv"
 
 // countMeetsExpectations returns false in case the current count does not match the
 // expectations. This could either be the case if the current deployed amount
-// of allocations is "out of bounds" regarding the defined min/ max of the job.
+// of allocations is "out of bounds" regarding the defined min/ max of the scalingObject.
 // Or if a the current count does not correlate to the desired amount of allocations
 // being deployed.
 func countMeetsExpectations(current uint, min uint, max uint, desired *uint) (asExpected bool, expectedCount uint) {
@@ -33,16 +33,16 @@ func countMeetsExpectations(current uint, min uint, max uint, desired *uint) (as
 	return asExpected, expectedCount
 }
 
-func (s *Scaler) ensureJobCount() error {
+func (s *Scaler) ensureScalingObjectCount() error {
 
 	count, err := s.GetCount()
 	if err != nil {
 		return err
 	}
 
-	asExpected, expected := countMeetsExpectations(count, s.job.minCount, s.job.maxCount, s.desiredScale)
+	asExpected, expected := countMeetsExpectations(count, s.scalingObjectCfg.minCount, s.scalingObjectCfg.maxCount, s.desiredScale)
 	if !asExpected {
-		s.logger.Warn().Msgf("The job count (%d) was not as expected. Thus the job had to be rescaled to %d.", count, expected)
+		s.logger.Warn().Msgf("The scalingObject count (%d) was not as expected. Thus the scalingObject had to be rescaled to %d.", count, expected)
 		if err := s.openScalingTicket(expected, false); err != nil {
 			return err
 		}

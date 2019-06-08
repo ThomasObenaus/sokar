@@ -42,7 +42,7 @@ func Test_CreateSession(t *testing.T) {
 	assert.NotNil(t, sess)
 }
 
-func TestSetJobCount(t *testing.T) {
+func TestSetScalingObjectCount(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -60,7 +60,7 @@ func TestSetJobCount(t *testing.T) {
 	// error, no numbers
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	err = connector.SetJobCount("invalid", 5)
+	err = connector.SetScalingObjectCount("invalid", 5)
 	assert.Error(t, err)
 
 	// no error
@@ -86,11 +86,11 @@ func TestSetJobCount(t *testing.T) {
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
 	asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
-	err = connector.SetJobCount(tagVal, 5)
+	err = connector.SetScalingObjectCount(tagVal, 5)
 	assert.NoError(t, err)
 }
 
-func TestGetJobCount(t *testing.T) {
+func TestGetScalingObjectCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -107,7 +107,7 @@ func TestGetJobCount(t *testing.T) {
 	// error, no numbers
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	count, err := connector.GetJobCount("invalid")
+	count, err := connector.GetScalingObjectCount("invalid")
 	assert.Error(t, err)
 	assert.Equal(t, uint(0), count)
 
@@ -133,12 +133,12 @@ func TestGetJobCount(t *testing.T) {
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	count, err = connector.GetJobCount(tagVal)
+	count, err = connector.GetScalingObjectCount(tagVal)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(123), count)
 }
 
-func Test_IsJobDead(t *testing.T) {
+func Test_IsScalingObjectDead(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -156,7 +156,7 @@ func Test_IsJobDead(t *testing.T) {
 	// error, no asgs
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	dead, err := connector.IsJobDead("public-services")
+	dead, err := connector.IsScalingObjectDead("public-services")
 	assert.Error(t, err)
 	assert.True(t, dead)
 
@@ -167,7 +167,7 @@ func Test_IsJobDead(t *testing.T) {
 	asgOut = append(asgOut, &group)
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: asgOut}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	dead, err = connector.IsJobDead("public-services")
+	dead, err = connector.IsScalingObjectDead("public-services")
 	assert.NoError(t, err)
 	assert.True(t, dead)
 
@@ -184,7 +184,7 @@ func Test_IsJobDead(t *testing.T) {
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	output = &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	dead, err = connector.IsJobDead("private-services")
+	dead, err = connector.IsScalingObjectDead("private-services")
 	assert.NoError(t, err)
 	assert.False(t, dead)
 }

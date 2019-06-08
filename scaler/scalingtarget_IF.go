@@ -3,7 +3,7 @@ package scaler
 // ScalingTarget represents the interface to be implemented
 // in order to be used by the Scaler as scaling target.
 type ScalingTarget interface {
-	SetJobCount(jobname string, count uint) error
-	GetJobCount(jobname string) (uint, error)
-	IsJobDead(jobname string) (bool, error)
+	SetScalingObjectCount(scalingObject string, count uint) error
+	GetScalingObjectCount(scalingObject string) (uint, error)
+	IsScalingObjectDead(scalingObject string) (bool, error)
 }

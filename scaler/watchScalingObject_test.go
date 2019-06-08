@@ -46,38 +46,38 @@ func TestCountMeetsExpectations(t *testing.T) {
 	assert.Equal(t, uint(2), expected)
 }
 
-func TestEnsureJobCount_NoScale(t *testing.T) {
+func TestEnsureScalingObjectCount_NoScale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	metrics, _ := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{JobName: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
 	// Error in scaling target
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), fmt.Errorf("Unable to determine job count"))
-	err = scaler.ensureJobCount()
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), fmt.Errorf("Unable to determine scalingObject count"))
+	err = scaler.ensureScalingObjectCount()
 	assert.Error(t, err)
 
 	// No scale
 	desired := uint(1)
 	scaler.desiredScale = &desired
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(1), nil)
-	err = scaler.ensureJobCount()
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(1), nil)
+	err = scaler.ensureScalingObjectCount()
 	assert.NoError(t, err)
 
 }
 
-func TestEnsureJobCount_MinViolated(t *testing.T) {
+func TestEnsureScalingObjectCount_MinViolated(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{JobName: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -88,19 +88,19 @@ func TestEnsureJobCount_MinViolated(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc()
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil)
-	err = scaler.ensureJobCount()
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil)
+	err = scaler.ensureScalingObjectCount()
 	assert.NoError(t, err)
 
 }
 
-func TestEnsureJobCount_MaxViolated(t *testing.T) {
+func TestEnsureScalingObjectCount_MaxViolated(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{JobName: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -111,7 +111,7 @@ func TestEnsureJobCount_MaxViolated(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc()
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(10), nil)
-	err = scaler.ensureJobCount()
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(10), nil)
+	err = scaler.ensureScalingObjectCount()
 	assert.NoError(t, err)
 }

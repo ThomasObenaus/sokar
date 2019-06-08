@@ -11,7 +11,7 @@ import (
 
 var oneDayAgo = time.Now().Add(time.Hour * -24)
 
-// Sokar component that can be used to scale jobs/instances
+// Sokar component that can be used to scale scaling-objects (jobs /instances).
 type Sokar struct {
 	logger zerolog.Logger
 

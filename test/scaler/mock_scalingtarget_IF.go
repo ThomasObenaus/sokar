@@ -32,40 +32,40 @@ func (m *MockScalingTarget) EXPECT() *MockScalingTargetMockRecorder {
 	return m.recorder
 }
 
-// SetJobCount mocks base method
-func (m *MockScalingTarget) SetJobCount(jobname string, count uint) error {
-	ret := m.ctrl.Call(m, "SetJobCount", jobname, count)
+// SetScalingObjectCount mocks base method
+func (m *MockScalingTarget) SetScalingObjectCount(scalingObject string, count uint) error {
+	ret := m.ctrl.Call(m, "SetScalingObjectCount", scalingObject, count)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SetJobCount indicates an expected call of SetJobCount
-func (mr *MockScalingTargetMockRecorder) SetJobCount(jobname, count interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetJobCount", reflect.TypeOf((*MockScalingTarget)(nil).SetJobCount), jobname, count)
+// SetScalingObjectCount indicates an expected call of SetScalingObjectCount
+func (mr *MockScalingTargetMockRecorder) SetScalingObjectCount(scalingObject, count interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).SetScalingObjectCount), scalingObject, count)
 }
 
-// GetJobCount mocks base method
-func (m *MockScalingTarget) GetJobCount(jobname string) (uint, error) {
-	ret := m.ctrl.Call(m, "GetJobCount", jobname)
+// GetScalingObjectCount mocks base method
+func (m *MockScalingTarget) GetScalingObjectCount(scalingObject string) (uint, error) {
+	ret := m.ctrl.Call(m, "GetScalingObjectCount", scalingObject)
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetJobCount indicates an expected call of GetJobCount
-func (mr *MockScalingTargetMockRecorder) GetJobCount(jobname interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobCount", reflect.TypeOf((*MockScalingTarget)(nil).GetJobCount), jobname)
+// GetScalingObjectCount indicates an expected call of GetScalingObjectCount
+func (mr *MockScalingTargetMockRecorder) GetScalingObjectCount(scalingObject interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).GetScalingObjectCount), scalingObject)
 }
 
-// IsJobDead mocks base method
-func (m *MockScalingTarget) IsJobDead(jobname string) (bool, error) {
-	ret := m.ctrl.Call(m, "IsJobDead", jobname)
+// IsScalingObjectDead mocks base method
+func (m *MockScalingTarget) IsScalingObjectDead(scalingObject string) (bool, error) {
+	ret := m.ctrl.Call(m, "IsScalingObjectDead", scalingObject)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// IsJobDead indicates an expected call of IsJobDead
-func (mr *MockScalingTargetMockRecorder) IsJobDead(jobname interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsJobDead", reflect.TypeOf((*MockScalingTarget)(nil).IsJobDead), jobname)
+// IsScalingObjectDead indicates an expected call of IsScalingObjectDead
+func (mr *MockScalingTargetMockRecorder) IsScalingObjectDead(scalingObject interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsScalingObjectDead", reflect.TypeOf((*MockScalingTarget)(nil).IsScalingObjectDead), scalingObject)
 }

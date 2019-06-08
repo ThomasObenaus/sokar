@@ -23,7 +23,7 @@ func NewMetrics() Metrics {
 		Namespace: "sokar",
 		Subsystem: "sca",
 		Name:      "scaling_policy_violated",
-		Help:      "Counts the number of occurrences the planning of sokar would have violated the scaling policy of the job (upper or lower threshold).",
+		Help:      "Counts the number of occurrences the planning of sokar would have violated the scaling policy of the scaling-object (upper or lower threshold).",
 	}, thresholds)
 
 	ticketAction := []string{"action"}

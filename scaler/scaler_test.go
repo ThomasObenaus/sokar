@@ -40,9 +40,9 @@ func Test_GetCount(t *testing.T) {
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(10), nil)
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(10), nil)
 
-	cfg := Config{JobName: "any"}
+	cfg := Config{Name: "any"}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -51,7 +51,7 @@ func Test_GetCount(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint(10), count)
 
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), fmt.Errorf("ERROR"))
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), fmt.Errorf("ERROR"))
 	count, err = scaler.GetCount()
 	assert.Error(t, err)
 	assert.Equal(t, uint(0), count)
@@ -140,10 +140,10 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil)
-	scaTgt.EXPECT().IsJobDead("any").Return(true, nil)
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil)
+	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil)
 
-	cfg := Config{JobName: "any"}
+	cfg := Config{Name: "any"}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -166,10 +166,10 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-	scaTgt.EXPECT().GetJobCount("any").Return(uint(0), nil).MaxTimes(11)
-	scaTgt.EXPECT().IsJobDead("any").Return(true, nil).MaxTimes(11)
+	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil).MaxTimes(11)
+	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil).MaxTimes(11)
 
-	cfg := Config{JobName: "any", MaxOpenScalingTickets: 10}
+	cfg := Config{Name: "any", MaxOpenScalingTickets: 10}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)

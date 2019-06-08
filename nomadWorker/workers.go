@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
-// SetJobCount will scale the nomad workers to the desired count (amount of instances)
-func (c *Connector) SetJobCount(datacenter string, count uint) error {
+// SetScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
+func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
 
 	sess, err := c.createSession()
 	if err != nil {
@@ -45,8 +45,8 @@ func (c *Connector) SetJobCount(datacenter string, count uint) error {
 	return nil
 }
 
-// GetJobCount will return the count of the nomad workers
-func (c *Connector) GetJobCount(datacenter string) (uint, error) {
+// GetScalingObjectCount will return the count of the nomad workers
+func (c *Connector) GetScalingObjectCount(datacenter string) (uint, error) {
 	sess, err := c.createSession()
 	if err != nil {
 		return 0, err
@@ -66,8 +66,8 @@ func (c *Connector) GetJobCount(datacenter string) (uint, error) {
 	return desired, nil
 }
 
-// IsJobDead will return if the nomad workers of the actual data-center are still available.
-func (c *Connector) IsJobDead(datacenter string) (bool, error) {
+// IsScalingObjectDead will return if the nomad workers of the actual data-center are still available.
+func (c *Connector) IsScalingObjectDead(datacenter string) (bool, error) {
 
 	// Currently the nomad worker is assumed to be dead in case the according AutoScalingGroup can't be found.
 	sess, err := c.createSession()

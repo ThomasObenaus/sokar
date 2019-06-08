@@ -42,7 +42,7 @@ func NewMetrics() Metrics {
 		Namespace: "sokar",
 		Subsystem: "cap",
 		Name:      "pre_scale_job_count",
-		Help:      "The job count before the scaling action. Based on this count sokar does the planning.",
+		Help:      "The scaling-object count before the scaling action. Based on this count sokar does the planning.",
 	})
 
 	plannedJobCount := promauto.NewGauge(prometheus.GaugeOpts{

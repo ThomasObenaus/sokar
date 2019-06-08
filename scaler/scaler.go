@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// Scaler is a component responsible for scaling a job
+// Scaler is a component responsible for scaling a scalingObject
 type Scaler struct {
 	logger zerolog.Logger
 
@@ -16,12 +16,12 @@ type Scaler struct {
 	// the system that shall be used for scaling (i.e nomad)
 	scalingTarget ScalingTarget
 
-	// job is the configuration for the job that should be scaled
-	job jobConfig
+	// scalingObjectCfg is the configuration for the scalingObject
+	scalingObjectCfg scalingObjectConfig
 
-	// jobWatcherCycle the cycle the Scaler will check if
-	// the job count still matches the desired state.
-	jobWatcherCycle time.Duration
+	// scalingObjectWatcherCycle the cycle the Scaler will check if
+	// the scalingObject count still matches the desired state.
+	scalingObjectWatcherCycle time.Duration
 
 	// numOpenScalingTickets represents the number
 	// of Scaling Tickets that where issued but not yet
@@ -47,16 +47,16 @@ type Scaler struct {
 
 // Config is the configuration for the Scaler
 type Config struct {
-	JobName               string
+	Name                  string
 	MinCount              uint
 	MaxCount              uint
 	Logger                zerolog.Logger
 	MaxOpenScalingTickets uint
 }
 
-// jobConfig config of the job to be scaled
-type jobConfig struct {
-	jobName  string
+// scalingObjectConfig config of the scalingObject to be scaled
+type scalingObjectConfig struct {
+	name     string
 	minCount uint
 	maxCount uint
 }
@@ -69,11 +69,11 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 	}
 
 	return &Scaler{
-		logger:          cfg.Logger,
-		scalingTarget:   scalingTarget,
-		jobWatcherCycle: time.Second * 5,
-		job: jobConfig{
-			jobName:  cfg.JobName,
+		logger:                    cfg.Logger,
+		scalingTarget:             scalingTarget,
+		scalingObjectWatcherCycle: time.Second * 5,
+		scalingObjectCfg: scalingObjectConfig{
+			name:     cfg.Name,
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
 		},
@@ -88,10 +88,10 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 
 // GetCount returns the number of currently deployed instances
 func (s *Scaler) GetCount() (uint, error) {
-	return s.scalingTarget.GetJobCount(s.job.jobName)
+	return s.scalingTarget.GetScalingObjectCount(s.scalingObjectCfg.name)
 }
 
-// ScaleTo will scale the job to the desired count.
+// ScaleTo will scale the scalingObject to the desired count.
 func (s *Scaler) ScaleTo(desiredCount uint, dryRun bool) error {
 	s.logger.Info().Msgf("Scale to %d requested (dryRun=%t).", desiredCount, dryRun)
 	return s.openScalingTicket(desiredCount, dryRun)
@@ -107,7 +107,7 @@ func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
 	go s.scaleTicketProcessor(s.scaleTicketChan)
 	// handler that checks periodically if the desired count is still valid
-	go s.jobWatcher(s.jobWatcherCycle)
+	go s.scalingObjectWatcher(s.scalingObjectWatcherCycle)
 }
 
 // Stop tears down scaler

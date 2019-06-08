@@ -7,8 +7,8 @@ import (
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 )
 
-// IsJobDead returns true if the mentioned job is in state nomad./structs/JobStatusDead, false otherwise.
-func (nc *Connector) IsJobDead(jobname string) (bool, error) {
+// IsScalingObjectDead returns true if the mentioned job is in state nomad./structs/JobStatusDead, false otherwise.
+func (nc *Connector) IsScalingObjectDead(jobname string) (bool, error) {
 
 	jobInfo, err := nc.getJobInfo(jobname)
 
@@ -25,7 +25,7 @@ func (nc *Connector) IsJobDead(jobname string) (bool, error) {
 
 // GetJobCount retunrs the actual count of the given nomad job.
 // HACK: To unify the multiple groups with we take the job with max count.
-func (nc *Connector) GetJobCount(jobname string) (uint, error) {
+func (nc *Connector) GetScalingObjectCount(jobname string) (uint, error) {
 	jobInfo, err := nc.getJobInfo(jobname)
 
 	if err != nil {
@@ -44,7 +44,7 @@ func (nc *Connector) GetJobCount(jobname string) (uint, error) {
 
 // SetJobCount sets the given count for the given nomad job.
 // HACK: The count is set to the same value for all groups inside the job.
-func (nc *Connector) SetJobCount(jobname string, count uint) error {
+func (nc *Connector) SetScalingObjectCount(jobname string, count uint) error {
 	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
 
 	// obtain current status about the job

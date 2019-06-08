@@ -90,7 +90,7 @@ func TestSetJobInfo_Success(t *testing.T) {
 	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusSuccessful}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
-	err := conn.SetJobCount("test", 5)
+	err := conn.SetScalingObjectCount("test", 5)
 	assert.NoError(t, err)
 }
 
@@ -121,7 +121,7 @@ func TestSetJobInfo_InternalError(t *testing.T) {
 	// Register Deployment
 	jobsIF.EXPECT().Register(gomock.Any(), gomock.Any()).Return(nil, nil, fmt.Errorf("Internal error"))
 
-	err := conn.SetJobCount("test", 5)
+	err := conn.SetScalingObjectCount("test", 5)
 	assert.Error(t, err)
 }
 
@@ -164,11 +164,11 @@ func TestSetJobInfo_DeploymentError(t *testing.T) {
 	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusCancelled}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
-	err := conn.SetJobCount("test", 5)
+	err := conn.SetScalingObjectCount("test", 5)
 	assert.Error(t, err)
 }
 
-func TestGetJobCount(t *testing.T) {
+func TestGetScalingObjectCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -180,7 +180,7 @@ func TestGetJobCount(t *testing.T) {
 	job := &nomadApi.Job{}
 	jobsIF.EXPECT().Info("test", &nomadApi.QueryOptions{AllowStale: true}).Return(job, nil, nil)
 
-	count, err := conn.GetJobCount("test")
+	count, err := conn.GetScalingObjectCount("test")
 	assert.NoError(t, err)
 	assert.Equal(t, uint(0), count)
 
@@ -192,12 +192,12 @@ func TestGetJobCount(t *testing.T) {
 	}
 	jobsIF.EXPECT().Info("test", &nomadApi.QueryOptions{AllowStale: true}).Return(job, nil, nil)
 
-	count, err = conn.GetJobCount("test")
+	count, err = conn.GetScalingObjectCount("test")
 	assert.NoError(t, err)
 	assert.Equal(t, uint(10), count)
 }
 
-func TestIsJobDead(t *testing.T) {
+func TestIsScalingObjectDead(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
@@ -209,7 +209,7 @@ func TestIsJobDead(t *testing.T) {
 	job := &nomadApi.Job{}
 	jobsIF.EXPECT().Info("test", gomock.Any()).Return(job, nil, nil)
 
-	dead, err := conn.IsJobDead("test")
+	dead, err := conn.IsScalingObjectDead("test")
 	assert.Error(t, err)
 	assert.Equal(t, false, dead)
 
@@ -218,7 +218,7 @@ func TestIsJobDead(t *testing.T) {
 	job = &nomadApi.Job{Status: &status}
 	jobsIF.EXPECT().Info("test", gomock.Any()).Return(job, nil, nil)
 
-	dead, err = conn.IsJobDead("test")
+	dead, err = conn.IsScalingObjectDead("test")
 	assert.NoError(t, err)
 	assert.Equal(t, true, dead)
 }
