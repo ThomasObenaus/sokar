@@ -247,6 +247,10 @@ func setupScaler(jobName string, min uint, max uint, scalingTarget scaler.Scalin
 		return nil, fmt.Errorf("Logging factory is nil")
 	}
 
+	if scalingTarget == nil {
+		return nil, fmt.Errorf("ScalingTarget is nil")
+	}
+
 	scaCfg := scaler.Config{
 		JobName:  jobName,
 		MinCount: min,

@@ -10,6 +10,7 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/test/logging"
+	"github.com/thomasobenaus/sokar/test/scaler"
 )
 
 func Test_CliAndConfig(t *testing.T) {
@@ -45,33 +46,35 @@ func Test_SetupLogging(t *testing.T) {
 	assert.NotNil(t, lf)
 }
 
-func Test_SetupScaler(t *testing.T) {
+func Test_SetupScaler_Failures(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
 
 	// no logging factory
-	scaler, err := setupScaler("any", 0, 1, "nomad-addr", config.ScalerModeJob, nil)
+	scaler, err := setupScaler("any", 0, 1, nil, nil)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
+	scaler, err = setupScaler("any", 0, 1, nil, logF)
+	assert.Error(t, err)
+	assert.Nil(t, scaler)
+}
+
+func Test_SetupScaler(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
+	scalingTarget := mock_scaler.NewMockScalingTarget(mockCtrl)
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
-	scaler, err = setupScaler("any", 0, 1, "", config.ScalerModeJob, logF)
-	assert.Error(t, err)
-	assert.Nil(t, scaler)
 
-	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(2)
-	scaler, err = setupScaler("any", 0, 1, "https://nomad.com", config.ScalerModeJob, logF)
+	scaler, err := setupScaler("any", 0, 1, scalingTarget, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scaler)
-
-	// FIXME: Find out why this test fails
-	//logF.EXPECT().NewNamedLogger(gomock.Any()).Times(2)
-	//scaler, err = setupScaler("any", 0, 1, "https://nomad.com", true, logF)
-	//assert.NoError(t, err)
-	//assert.NotNil(t, scaler)
 }
+
 func Test_SetupScaleEmitters(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -92,4 +95,30 @@ func Test_SetupScaleEmitters(t *testing.T) {
 	emitters, err = setupScaleAlertEmitters(apiInst, logF)
 	assert.NoError(t, err)
 	assert.Len(t, emitters, 1)
+}
+
+func Test_SetupScalingTarget(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	scalingTarget, err := setupScalingTarget("https://nomad.com", config.ScalerModeDataCenter, nil)
+	assert.Error(t, err)
+	assert.Nil(t, scalingTarget)
+
+	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
+	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
+
+	scalingTarget, err = setupScalingTarget("", config.ScalerModeJob, logF)
+	assert.Error(t, err)
+	assert.Nil(t, scalingTarget)
+
+	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
+	scalingTarget, err = setupScalingTarget("https://nomad.com", config.ScalerModeDataCenter, logF)
+	assert.NoError(t, err)
+	assert.NotNil(t, scalingTarget)
+
+	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
+	scalingTarget, err = setupScalingTarget("https://nomad.com", config.ScalerModeJob, logF)
+	assert.NoError(t, err)
+	assert.NotNil(t, scalingTarget)
 }
