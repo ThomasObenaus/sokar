@@ -21,11 +21,6 @@ func (cfg *Config) fillCfgValues() error {
 	}
 	cfg.Scaler.Mode = scaMode
 
-	dummyScalingTargetEnabled := cfg.viper.GetBool(dummyScalingTarget.name)
-	if dummyScalingTargetEnabled {
-		cfg.Scaler.Mode = ScalerModeDataCenter
-	}
-
 	// Context: Nomad
 	cfg.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
 
@@ -42,21 +37,6 @@ func (cfg *Config) fillCfgValues() error {
 		max = 0
 	}
 	cfg.ScaleObject.MaxCount = uint(max)
-
-	// Context: job
-	objName := cfg.viper.GetString(jobName.name)
-	if len(objName) > 0 {
-		cfg.ScaleObject.Name = objName
-	}
-	min = cfg.viper.GetInt(jobMin.name)
-	if min >= 0 {
-		cfg.ScaleObject.MinCount = uint(min)
-	}
-
-	max = cfg.viper.GetInt(jobMax.name)
-	if max >= 0 {
-		cfg.ScaleObject.MaxCount = uint(max)
-	}
 
 	// Context: CapacityPlanner
 	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)

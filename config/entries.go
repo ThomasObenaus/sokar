@@ -28,15 +28,6 @@ var port = configEntry{
 	usage:        "Port where sokar is listening.",
 }
 
-// TODO: This is deprecated. Remove it.
-var dummyScalingTarget = configEntry{
-	name:         "dummy-scaling-target",
-	bindFlag:     true,
-	bindEnv:      true,
-	defaultValue: false,
-	usage:        "If true a dummy scaling target will be used instead of nomad.",
-}
-
 // ###################### Context: scaler ####################################################
 var scalerMode = configEntry{
 	name:         "sca.mode",
@@ -78,32 +69,6 @@ var scaleObjectMax = configEntry{
 	bindFlag:     true,
 	defaultValue: 10,
 	usage:        "The maximum count of the object to be scaled.",
-}
-
-// TODO: The whole job-section is deprecated. Remove it.
-// ###################### Context: job ####################################################
-var jobName = configEntry{
-	name:         "job.name",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "",
-	usage:        "The name of the job to be scaled.",
-}
-
-var jobMin = configEntry{
-	name:         "job.min",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: -1,
-	usage:        "The minimum scale of the job.",
-}
-
-var jobMax = configEntry{
-	name:         "job.max",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: -1,
-	usage:        "The maximum scale of the job.",
 }
 
 // ###################### Context: CapacityPlanner#########################################
@@ -217,18 +182,10 @@ var configEntries = []configEntry{
 	port,
 	dryRun,
 	scalerMode,
-	// TODO: Remove it.
-	dummyScalingTarget,
 	nomadServerAddress,
 	scaleObjectName,
 	scaleObjectMin,
 	scaleObjectMax,
-	// TODO: Remove it.
-	jobName,
-	// TODO: Remove it.
-	jobMin,
-	// TODO: Remove it.
-	jobMax,
 	capDownScaleCoolDown,
 	capUpScaleCoolDown,
 	loggingStructured,
