@@ -1,12 +1,12 @@
 # Changelog
 
+## v0.0.7 (TODO: Fill Date)
 
 - Config: With [#71](https://github.com/ThomasObenaus/sokar/issues/71) some deprecated config parameters where removed. These are:
   - `--dummy-scaling-target`
   - `-job.name` was replaced by `--scale-object.name`
   - `-job.min` was replaced by `--scale-object.min`
   - `-job.max` was replaced by `--scale-object.max`
-
 
 ## v0.0.6 (2019-05-27)
 
