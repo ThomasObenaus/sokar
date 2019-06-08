@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// ScalingTicket represents a ticket/ job to express the whish to scale
+// ScalingTicket represents a ticket/ scalingObject to express the whish to scale
 // and to track the state of the scaling.
 type ScalingTicket struct {
 	// issuedAt reflects the point in time the scaling ticket was

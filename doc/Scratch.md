@@ -59,13 +59,6 @@ Build
 cd $SK
 make build
 ```
-
-One Shot
-
-```bash
-$SK/sokar-bin -oneshot -nomad-server-address=$NOMAD_ADDR -job-name="fail-service" -scale-by=1
-```
-
 Deploy Sokar in Nomad (dev mode)
 
 ```bash

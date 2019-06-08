@@ -11,7 +11,7 @@ import (
 	"github.com/thomasobenaus/sokar/test/scaler"
 )
 
-func TestScale_JobDead(t *testing.T) {
+func TestScale_ScalingObjectDead(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -19,18 +19,18 @@ func TestScale_JobDead(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname}
+	sObjName := "any"
+	cfg := Config{Name: sObjName}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
-	// dead job - error
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, fmt.Errorf("internal error"))
+	// dead scalingObject - error
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, fmt.Errorf("internal error"))
 	result := scaler.scale(2, 0, false)
 	assert.Equal(t, scaleFailed, result.state)
 
-	// dead job
-	scaTgt.EXPECT().IsJobDead(jobname).Return(true, nil)
+	// dead scalingObject
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(true, nil)
 	result = scaler.scale(2, 0, false)
 	assert.Equal(t, scaleIgnored, result.state)
 }
@@ -43,8 +43,8 @@ func TestScale_Up(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -53,8 +53,8 @@ func TestScale_Up(t *testing.T) {
 	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge).Times(2)
 
 	// scale up
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(2)).Return(nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(2)).Return(nil)
 	result := scaler.scale(2, 0, false)
 	assert.Equal(t, uint(2), *scaler.desiredScale)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -63,8 +63,8 @@ func TestScale_Up(t *testing.T) {
 	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
 	polViolatedCounter.EXPECT().Inc()
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("max").Return(polViolatedCounter)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(5)).Return(nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(5)).Return(nil)
 	result = scaler.scale(6, 0, false)
 	assert.Equal(t, uint(5), *scaler.desiredScale)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -78,8 +78,8 @@ func TestScale_Down(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -88,8 +88,8 @@ func TestScale_Down(t *testing.T) {
 	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge).Times(2)
 
 	// scale down
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
 	result := scaler.scale(1, 4, false)
 	assert.Equal(t, uint(1), *scaler.desiredScale)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -98,8 +98,8 @@ func TestScale_Down(t *testing.T) {
 	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
 	polViolatedCounter.EXPECT().Inc()
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("min").Return(polViolatedCounter)
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
-	scaTgt.EXPECT().SetJobCount(jobname, uint(1)).Return(nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
 	result = scaler.scale(0, 2, false)
 	assert.Equal(t, uint(1), *scaler.desiredScale)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -113,13 +113,13 @@ func TestScale_NoScale(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
 	// scale down
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	result := scaler.scale(2, 2, false)
 	assert.Nil(t, scaler.desiredScale)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -181,8 +181,8 @@ func TestScale_UpDryRun(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -191,7 +191,7 @@ func TestScale_UpDryRun(t *testing.T) {
 	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge)
 
 	// scale up
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	result := scaler.scale(2, 0, true)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
@@ -204,8 +204,8 @@ func TestScale_DownDryRun(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	jobname := "any"
-	cfg := Config{JobName: jobname, MinCount: 1, MaxCount: 5}
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -214,7 +214,7 @@ func TestScale_DownDryRun(t *testing.T) {
 	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge)
 
 	// scale down
-	scaTgt.EXPECT().IsJobDead(jobname).Return(false, nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	result := scaler.scale(1, 4, true)
 	assert.NotEqual(t, scaleFailed, result.state)
 }

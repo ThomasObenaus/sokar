@@ -85,42 +85,42 @@ func trueIfNil(s *Scaler) (result scaleResult, ok bool) {
 	return result, ok
 }
 
-// scale scales the job from currentCount to desiredCount.
+// scale scales the scalingObject from currentCount to desiredCount.
 // Internally it is checked if a scaling is needed and if the scaling policy is valid.
 func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleResult {
 	if r, ok := trueIfNil(s); ok {
 		return r
 	}
 
-	jobName := s.job.jobName
-	min := s.job.minCount
-	max := s.job.maxCount
+	sObjName := s.scalingObjectCfg.name
+	min := s.scalingObjectCfg.minCount
+	max := s.scalingObjectCfg.maxCount
 
-	s.logger.Info().Str("job", jobName).Msgf("Request to scale job from %d to %d.", currentCount, desiredCount)
+	s.logger.Info().Str("scalingObject", sObjName).Msgf("Request to scale scalingObject from %d to %d.", currentCount, desiredCount)
 
-	dead, err := s.scalingTarget.IsJobDead(jobName)
+	dead, err := s.scalingTarget.IsScalingObjectDead(sObjName)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,
-			stateDescription: fmt.Sprintf("Error obtaining if job is dead: %s.", err.Error()),
+			stateDescription: fmt.Sprintf("Error obtaining if scalingObject is dead: %s.", err.Error()),
 		}
 	}
 
 	if dead {
 		return scaleResult{
 			state:            scaleIgnored,
-			stateDescription: fmt.Sprintf("Job '%s' is dead. Can't scale", jobName),
+			stateDescription: fmt.Sprintf("ScalingObject '%s' is dead. Can't scale", sObjName),
 		}
 	}
 
 	chkResult := checkScalingPolicy(desiredCount, min, max)
 	newCount := chkResult.validCount
 	if chkResult.minPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, currentCount, newCount)
+		s.logger.Info().Str("scalingObject", sObjName).Msgf("ScalingObject.MinCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", min, chkResult.desiredCount, currentCount, newCount)
 		s.metrics.scalingPolicyViolated.WithLabelValues("min").Inc()
 	}
 	if chkResult.maxPolicyViolated {
-		s.logger.Info().Str("job", jobName).Msgf("Job.MaxCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", max, chkResult.desiredCount, currentCount, newCount)
+		s.logger.Info().Str("scalingObject", sObjName).Msgf("ScalingObject.MaxCount (%d) policy violated (wanted %d, have %d). Scale limited to %d.", max, chkResult.desiredCount, currentCount, newCount)
 		s.metrics.scalingPolicyViolated.WithLabelValues("max").Inc()
 	}
 
@@ -128,7 +128,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	scaleNeeded := (diff != 0)
 
 	if !scaleNeeded {
-		s.logger.Info().Str("job", jobName).Msg("No scaling needed/ possible.")
+		s.logger.Info().Str("scalingObject", sObjName).Msg("No scaling needed/ possible.")
 		return scaleResult{
 			state:            scaleIgnored,
 			stateDescription: "No scaling needed/ possible.",
@@ -139,7 +139,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	scaleTypeStr := amountToScaleType(diff)
 
 	if dryRun {
-		s.logger.Info().Str("job", jobName).Msgf("Skip scale %s by %d to %d (DryRun).", scaleTypeStr, diff, newCount)
+		s.logger.Info().Str("scalingObject", sObjName).Msgf("Skip scale %s by %d to %d (DryRun).", scaleTypeStr, diff, newCount)
 		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(1)
 
 		return scaleResult{
@@ -149,16 +149,16 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		}
 	}
 
-	s.logger.Info().Str("job", jobName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
+	s.logger.Info().Str("scalingObject", sObjName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
-	// Set the new job count
+	// Set the new scalingObject count
 	s.desiredScale = &newCount
-	err = s.scalingTarget.SetJobCount(s.job.jobName, newCount)
+	err = s.scalingTarget.SetScalingObjectCount(s.scalingObjectCfg.name, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,
-			stateDescription: fmt.Sprintf("Error adjusting job count to %d: %s.", newCount, err.Error()),
+			stateDescription: fmt.Sprintf("Error adjusting scalingObject count to %d: %s.", newCount, err.Error()),
 		}
 	}
 

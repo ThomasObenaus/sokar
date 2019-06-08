@@ -7,20 +7,20 @@ import (
 	m "github.com/thomasobenaus/sokar/metrics"
 )
 
-func (s *Scaler) jobWatcher(cycle time.Duration) {
+func (s *Scaler) scalingObjectWatcher(cycle time.Duration) {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	jobWatcherTicker := time.NewTicker(cycle)
+	scalingObjectWatcherTicker := time.NewTicker(cycle)
 
 	for {
 		select {
 		case <-s.stopChan:
-			s.logger.Info().Msg("JobWatcher Closed.")
+			s.logger.Info().Msg("ScaleObjectWatcher Closed.")
 			return
-		case <-jobWatcherTicker.C:
-			if err := s.ensureJobCount(); err != nil {
-				s.logger.Error().Msgf("Check job state failed: %s", err.Error())
+		case <-scalingObjectWatcherTicker.C:
+			if err := s.ensureScalingObjectCount(); err != nil {
+				s.logger.Error().Msgf("Check scalingObject state failed: %s", err.Error())
 			}
 		}
 	}
@@ -34,9 +34,9 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.logger.Info().Msg("ScaleTicketProcessor started.")
 
 	for ticket := range ticketChan {
-		// TODO: Stop jobwatcher here
+		// TODO: Stop scalingObjectwatcher here
 		s.applyScaleTicket(ticket)
-		// TODO: Start jobwatcher here
+		// TODO: Start scalingObjectwatcher here
 	}
 
 	s.logger.Info().Msg("ScaleTicketProcessor closed.")
@@ -94,12 +94,12 @@ func (s *Scaler) openScalingTicket(desiredCount uint, dryRun bool) error {
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, dryRun bool) scaleResult {
-	jobName := s.job.jobName
-	currentCount, err := s.scalingTarget.GetJobCount(jobName)
+	scalingObjectName := s.scalingObjectCfg.name
+	currentCount, err := s.scalingTarget.GetScalingObjectCount(scalingObjectName)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,
-			stateDescription: fmt.Sprintf("Error obtaining job count: %s.", err.Error()),
+			stateDescription: fmt.Sprintf("Error obtaining scalingObject count: %s.", err.Error()),
 		}
 	}
 

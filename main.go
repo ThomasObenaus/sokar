@@ -241,7 +241,7 @@ func setupScalingTarget(nomadSrvAddr string, mode config.ScalerMode, logF loggin
 }
 
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
-func setupScaler(jobName string, min uint, max uint, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+func setupScaler(scalingObjName string, min uint, max uint, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
@@ -252,7 +252,7 @@ func setupScaler(jobName string, min uint, max uint, scalingTarget scaler.Scalin
 	}
 
 	scaCfg := scaler.Config{
-		JobName:  jobName,
+		Name:     scalingObjName,
 		MinCount: min,
 		MaxCount: max,
 		Logger:   logF.NewNamedLogger("sokar.scaler"),
