@@ -209,6 +209,35 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	return sokarInst, err
 }
 
+func setupScalingTarget(nomadSrvAddr string, mode config.ScalerMode, logF logging.LoggerFactory) (scaler.ScalingTarget, error) {
+	if logF == nil {
+		return nil, fmt.Errorf("Logging factory is nil")
+	}
+
+	var scalingTarget scaler.ScalingTarget
+
+	if mode == config.ScalerModeDataCenter {
+
+		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker")}
+		nomadWorker, err := cfg.New()
+		if err != nil {
+			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
+		}
+		scalingTarget = nomadWorker
+	} else {
+		nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)
+		nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
+		nomad, err := nomadConfig.New()
+		if err != nil {
+			return nil, fmt.Errorf("Failed setting up nomad connector: %s", err)
+		}
+
+		scalingTarget = nomad
+	}
+
+	return scalingTarget, nil
+}
+
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
 func setupScaler(jobName string, min uint, max uint, nomadSrvAddr string, mode config.ScalerMode, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
