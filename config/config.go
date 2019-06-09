@@ -19,9 +19,10 @@ const (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port                 int                  `json:"port,omitempty"`
-	Scaler               Scaler               `json:"scaler,omitempty"`
-	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
+	Port       int    `json:"port,omitempty"`
+	Scaler     Scaler `json:"scaler,omitempty"`
+	DryRunMode bool   `json:"dry_run_mode,omitempty"`
+	// TODO: [DEPRECATED] Remove this entry
 	Nomad                Nomad                `json:"nomad,omitempty"`
 	Logging              Logging              `json:"logging,omitempty"`
 	ScaleObject          ScaleObject          `json:"scale_object,omitempty"`
@@ -36,11 +37,28 @@ type Config struct {
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
-	Mode ScalerMode `json:"mode,omitempty"`
+	// TODO: [DEPRECATED] Remove this entry
+	Mode  ScalerMode `json:"mode,omitempty"`
+	Nomad SCANomad   `json:"nomad,omitempty"`
+}
+
+// SCANomad represents the parameters for a nomad based scaler (job or data-center).
+type SCANomad struct {
+	Mode          ScalerMode            `json:"mode,omitempty"`
+	ServerAddr    string                `json:"server_addr,omitempty"`
+	DataCenterAWS SCANomadDataCenterAWS `json:"datacenter_aws,omitempty"`
+}
+
+// SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
+type SCANomadDataCenterAWS struct {
+	AWSProfile string `json:"aws_profile,omitempty"`
+	AWSRegion  string `json:"aws_region,omitempty"`
 }
 
 // Nomad represents the configuration for the scaling target nomad
+// TODO: [DEPRECATED] Remove this entry
 type Nomad struct {
+	// TODO: [DEPRECATED] Remove this entry
 	ServerAddr string `json:"server_addr,omitempty"`
 }
 
@@ -93,7 +111,9 @@ func NewDefaultConfig() Config {
 		Nomad:       Nomad{},
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
-		Scaler:      Scaler{Mode: ScalerModeJob},
+		Scaler: Scaler{
+			Nomad: SCANomad{Mode: ScalerModeJob},
+		},
 		ScaleAlertAggregator: ScaleAlertAggregator{
 			EvaluationCycle:        time.Second * 1,
 			EvaluationPeriodFactor: 10,

@@ -1,9 +1,11 @@
 dry-run: false
 port: 11000
 sca:
-  mode: "job"
-nomad:
-  server-address: "http://192.168.0.236:4646"
+  nomad:
+    mode: "job"
+    server-address: "http://192.168.0.236:4646"
+    datacenter-aws:
+      aws-region: "us-east-1"
 scale-object:
   name: "fail-service"
   min: 1

@@ -14,9 +14,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	cfg := NewDefaultConfig()
 	args := []string{
 		"--dry-run",
-		"--sca.mode=dc",
 		"--port=1000",
-		"--nomad.server-address=http://nomad",
 		"--scale-object.name=job",
 		"--scale-object.min=10",
 		"--scale-object.max=100",
@@ -32,14 +30,22 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--saa.eval-period-factor=105",
 		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
 		"--saa.alert-expiration-time=5m",
+		"--sca.mode=job",
+		"--nomad.server-address=INVALID",
+		"--sca.nomad.mode=dc",
+		"--sca.nomad.server-address=http://nomad",
+		"--sca.nomad.dc-aws.aws-region=region-test",
+		"--sca.nomad.dc-aws.aws-profile=profile-test",
 	}
 
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Mode)
+	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Nomad.Mode)
+	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.AWSProfile)
+	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.AWSRegion)
+	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
-	assert.Equal(t, "http://nomad", cfg.Nomad.ServerAddr)
 	assert.Equal(t, "job", cfg.ScaleObject.Name)
 	assert.Equal(t, uint(10), cfg.ScaleObject.MinCount)
 	assert.Equal(t, uint(100), cfg.ScaleObject.MaxCount)
@@ -59,6 +65,37 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, float32(1.2), cfg.ScaleAlertAggregator.ScaleAlerts[0].Weight)
 	assert.Equal(t, "This is an upscaling alert", cfg.ScaleAlertAggregator.ScaleAlerts[0].Description)
 	assert.Equal(t, time.Minute*5, cfg.ScaleAlertAggregator.AlertExpirationTime)
+}
+
+func Test_FillCfg_DeprecatedFlags(t *testing.T) {
+
+	cfg := NewDefaultConfig()
+	args := []string{
+		"--dry-run",
+		"--port=1000",
+		"--scale-object.name=job",
+		"--scale-object.min=10",
+		"--scale-object.max=100",
+		"--logging.structured",
+		"--logging.unix-ts",
+		"--cap.down-scale-cooldown=90s",
+		"--cap.up-scale-cooldown=91s",
+		"--saa.no-alert-damping=100",
+		"--saa.up-thresh=101",
+		"--saa.down-thresh=102",
+		"--saa.eval-cycle=103s",
+		"--saa.cleanup-cycle=104s",
+		"--saa.eval-period-factor=105",
+		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
+		"--saa.alert-expiration-time=5m",
+		"--sca.mode=dc",
+		"--nomad.server-address=http://nomad",
+	}
+
+	err := cfg.ReadConfig(args)
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Nomad.Mode)
+	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 }
 
 func Test_AlertMapToAlerts(t *testing.T) {

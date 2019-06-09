@@ -18,12 +18,12 @@ func Test_CliAndConfig(t *testing.T) {
 	nomadSrvAddr := "http://nomad.example.com:4646"
 	cfgFile := "examples/config/full.yaml"
 
-	args := []string{"./sokar-bin", "--config-file=" + cfgFile, "--nomad.server-address=" + nomadSrvAddr}
+	args := []string{"./sokar-bin", "--config-file=" + cfgFile, "--sca.nomad.server-address=" + nomadSrvAddr}
 	cfg, err := cliAndConfig(args)
 
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
-	assert.Equal(t, nomadSrvAddr, cfg.Nomad.ServerAddr)
+	assert.Equal(t, nomadSrvAddr, cfg.Scaler.Nomad.ServerAddr)
 
 	args = []string{"./sokar-bin", "--co"}
 	cfg, err = cliAndConfig(args)
@@ -101,24 +101,38 @@ func Test_SetupScalingTarget(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	scalingTarget, err := setupScalingTarget("https://nomad.com", config.ScalerModeDataCenter, nil)
+	cfg := config.Scaler{
+		Nomad: config.SCANomad{ServerAddr: "http://nomad"},
+	}
+	scalingTarget, err := setupScalingTarget(cfg, nil)
 	assert.Error(t, err)
 	assert.Nil(t, scalingTarget)
 
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 
-	scalingTarget, err = setupScalingTarget("", config.ScalerModeJob, logF)
+	cfg = config.Scaler{}
+	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.Error(t, err)
 	assert.Nil(t, scalingTarget)
 
+	cfg = config.Scaler{
+		Nomad: config.SCANomad{
+			ServerAddr:    "http://nomad",
+			Mode:          config.ScalerModeDataCenter,
+			DataCenterAWS: config.SCANomadDataCenterAWS{AWSRegion: "eu-central-1"},
+		},
+	}
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
-	scalingTarget, err = setupScalingTarget("https://nomad.com", config.ScalerModeDataCenter, logF)
+	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scalingTarget)
 
+	cfg = config.Scaler{
+		Nomad: config.SCANomad{ServerAddr: "http://nomad", Mode: config.ScalerModeJob},
+	}
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
-	scalingTarget, err = setupScalingTarget("https://nomad.com", config.ScalerModeJob, logF)
+	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scalingTarget)
 }

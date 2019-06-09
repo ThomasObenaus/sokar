@@ -15,14 +15,29 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Port = cfg.viper.GetInt(port.name)
 
 	// Context: Scaler
-	scaMode, err := strToScalerMode(cfg.viper.GetString(scalerMode.name))
+	scaModeStr := cfg.viper.GetString(scalerMode.name)
+	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
+
+	// TODO: Remove since scalerMode.name is deprecated
+	// Currently the new parameter overrides the old one only if the old is not dc and the new is not empty.
+	if len(scaNomadModeStr) > 0 && scaModeStr != "dc" {
+		scaModeStr = scaNomadModeStr
+	}
+
+	scaMode, err := strToScalerMode(scaModeStr)
 	if err != nil {
 		return err
 	}
-	cfg.Scaler.Mode = scaMode
+	cfg.Scaler.Nomad.Mode = scaMode
 
-	// Context: Nomad
-	cfg.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
+	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
+	nomadSrvAddressCfg := cfg.viper.GetString(scaNomadModeServerAddress.name)
+	if len(nomadSrvAddressCfg) > 0 {
+		cfg.Scaler.Nomad.ServerAddr = nomadSrvAddressCfg
+	}
+
+	cfg.Scaler.Nomad.DataCenterAWS.AWSProfile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
+	cfg.Scaler.Nomad.DataCenterAWS.AWSRegion = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
