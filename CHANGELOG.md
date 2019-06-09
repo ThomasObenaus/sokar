@@ -2,7 +2,7 @@
 
 ## v0.0.7 (TODO: Fill Date)
 
-- Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) two new config parameters for scaling a nomad data-center on AWS where added. These are:
+- Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) two new config parameters for scaling a nomad data-center on AWS where added. These parameters are:
   - `--sca.nomad.dc-aws.profile`
   - `--sca.nomad.dc-aws.region`
 - Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) some config parameters where marked as deprecated and will be removed in next release. These are:
