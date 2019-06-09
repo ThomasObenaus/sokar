@@ -35,6 +35,7 @@ func Test_CreateSession(t *testing.T) {
 
 	// success, no profile
 	connector = Connector{
+		awsRegion:       "xyz",
 		fnCreateSession: newAWSSession,
 	}
 	sess, err = connector.createSession()
@@ -50,7 +51,7 @@ func TestSetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{}
+	cfg := Config{AWSProfile: "xyz"}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -97,7 +98,7 @@ func TestGetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{}
+	cfg := Config{AWSProfile: "xyz"}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -146,7 +147,7 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{}
+	cfg := Config{AWSProfile: "xyz"}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
