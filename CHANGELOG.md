@@ -2,11 +2,17 @@
 
 ## v0.0.7 (TODO: Fill Date)
 
+- Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) two new config parameters for scaling a nomad data-center on AWS where added. These are:
+  - `--sca.nomad.dc-aws.profile`
+  - `--sca.nomad.dc-aws.region`
+- Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) some config parameters where marked as deprecated and will be removed in next release. These are:
+  - `--sca.mode` is deprecated, instead `--sca.nomad.mode` should be used
+  - `--nomad.server-address` is deprecated, instead `--sca.nomad.server-address` should be used
 - Config: With [#71](https://github.com/ThomasObenaus/sokar/issues/71) some deprecated config parameters where removed. These are:
-  - `--dummy-scaling-target`
-  - `-job.name` was replaced by `--scale-object.name`
-  - `-job.min` was replaced by `--scale-object.min`
-  - `-job.max` was replaced by `--scale-object.max`
+  - `--dummy-scaling-target` was removed
+  - `--job.name` was replaced by `--scale-object.name`
+  - `--job.min` was replaced by `--scale-object.min`
+  - `--job.max` was replaced by `--scale-object.max`
 
 ## v0.0.6 (2019-05-27)
 
