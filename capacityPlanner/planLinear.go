@@ -6,6 +6,9 @@ import (
 	"github.com/thomasobenaus/sokar/helper"
 )
 
+// planLinear increases/ decreases the given scale linearly based on the given scaleFactor.
+// Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
+// newScale = (1+scaleFactor) * currentScale
 func (cp *CapacityPlanner) planLinear(scaleFactor float32, currentScale uint) uint {
 
 	if scaleFactor == 0 {
