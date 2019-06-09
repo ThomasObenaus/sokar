@@ -34,15 +34,15 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--nomad.server-address=INVALID",
 		"--sca.nomad.mode=dc",
 		"--sca.nomad.server-address=http://nomad",
-		"--sca.nomad.dc-aws.aws-region=region-test",
-		"--sca.nomad.dc-aws.aws-profile=profile-test",
+		"--sca.nomad.dc-aws.region=region-test",
+		"--sca.nomad.dc-aws.profile=profile-test",
 	}
 
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
 	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Nomad.Mode)
-	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.AWSProfile)
-	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.AWSRegion)
+	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.Profile)
+	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.Region)
 	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)

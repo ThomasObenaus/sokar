@@ -51,8 +51,8 @@ type SCANomad struct {
 
 // SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
 type SCANomadDataCenterAWS struct {
-	AWSProfile string `json:"aws_profile,omitempty"`
-	AWSRegion  string `json:"aws_region,omitempty"`
+	Profile string `json:"profile,omitempty"`
+	Region  string `json:"region,omitempty"`
 }
 
 // Nomad represents the configuration for the scaling target nomad

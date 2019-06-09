@@ -39,7 +39,7 @@ var scalerMode = configEntry{
 }
 
 var scaNomadDataCenterAWSProfile = configEntry{
-	name:         "sca.nomad.dc-aws.aws-profile",
+	name:         "sca.nomad.dc-aws.profile",
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: "",
@@ -47,7 +47,7 @@ var scaNomadDataCenterAWSProfile = configEntry{
 }
 
 var scaNomadDataCenterAWSRegion = configEntry{
-	name:         "sca.nomad.dc-aws.aws-region",
+	name:         "sca.nomad.dc-aws.region",
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: "eu-central-1",

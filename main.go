@@ -218,7 +218,7 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 	var scalingTarget scaler.ScalingTarget
 
 	if cfg.Nomad.Mode == config.ScalerModeDataCenter {
-		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.AWSRegion, AWSProfile: cfg.Nomad.DataCenterAWS.AWSProfile}
+		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile}
 		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)

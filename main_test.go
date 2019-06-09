@@ -120,7 +120,7 @@ func Test_SetupScalingTarget(t *testing.T) {
 		Nomad: config.SCANomad{
 			ServerAddr:    "http://nomad",
 			Mode:          config.ScalerModeDataCenter,
-			DataCenterAWS: config.SCANomadDataCenterAWS{AWSRegion: "eu-central-1"},
+			DataCenterAWS: config.SCANomadDataCenterAWS{Region: "eu-central-1"},
 		},
 	}
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)

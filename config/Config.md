@@ -37,7 +37,61 @@
 
 ## Scaler
 
-### ScalingTarget
+### Nomad
+
+* This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
+
+#### Mode
+
+|         |                                                                                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| name    | mode                                                                                                                                                                                                                     |
+| usage   | Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
+| type    | string (enum: job \| dc )                                                                                                                                                                                                |
+| default | job                                                                                                                                                                                                                      |
+| flag    | --sca.nomad.mode                                                                                                                                                                                                         |
+| env     | SK_SCA_NOMAD_MODE                                                                                                                                                                                                        |
+
+#### Server-Address
+
+|         |                                            |
+| ------- | ------------------------------------------ |
+| name    | server-address                             |
+| usage   | Specifies the address of the nomad server. |
+| type    | string                                     |
+| default | ""                                         |
+| flag    | --sca.nomad.server-address                 |
+| env     | SK_SCA_NOMAD_SERVER_ADDRESS                |
+
+#### Data-Center AWS
+
+* The parameters in this section are used to configure the scaler that is used to scale a data-center hosted on AWS
+
+##### Profile
+
+|         |                                                                                                                                                                                                                                                                                                                                                    |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name    | profile                                                                                                                                                                                                                                                                                                                                            |
+| usage   | This parameter represents the name of the aws profile that shall be used to access the resources to scale the data-center. This parameter is optional. If it is empty the instance where sokar runs on has to have enough permissions to access the resources (ASG) for scaling. In this case the AWSRegion parameter has to be specified as well. |
+| type    | string                                                                                                                                                                                                                                                                                                                                             |
+| default | ""                                                                                                                                                                                                                                                                                                                                                 |
+| flag    | --sca.nomad.dc-aws.profile                                                                                                                                                                                                                                                                                                                         |
+| env     | SK_SCA_NOMAD_DC_AWS_PROFILE                                                                                                                                                                                                                                                                                                                        |
+
+##### Region
+
+|         |                                                                                                                                                                                    |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name    | region                                                                                                                                                                             |
+| usage   | This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in. |
+| type    | string                                                                                                                                                                             |
+| default | ""                                                                                                                                                                                 |
+| flag    | --sca.nomad.dc-aws.region                                                                                                                                                          |
+| env     | SK_SCA_NOMAD_DC_AWS_REGION                                                                                                                                                         |
+
+### [DEPRECATED] ScalingTarget
+
+* Replaced by `--sca.nomad.mode`
 
 |         |                                                                                                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -48,9 +102,11 @@
 | flag    | --sca.mode                                                                                                                                                                                                               |
 | env     | SK_SCA_MODE                                                                                                                                                                                                              |
 
-## Nomad
+## [DEPRECATED] Nomad
 
-### Server-Address
+### [DEPRECATED] Server-Address
+
+* Replaced by `--sca.nomad.server-address`
 
 |         |                                            |
 | ------- | ------------------------------------------ |
