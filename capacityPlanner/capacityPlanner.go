@@ -11,6 +11,8 @@ type CapacityPlanner struct {
 	logger                  zerolog.Logger
 	downScaleCooldownPeriod time.Duration
 	upScaleCooldownPeriod   time.Duration
+
+	offsetConstantMode uint
 }
 
 // Config is the configuration for the Capacity Planner
@@ -19,6 +21,8 @@ type Config struct {
 
 	DownScaleCooldownPeriod time.Duration
 	UpScaleCooldownPeriod   time.Duration
+
+	OffsetConstantMode uint
 }
 
 // NewDefaultConfig provides a config with good default values for the CapacityPlanner
@@ -26,6 +30,7 @@ func NewDefaultConfig() Config {
 	return Config{
 		DownScaleCooldownPeriod: time.Second * 80,
 		UpScaleCooldownPeriod:   time.Second * 60,
+		OffsetConstantMode:      1,
 	}
 }
 
@@ -36,5 +41,6 @@ func (cfg Config) New() *CapacityPlanner {
 		logger:                  cfg.Logger,
 		downScaleCooldownPeriod: cfg.DownScaleCooldownPeriod,
 		upScaleCooldownPeriod:   cfg.UpScaleCooldownPeriod,
+		offsetConstantMode:      cfg.OffsetConstantMode,
 	}
 }
