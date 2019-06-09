@@ -29,6 +29,7 @@ var port = configEntry{
 }
 
 // ###################### Context: scaler ####################################################
+// TODO: [DEPRECATED] Remove this entry
 var scalerMode = configEntry{
 	name:         "sca.mode",
 	bindEnv:      true,
@@ -37,6 +38,39 @@ var scalerMode = configEntry{
 	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
 }
 
+var scaNomadDataCenterAWSProfile = configEntry{
+	name:         "sca.nomad.dc-aws.aws-profile",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "",
+	usage:        "This parameter represents the name of the aws profile that shall be used to access the resources to scale the data-center. This parameter is optional. If it is empty the instance where sokar runs on has to have enough permissions to access the resources (ASG) for scaling. In this case the AWSRegion parameter has to be specified as well.",
+}
+
+var scaNomadDataCenterAWSRegion = configEntry{
+	name:         "sca.nomad.dc-aws.aws-region",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "eu-central-1",
+	usage:        "This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in.",
+}
+
+var scaNomadMode = configEntry{
+	name:         "sca.nomad.mode",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "job",
+	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
+}
+
+var scaNomadModeServerAddress = configEntry{
+	name:         "sca.nomad.server-address",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "",
+	usage:        "Specifies the address of the nomad server.",
+}
+
+// TODO: [DEPRECATED] Remove this entry
 // ###################### Context: nomad ####################################################
 var nomadServerAddress = configEntry{
 	name:         "nomad.server-address",
@@ -181,7 +215,9 @@ var configEntries = []configEntry{
 	configFile,
 	port,
 	dryRun,
+	// TODO: [DEPRECATED] Remove this entry
 	scalerMode,
+	// TODO: [DEPRECATED] Remove this entry
 	nomadServerAddress,
 	scaleObjectName,
 	scaleObjectMin,
@@ -199,4 +235,8 @@ var configEntries = []configEntry{
 	saaCleanupCylce,
 	saaScaleAlerts,
 	saaAlertExpirationTime,
+	scaNomadDataCenterAWSProfile,
+	scaNomadDataCenterAWSRegion,
+	scaNomadMode,
+	scaNomadModeServerAddress,
 }

@@ -76,9 +76,13 @@ gen-metrics-md: sep
 	@python3 gen_metrics_doc.py > Metrics.md
 
 
-run: sep build
+run.dc: sep build
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --nomad.server-address=$(nomad_server)
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.nomad.mode="dc"
+
+run.job: sep build
+	@echo "--> Run $(sokar_file_name)"
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server)
 
 docker.build: sep
 	@echo "--> Build docker image thobe/sokar"
@@ -86,7 +90,7 @@ docker.build: sep
 
 docker.run: sep
 	@echo "--> Run docker image $(docker_image)"
-	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --nomad.server-address=$(nomad_server)
+	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --sca.nomad.server-address=$(nomad_server)
 
 docker.push: sep
 	@echo "--> Tag image to thobe/sokar:$(tag)"

@@ -57,8 +57,7 @@ func main() {
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
 	logger.Info().Msg("4. Setup: Scaler")
-	scalerMode := cfg.Scaler.Mode
-	scalingTarget := helper.Must(setupScalingTarget(cfg.Nomad.ServerAddr, scalerMode, loggingFactory)).(scaler.ScalingTarget)
+	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
 
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, scalingTarget, loggingFactory)).(*scaler.Scaler)
 
@@ -211,25 +210,22 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	return sokarInst, err
 }
 
-func setupScalingTarget(nomadSrvAddr string, mode config.ScalerMode, logF logging.LoggerFactory) (scaler.ScalingTarget, error) {
+func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.ScalingTarget, error) {
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
 	}
 
 	var scalingTarget scaler.ScalingTarget
 
-	if mode == config.ScalerModeDataCenter {
-		// TODO: Remove hard-coded value
-		awsRegion := "eu-central-1"
-
-		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: awsRegion}
+	if cfg.Nomad.Mode == config.ScalerModeDataCenter {
+		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.AWSRegion, AWSProfile: cfg.Nomad.DataCenterAWS.AWSProfile}
 		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
 		}
 		scalingTarget = nomadWorker
 	} else {
-		nomadConfig := nomad.NewDefaultConfig(nomadSrvAddr)
+		nomadConfig := nomad.NewDefaultConfig(cfg.Nomad.ServerAddr)
 		nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
 		nomad, err := nomadConfig.New()
 		if err != nil {
