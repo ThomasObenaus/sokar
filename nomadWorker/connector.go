@@ -20,7 +20,7 @@ type Connector struct {
 
 	// fnCreateSession is the function that should be used to create the aws session
 	// which is needed to access the aws resources.
-	fnCreateSession func() (*session.Session, error)
+	fnCreateSession func(region string) (*session.Session, error)
 
 	// fnCreateSessionFromProfile is the function that should be used to create the aws session
 	// which is needed to access the aws resources.

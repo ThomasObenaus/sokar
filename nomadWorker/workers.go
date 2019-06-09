@@ -111,7 +111,8 @@ func (c *Connector) createSession() (*session.Session, error) {
 			return nil, fmt.Errorf("fnCreateSession is nil")
 		}
 
-		session, err = c.fnCreateSession()
+		// HACK: Remove hardcoded region
+		session, err = c.fnCreateSession("eu-central-1")
 	}
 	return session, err
 }
