@@ -5,7 +5,7 @@ sca:
     mode: "job"
     server-address: "http://192.168.0.236:4646"
     datacenter-aws:
-      aws-region: "us-east-1"
+      region: "us-east-1"
 scale-object:
   name: "fail-service"
   min: 1

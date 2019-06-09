@@ -36,8 +36,8 @@ func (cfg *Config) fillCfgValues() error {
 		cfg.Scaler.Nomad.ServerAddr = nomadSrvAddressCfg
 	}
 
-	cfg.Scaler.Nomad.DataCenterAWS.AWSProfile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
-	cfg.Scaler.Nomad.DataCenterAWS.AWSRegion = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
+	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
+	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
