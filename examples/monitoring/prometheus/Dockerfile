@@ -1,4 +1,4 @@
-FROM  quay.io/prometheus/prometheus:latest
+FROM  quay.io/prometheus/prometheus:v2.10.0
 
 COPY config.yml /etc/prometheus/prometheus.yml
 

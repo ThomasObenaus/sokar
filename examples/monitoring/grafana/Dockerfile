@@ -1,4 +1,4 @@
-FROM  grafana/grafana:latest
+FROM  grafana/grafana:6.2.2
 
 COPY grafana.ini /etc/grafana/grafana.ini
 COPY prometheus_ds.yaml /etc/grafana/provisioning/datasources
