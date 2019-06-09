@@ -23,7 +23,7 @@ func (nc *Connector) IsScalingObjectDead(jobname string) (bool, error) {
 	return (*jobInfo.Status == nomadstructs.JobStatusDead), nil
 }
 
-// GetJobCount retunrs the actual count of the given nomad job.
+// GetScalingObjectCount retunrs the actual count of the given nomad job.
 // HACK: To unify the multiple groups with we take the job with max count.
 func (nc *Connector) GetScalingObjectCount(jobname string) (uint, error) {
 	jobInfo, err := nc.getJobInfo(jobname)
@@ -42,7 +42,7 @@ func (nc *Connector) GetScalingObjectCount(jobname string) (uint, error) {
 	return uint(count), nil
 }
 
-// SetJobCount sets the given count for the given nomad job.
+// SetScalingObjectCount sets the given count for the given nomad job.
 // HACK: The count is set to the same value for all groups inside the job.
 func (nc *Connector) SetScalingObjectCount(jobname string, count uint) error {
 	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)

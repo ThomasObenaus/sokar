@@ -8,16 +8,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// LoggerFactory is a factory that can be used to create named loggers using the same aligned configuration and namespace.
 type LoggerFactory interface {
 	NewNamedLogger(name string) zerolog.Logger
 }
 
+// Config is a struct keeping the main configuration parameters for the LoggerFactory
 type Config struct {
 	UseStructuredLogging       bool
 	UseUnixTimestampForLogging bool
 	NoColoredLogOutput         bool
 }
 
+// New creates a new LoggerFactory
 func (cfg Config) New() LoggerFactory {
 	if cfg.UseUnixTimestampForLogging {
 		// UNIX Time is faster and smaller than most timestamps
