@@ -1,6 +1,8 @@
 package nomadWorker
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -14,11 +16,13 @@ func newAWSSessionFromProfile(profile string) (*session.Session, error) {
 	return session.NewSessionWithOptions(sessionOpts)
 }
 
-func newAWSSession() (*session.Session, error) {
+func newAWSSession(region string) (*session.Session, error) {
+	if len(region) == 0 {
+		return nil, fmt.Errorf("Required region parameter is empty")
+	}
+
 	verboseCredErrors := true
 
-	// HACK: should not be hard-coded
-	region := "eu-central-1"
 	cfg := aws.Config{CredentialsChainVerboseErrors: &verboseCredErrors, Region: &region}
 	sessionOpts := session.Options{Config: cfg, SharedConfigState: session.SharedConfigEnable}
 

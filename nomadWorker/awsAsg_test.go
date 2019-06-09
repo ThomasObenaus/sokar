@@ -20,7 +20,7 @@ func Test_CreateAutoScaling(t *testing.T) {
 	assert.Nil(t, as)
 
 	//  no session
-	sess, _ := newAWSSession()
+	sess, _ := newAWSSession("eu-central-1")
 	as = asgF.CreateAutoScaling(sess)
 	assert.NotNil(t, as)
 }
