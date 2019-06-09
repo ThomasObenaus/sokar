@@ -1,5 +1,4 @@
 
-import sys
 import os
 
 metric_types = ["NewCounter", "NewGauge",
@@ -94,9 +93,9 @@ class Metric:
         self.buckets = None
 
 
-def findMetricsFiles(dir):
+def findMetricsFiles(directory):
     mFiles = list()
-    for r, _, f in os.walk("."):
+    for r, _, f in os.walk(directory):
         for file in f:
             full_file_name = os.path.join(r, file)
             if "/metrics.go" in full_file_name and "vendor" not in full_file_name:
@@ -121,9 +120,7 @@ for mFile in mFiles:
     metric_block = list()
     metric_block_open = False
     metric_type = ""
-    for i in range(0, len(file_content)):
-        line = file_content[i]
-
+    for i, line in enumerate(file_content):
         if isEndOfMetricDefinition(line) and metric_block_open:
             metric_block_open = False
             metric = createMetric(metric_block, metric_type)
