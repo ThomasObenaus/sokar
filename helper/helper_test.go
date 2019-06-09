@@ -23,6 +23,19 @@ func Test_CastInt64ToUint(t *testing.T) {
 	assert.Equal(t, uint(0), result)
 }
 
+func Test_SubUint2(t *testing.T) {
+	r := SubUint2(1, 1)
+	assert.Equal(t, uint(0), r)
+
+	r = SubUint2(0, 1)
+	assert.Equal(t, uint(0), r)
+
+	r = SubUint2(0, maxUint)
+	assert.Equal(t, uint(0), r)
+
+	r = SubUint2(maxUint, 0)
+	assert.Equal(t, maxUint, r)
+}
 func Test_SubUint(t *testing.T) {
 	r := SubUint(1, 1)
 	assert.Equal(t, 0, r)
