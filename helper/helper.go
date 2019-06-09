@@ -58,6 +58,17 @@ func SubUint(a uint, by uint) int {
 	return int(r)
 }
 
+// SubUint2 substracts two uint's and returns the unsigned difference
+// Avoids over-/underflow.
+func SubUint2(a uint, by uint) uint {
+
+	if a <= by {
+		return 0
+	}
+
+	return a - by
+}
+
 // Hash creates a 32-bit FNV-1a hash out of the given string.
 func Hash(s string) uint32 {
 	h := fnv.New32a()
