@@ -66,8 +66,12 @@ func main() {
 		Logger:                  loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 		DownScaleCooldownPeriod: cfg.CapacityPlanner.DownScaleCooldownPeriod,
 		UpScaleCooldownPeriod:   cfg.CapacityPlanner.UpScaleCooldownPeriod,
+		// FIXME: Move hard-coded value to config
+		Mode: capacityPlanner.CapaPlanningModeConstant,
+		// FIXME: Move hard-coded value to config
+		OffsetConstantMode: 1,
 	}
-	capaPlanner := capaCfg.New()
+	capaPlanner := helper.Must(capaCfg.New()).(*capacityPlanner.CapacityPlanner)
 
 	logger.Info().Msg("6. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)

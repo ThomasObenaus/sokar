@@ -4,12 +4,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_PlanLinear(t *testing.T) {
 
 	cfg := NewDefaultConfig()
-	cap := cfg.New()
+	cap, err := cfg.New()
+	require.NotNil(t, cap)
+	require.NoError(t, err)
 
 	assert.Equal(t, uint(10), cap.planLinear(0, 10))
 
