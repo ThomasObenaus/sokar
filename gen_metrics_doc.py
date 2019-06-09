@@ -3,7 +3,7 @@ import os
 
 metric_types = ["NewCounter", "NewGauge",
                 "NewWrappedGaugeVec", "NewWrappedCounterVec", "NewHistogram"]
-column_format = "| {:<50s} | {:<200s} | {:<15s} |"
+column_format = "| {:<50s} | {:<220s} | {:<20s} |"
 
 
 def isEndOfMetricDefinition(line):
@@ -107,7 +107,7 @@ print("# Metrics")
 print("")
 # print metrics table header
 print(column_format.format("Name", "Help", "Type"))
-print("| {:-<50s} | {:-<200s} | {:-<15s} |".format(":", ":", ":"))
+print("| {:-<50s} | {:-<220s} | {:-<20s} |".format(":", ":", ":"))
 
 mFiles = findMetricsFiles(".")
 for mFile in mFiles:
