@@ -15,9 +15,9 @@ type Connector struct {
 	log zerolog.Logger
 
 	// Interfaces needed to interact with nomad
-	jobsIF       NomadJobs
-	deploymentIF NomadDeployments
-	evalIF       NomadEvaluations
+	jobsIF       Jobs
+	deploymentIF Deployments
+	evalIF       Evaluations
 
 	deploymentTimeOut time.Duration
 	evaluationTimeOut time.Duration
