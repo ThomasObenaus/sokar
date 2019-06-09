@@ -5,9 +5,17 @@ import "time"
 // Plan computes the number of instances needed based on the current number and the scale factor
 func (cp *CapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
 
-	plannedScale := cp.planConstant(scaleFactor, currentScale, cp.offsetConstantMode)
+	plannedScale := uint(0)
 
-	cp.logger.Info().Msgf("Plan sf=%f, cs=%d, ps=%d.", scaleFactor, currentScale, plannedScale)
+	if cp.mode == CapaPlanningModeConstant {
+		plannedScale = cp.planConstant(scaleFactor, currentScale, cp.offsetConstantMode)
+	} else if cp.mode == CapaPlanningModeLinear {
+		plannedScale = cp.planLinear(scaleFactor, currentScale)
+	} else {
+		cp.logger.Error().Msgf("Unknown planning mode %v. No planning done.", cp.mode)
+	}
+
+	cp.logger.Info().Msgf("Plan mode=%v, sf=%f, cs=%d, ps=%d.", cp.mode, scaleFactor, currentScale, plannedScale)
 	return plannedScale
 }
 
