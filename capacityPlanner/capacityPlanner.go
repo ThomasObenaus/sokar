@@ -1,6 +1,7 @@
 package capacityPlanner
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -53,12 +54,17 @@ func NewDefaultConfig() Config {
 
 // New creates a new instance of a CapacityPlanner using the given
 // Scaler to send scaling events to.
-func (cfg Config) New() *CapacityPlanner {
+func (cfg Config) New() (*CapacityPlanner, error) {
+
+	if cfg.Mode != CapaPlanningModeConstant && cfg.Mode != CapaPlanningModeLinear {
+		return nil, fmt.Errorf("Unsupported planning mode '%v'", cfg.Mode)
+	}
+
 	return &CapacityPlanner{
 		logger:                  cfg.Logger,
 		downScaleCooldownPeriod: cfg.DownScaleCooldownPeriod,
 		upScaleCooldownPeriod:   cfg.UpScaleCooldownPeriod,
 		offsetConstantMode:      cfg.OffsetConstantMode,
 		mode:                    cfg.Mode,
-	}
+	}, nil
 }

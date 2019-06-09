@@ -4,12 +4,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_PlanConstant(t *testing.T) {
 
 	cfg := NewDefaultConfig()
-	cap := cfg.New()
+	cap, err := cfg.New()
+	require.NotNil(t, cap)
+	require.NoError(t, err)
 
 	assert.Equal(t, uint(0), cap.planConstant(-1, 0, 1))
 	assert.Equal(t, uint(0), cap.planConstant(-1, 1, 1))
