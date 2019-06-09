@@ -32,7 +32,7 @@ func TestGetJobInfo(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, jobInfo)
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
 	conn.jobsIF = jobsIF
 
 	// job not found test
@@ -56,9 +56,9 @@ func TestSetJobInfo_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -99,9 +99,9 @@ func TestSetJobInfo_InternalError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -130,9 +130,9 @@ func TestSetJobInfo_DeploymentError(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
-	evalIF := mock_nomad.NewMockNomadEvaluations(mockCtrl)
-	deplIF := mock_nomad.NewMockNomadDeployments(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
+	evalIF := mock_nomad.NewMockEvaluations(mockCtrl)
+	deplIF := mock_nomad.NewMockDeployments(mockCtrl)
 
 	conn := minimalConnectorImpl()
 	conn.evalIF = evalIF
@@ -172,7 +172,7 @@ func TestGetScalingObjectCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.jobsIF = jobsIF
 
@@ -201,7 +201,7 @@ func TestIsScalingObjectDead(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	jobsIF := mock_nomad.NewMockNomadJobs(mockCtrl)
+	jobsIF := mock_nomad.NewMockJobs(mockCtrl)
 	conn := minimalConnectorImpl()
 	conn.jobsIF = jobsIF
 

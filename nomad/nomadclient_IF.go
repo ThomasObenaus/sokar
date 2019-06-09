@@ -4,21 +4,21 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 )
 
-// NomadJobs represents the interface for interacting
+// Jobs represents the interface for interacting
 // with nomads over the jobs end-point
-type NomadJobs interface {
+type Jobs interface {
 	Info(jobID string, q *nomadApi.QueryOptions) (*nomadApi.Job, *nomadApi.QueryMeta, error)
 	Register(job *nomadApi.Job, q *nomadApi.WriteOptions) (*nomadApi.JobRegisterResponse, *nomadApi.WriteMeta, error)
 }
 
-// NomadDeployments represents the interface for interacting
+// Deployments represents the interface for interacting
 // with nomads over the deployments end-point
-type NomadDeployments interface {
+type Deployments interface {
 	Info(deploymentID string, q *nomadApi.QueryOptions) (*nomadApi.Deployment, *nomadApi.QueryMeta, error)
 }
 
-// NomadEvaluations represents the interface for interacting
+// Evaluations represents the interface for interacting
 // with nomads over the evaluations end-point
-type NomadEvaluations interface {
+type Evaluations interface {
 	Info(evalID string, q *nomadApi.QueryOptions) (*nomadApi.Evaluation, *nomadApi.QueryMeta, error)
 }
