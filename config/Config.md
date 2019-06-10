@@ -39,7 +39,7 @@
 
 ### Nomad
 
-* This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
+- This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
 
 #### Mode
 
@@ -65,7 +65,7 @@
 
 #### Data-Center AWS
 
-* The parameters in this section are used to configure the scaler that is used to scale a data-center hosted on AWS
+- The parameters in this section are used to configure the scaler that is used to scale a data-center hosted on AWS
 
 ##### Profile
 
@@ -91,7 +91,7 @@
 
 ### [DEPRECATED] ScalingTarget
 
-* Replaced by `--sca.nomad.mode`
+- Replaced by `--sca.nomad.mode`
 
 |         |                                                                                                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -106,7 +106,7 @@
 
 ### [DEPRECATED] Server-Address
 
-* Replaced by `--sca.nomad.server-address`
+- Replaced by `--sca.nomad.server-address`
 
 |         |                                            |
 | ------- | ------------------------------------------ |
@@ -176,13 +176,50 @@
 | flag    | --cap.up-scale-cooldown                                |
 | env     | SK_CAP_UP_SCALE_COOLDOWN                               |
 
+### Constant Mode
+
+#### Enable
+
+|         |                                                                                                                  |
+| ------- | ---------------------------------------------------------------------------------------------------------------- |
+| name    | enable                                                                                                           |
+| usage   | Enable/ disable the constant mode of the CapacityPlanner. Only one of the modes can be enabled at the same time. |
+| type    | bool                                                                                                             |
+| default | true                                                                                                             |
+| flag    | --cap.constant-mode.enable                                                                                       |
+| env     | SK_CAP_CONSTANT_MODE_ENABLE                                                                                      |
+
+#### Offset
+
+|         |                                                                                                      |
+| ------- | ---------------------------------------------------------------------------------------------------- |
+| name    | offset                                                                                               |
+| usage   | The constant offset value that should be used to increment/ decrement the count of the scale-object. |
+| type    | uint                                                                                                 |
+| default | 1                                                                                                    |
+| flag    | --cap.constant-mode.offset                                                                           |
+| env     | SK_CAP_CONSTANT_MODE_OFFSET                                                                          |
+
+### Linear Mode
+
+#### Enable
+
+|         |                                                                                                                |
+| ------- | -------------------------------------------------------------------------------------------------------------- |
+| name    | enable                                                                                                         |
+| usage   | Enable/ disable the linear mode of the CapacityPlanner. Only one of the modes can be enabled at the same time. |
+| type    | bool                                                                                                           |
+| default | false                                                                                                          |
+| flag    | --cap.linear-mode.enable                                                                                       |
+| env     | SK_CAP_LINEAR_MODE_ENABLE                                                                                      |
+
 ## Logging
 
 ### Structured
 
 |         |                                |
 | ------- | ------------------------------ |
-| name    | logging.structured             |
+| name    | structured                     |
 | usage   | Use structured logging or not. |
 | type    | bool                           |
 | default | false                          |
@@ -193,7 +230,7 @@
 
 |         |                                                    |
 | ------- | -------------------------------------------------- |
-| name    | logging.unix-ts                                    |
+| name    | unix-ts                                            |
 | usage   | Use Unix-Timestamp representation for log entries. |
 | type    | bool                                               |
 | default | false                                              |
@@ -204,7 +241,7 @@
 
 |         |                                                 |
 | ------- | ----------------------------------------------- |
-| name    | logging.no-color                                |
+| name    | no-color                                        |
 | usage   | If true colors in log out-put will be disabled. |
 | type    | bool                                            |
 | default | false                                           |
