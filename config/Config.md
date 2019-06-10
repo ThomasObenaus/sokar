@@ -213,6 +213,17 @@
 | flag    | --cap.linear-mode.enable                                                                                       |
 | env     | SK_CAP_LINEAR_MODE_ENABLE                                                                                      |
 
+#### ScaleFactorWeight
+
+|         |                                                                                                      |
+| ------- | ---------------------------------------------------------------------------------------------------- |
+| name    | scale-factor-weight                                                                                  |
+| usage   | This weight is used to adjust the impact of the scaleFactor during capacity planning in linear mode. |
+| type    | float                                                                                                |
+| default | 0.5                                                                                                  |
+| flag    | --cap.linear-mode.scale-factor-weight                                                                |
+| env     | SK_CAP_LINEAR_MODE_SCALE_FACTOR_WEIGHT                                                               |
+
 ## Logging
 
 ### Structured

@@ -15,7 +15,7 @@ func (cp *CapacityPlanner) planLinear(scaleFactor float32, currentScale uint) ui
 		return currentScale
 	}
 
-	increment := float64(scaleFactor * float32(currentScale))
+	increment := float64(scaleFactor * float32(currentScale) * cp.linearMode.ScaleFactorWeight)
 	incrementInt := int(math.Ceil(increment))
 
 	// at least scale up by one if scaleFactor is positive
