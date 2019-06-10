@@ -30,6 +30,15 @@ type CapacityPlanner struct {
 	// offsetConstantMode is the offset that is used in CapaPlanningModeConstant.
 	// There this offset is just added/ substracted from the current scale to calculate the new planned scale.
 	offsetConstantMode uint
+
+	// constantMode if specified (not nil) the CapacityPlanner uses a constant offset to calculate the new planned scale. It is only allowed to
+	// specify (not nil) one planning mode at the same time.
+	constantMode *ConstantMode
+
+	// linearMode if specified (not nil) the CapacityPlanner will increase the given scale linearly based on the current scaleFactor.
+	// Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
+	// It is only allowed to specify (not nil) one planning mode at the same time.
+	linearMode *LinearMode
 }
 
 // Config is the configuration for the Capacity Planner
@@ -39,8 +48,19 @@ type Config struct {
 	DownScaleCooldownPeriod time.Duration
 	UpScaleCooldownPeriod   time.Duration
 
-	Mode               CapaPlanningMode
-	OffsetConstantMode uint
+	ConstantMode *ConstantMode
+	LinearMode   *LinearMode
+}
+
+// ConstantMode in this mode the CapacityPlanner uses a constant offset to calculate the new planned scale.
+type ConstantMode struct {
+	// Offset is the offset is just added/ substracted from the current scale to calculate the new planned scale.
+	Offset uint
+}
+
+// LinearMode in this mode the CapacityPlanner will increase the given scale linearly based on the current scaleFactor.
+// Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
+type LinearMode struct {
 }
 
 // NewDefaultConfig provides a config with good default values for the CapacityPlanner
@@ -48,8 +68,8 @@ func NewDefaultConfig() Config {
 	return Config{
 		DownScaleCooldownPeriod: time.Second * 80,
 		UpScaleCooldownPeriod:   time.Second * 60,
-		OffsetConstantMode:      1,
-		Mode:                    CapaPlanningModeConstant,
+		ConstantMode:            &ConstantMode{Offset: 1},
+		LinearMode:              nil,
 	}
 }
 
@@ -57,15 +77,19 @@ func NewDefaultConfig() Config {
 // Scaler to send scaling events to.
 func (cfg Config) New() (*CapacityPlanner, error) {
 
-	if cfg.Mode != CapaPlanningModeConstant && cfg.Mode != CapaPlanningModeLinear {
-		return nil, fmt.Errorf("Unsupported planning mode '%v'", cfg.Mode)
+	if cfg.ConstantMode == nil && cfg.LinearMode == nil {
+		return nil, fmt.Errorf("No planning mode specified")
+	}
+
+	if cfg.ConstantMode != nil && cfg.LinearMode != nil {
+		return nil, fmt.Errorf("Multiple planning modes specified at the same time")
 	}
 
 	return &CapacityPlanner{
 		logger:                  cfg.Logger,
 		downScaleCooldownPeriod: cfg.DownScaleCooldownPeriod,
 		upScaleCooldownPeriod:   cfg.UpScaleCooldownPeriod,
-		offsetConstantMode:      cfg.OffsetConstantMode,
-		mode:                    cfg.Mode,
+		constantMode:            cfg.ConstantMode,
+		linearMode:              cfg.LinearMode,
 	}, nil
 }

@@ -62,14 +62,21 @@ func main() {
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, scalingTarget, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
+
+	var constantMode *capacityPlanner.ConstantMode
+	var linearMode *capacityPlanner.LinearMode
+	if cfg.CapacityPlanner.ConstantMode.Enable {
+		constantMode = &capacityPlanner.ConstantMode{Offset: cfg.CapacityPlanner.ConstantMode.Offset}
+	} else if cfg.CapacityPlanner.LinearMode.Enable {
+		linearMode = &capacityPlanner.LinearMode{}
+	}
+
 	capaCfg := capacityPlanner.Config{
 		Logger:                  loggingFactory.NewNamedLogger("sokar.capaPlanner"),
 		DownScaleCooldownPeriod: cfg.CapacityPlanner.DownScaleCooldownPeriod,
 		UpScaleCooldownPeriod:   cfg.CapacityPlanner.UpScaleCooldownPeriod,
-		// FIXME: Move hard-coded value to config
-		Mode: capacityPlanner.CapaPlanningModeConstant,
-		// FIXME: Move hard-coded value to config
-		OffsetConstantMode: 1,
+		ConstantMode:            constantMode,
+		LinearMode:              linearMode,
 	}
 	capaPlanner := helper.Must(capaCfg.New()).(*capacityPlanner.CapacityPlanner)
 
