@@ -13,6 +13,8 @@ scale-object:
 cap:
   down-scale-cooldown: 20s
   up-scale-cooldown: 10s
+  constant-mode:
+    offset: 1
 saa:
   no-alert-damping: 1.0
   up-thresh: 10.0
