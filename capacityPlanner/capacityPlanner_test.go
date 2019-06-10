@@ -17,7 +17,8 @@ func Test_New(t *testing.T) {
 
 func Test_Plan_ModeLinear(t *testing.T) {
 	cfg := NewDefaultConfig()
-	cfg.Mode = CapaPlanningModeLinear
+	cfg.LinearMode = &LinearMode{}
+	cfg.ConstantMode = nil
 	capa, err := cfg.New()
 	assert.NotNil(t, capa)
 	assert.NoError(t, err)
@@ -37,9 +38,7 @@ func Test_Plan_ModeLinear(t *testing.T) {
 
 func Test_Plan_ModeConstant(t *testing.T) {
 	cfg := NewDefaultConfig()
-	cfg.Mode = CapaPlanningModeConstant
-
-	cfg.OffsetConstantMode = 1
+	cfg.ConstantMode = &ConstantMode{Offset: 1}
 	capa, err := cfg.New()
 	require.NotNil(t, capa)
 	require.NoError(t, err)
@@ -50,7 +49,7 @@ func Test_Plan_ModeConstant(t *testing.T) {
 	assert.Equal(t, uint(1), capa.Plan(1, 0))
 	assert.Equal(t, uint(2), capa.Plan(1, 1))
 
-	cfg.OffsetConstantMode = 2
+	cfg.ConstantMode = &ConstantMode{Offset: 2}
 	capa, err = cfg.New()
 	require.NotNil(t, capa)
 	require.NoError(t, err)
@@ -59,7 +58,7 @@ func Test_Plan_ModeConstant(t *testing.T) {
 	assert.Equal(t, uint(3), capa.Plan(1, 1))
 	assert.Equal(t, uint(7), capa.Plan(1, 5))
 
-	cfg.OffsetConstantMode = 0
+	cfg.ConstantMode = &ConstantMode{Offset: 0}
 	capa, err = cfg.New()
 	require.NotNil(t, capa)
 	require.NoError(t, err)
@@ -72,7 +71,7 @@ func Test_IsCoolingDown(t *testing.T) {
 	cfg := Config{
 		DownScaleCooldownPeriod: downScalePeriod,
 		UpScaleCooldownPeriod:   upScalePeriod,
-		Mode: CapaPlanningModeLinear,
+		ConstantMode:            &ConstantMode{Offset: 1},
 	}
 	capa, err := cfg.New()
 	require.NoError(t, err)
