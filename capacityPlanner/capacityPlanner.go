@@ -24,13 +24,6 @@ type CapacityPlanner struct {
 	downScaleCooldownPeriod time.Duration
 	upScaleCooldownPeriod   time.Duration
 
-	// mode specifies the mode that shall be used to calculate the new planned scale
-	mode CapaPlanningMode
-
-	// offsetConstantMode is the offset that is used in CapaPlanningModeConstant.
-	// There this offset is just added/ substracted from the current scale to calculate the new planned scale.
-	offsetConstantMode uint
-
 	// constantMode if specified (not nil) the CapacityPlanner uses a constant offset to calculate the new planned scale. It is only allowed to
 	// specify (not nil) one planning mode at the same time.
 	constantMode *ConstantMode

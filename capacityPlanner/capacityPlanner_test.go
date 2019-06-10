@@ -11,8 +11,22 @@ import (
 func Test_New(t *testing.T) {
 	cfg := NewDefaultConfig()
 	capa, err := cfg.New()
-	assert.NotNil(t, capa)
 	assert.NoError(t, err)
+	assert.NotNil(t, capa)
+
+	cfg = NewDefaultConfig()
+	cfg.ConstantMode = nil
+	cfg.LinearMode = nil
+	capa, err = cfg.New()
+	assert.Error(t, err)
+	assert.Nil(t, capa)
+
+	cfg = NewDefaultConfig()
+	cfg.ConstantMode = &ConstantMode{}
+	cfg.LinearMode = &LinearMode{}
+	capa, err = cfg.New()
+	assert.Error(t, err)
+	assert.Nil(t, capa)
 }
 
 func Test_Plan_ModeLinear(t *testing.T) {
