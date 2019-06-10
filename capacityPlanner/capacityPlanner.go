@@ -7,13 +7,14 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// CapaPlanningMode represents the mode the CapacityPlanner should use
+// CapaPlanningMode represents the mode the CapacityPlanner should use.
 type CapaPlanningMode string
 
 const (
-	// CapaPlanningModeConstant specifies the mode where a constant offset is used to calculate the new planned scale
+	// CapaPlanningModeConstant specifies the mode where a constant offset is used to calculate the new planned scale.
 	CapaPlanningModeConstant CapaPlanningMode = "const"
-	// CapaPlanningModeLinear specifies the mode where the given scale is increased linearly based on the given scaleFactor. Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
+	// CapaPlanningModeLinear specifies the mode where the given scale is increased linearly based on the given scaleFactor.
+	// Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
 	CapaPlanningModeLinear CapaPlanningMode = "linear"
 )
 
