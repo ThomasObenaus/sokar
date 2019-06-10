@@ -90,7 +90,7 @@ docker.build: sep
 
 docker.run: sep
 	@echo "--> Run docker image $(docker_image)"
-	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --sca.nomad.server-address=$(nomad_server)
+	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --sca.nomad.server-address=$(nomad_server) --scale-object.name="fail-service" --saa.scale-alerts="AlertA:1.0:An upscaling alert;AlertB:-1.5:A downscaling alert"
 
 docker.push: sep
 	@echo "--> Tag image to thobe/sokar:$(tag)"
