@@ -191,14 +191,14 @@
 
 #### Offset
 
-|         |                                                                                                      |
-| ------- | ---------------------------------------------------------------------------------------------------- |
-| name    | offset                                                                                               |
-| usage   | The constant offset value that should be used to increment/ decrement the count of the scale-object. |
-| type    | uint                                                                                                 |
-| default | 1                                                                                                    |
-| flag    | --cap.constant-mode.offset                                                                           |
-| env     | SK_CAP_CONSTANT_MODE_OFFSET                                                                          |
+|         |                                                                                                                                 |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| name    | offset                                                                                                                          |
+| usage   | The constant offset value that should be used to increment/ decrement the count of the scale-object. Only values > 0 are valid. |
+| type    | uint                                                                                                                            |
+| default | 1                                                                                                                               |
+| flag    | --cap.constant-mode.offset                                                                                                      |
+| env     | SK_CAP_CONSTANT_MODE_OFFSET                                                                                                     |
 
 ### Linear Mode
 
