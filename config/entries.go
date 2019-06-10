@@ -146,6 +146,14 @@ var capLinearModeEnable = configEntry{
 	usage:        "Enable/ disable the linear mode of the CapacityPlanner. Only one of the modes can be enabled at the same time.",
 }
 
+var capLinearModeScaleFactorWeight = configEntry{
+	name:         "cap.linear-mode.scale-factor-weight",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: 0.5,
+	usage:        "This weight is used to adjust the impact of the scaleFactor during capacity planning in linear mode.",
+}
+
 // ###################### Context: Logging ################################################
 var loggingStructured = configEntry{
 	name:         "logging.structured",
@@ -266,4 +274,5 @@ var configEntries = []configEntry{
 	capConstantModeEnable,
 	capConstantModeOffset,
 	capLinearModeEnable,
+	capLinearModeScaleFactorWeight,
 }

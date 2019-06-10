@@ -39,6 +39,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--cap.constant-mode.enable=false",
 		"--cap.constant-mode.offset=106",
 		"--cap.linear-mode.enable=true",
+		"--cap.linear-mode.scale-factor-weight=0.107",
 	}
 
 	err := cfg.ReadConfig(args)
@@ -71,6 +72,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.False(t, cfg.CapacityPlanner.ConstantMode.Enable)
 	assert.Equal(t, uint(106), cfg.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, cfg.CapacityPlanner.LinearMode.Enable)
+	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
 }
 
 func Test_FillCfg_DeprecatedFlags(t *testing.T) {

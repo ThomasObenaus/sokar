@@ -64,6 +64,7 @@ func (cfg *Config) fillCfgValues() error {
 	}
 	cfg.CapacityPlanner.ConstantMode.Offset = uint(constModeOffset)
 	cfg.CapacityPlanner.LinearMode.Enable = cfg.viper.GetBool(capLinearModeEnable.name)
+	cfg.CapacityPlanner.LinearMode.ScaleFactorWeight = cfg.viper.GetFloat64(capLinearModeScaleFactorWeight.name)
 
 	// Context: Logging
 	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)

@@ -29,7 +29,7 @@ In this mode the CAP:
 #### Example
 
 Start sokar with CAP in constant mode using an offset of 2 (scales n+2).
-`./sokar --cap.constant-mode.enable=true --cap.constant-mode.offset=2`
+`./sokar --cap.constant-mode.enable --cap.constant-mode.offset=2`
 
 ### Linear Mode
 
@@ -52,7 +52,7 @@ To control a bit the impact of the `scaleFactor` on the planning the parameter `
 #### Example
 
 Start sokar with CAP in linear mode using a `scaleFactorWeight` of 0.7.
-`./sokar --cap.linear-mode.enable=true --cap.linear-mode.scaleFactorWeight=0.7`
+`./sokar --cap.constant-mode.enable=false --cap.linear-mode.enable --cap.linear-mode.scaleFactorWeight=0.7`
 
 ### Stepwise Mode
 

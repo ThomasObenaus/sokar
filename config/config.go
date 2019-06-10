@@ -105,7 +105,8 @@ type CapacityPlanner struct {
 
 // CAPLinearMode configuration parameters needed for linear mode of the CapacityPlanner
 type CAPLinearMode struct {
-	Enable bool `json:"enable,omitempty"`
+	Enable            bool    `json:"enable,omitempty"`
+	ScaleFactorWeight float64 `json:"scale_factor_weight,omitempty"`
 }
 
 // CAPConstMode configuration parameters needed for constant mode of the CapacityPlanner

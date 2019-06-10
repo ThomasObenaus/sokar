@@ -54,6 +54,7 @@ type ConstantMode struct {
 // LinearMode in this mode the CapacityPlanner will increase the given scale linearly based on the current scaleFactor.
 // Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
 type LinearMode struct {
+	ScaleFactorWeight float32
 }
 
 // NewDefaultConfig provides a config with good default values for the CapacityPlanner
@@ -76,6 +77,10 @@ func (cfg Config) New() (*CapacityPlanner, error) {
 
 	if cfg.ConstantMode != nil && cfg.LinearMode != nil {
 		return nil, fmt.Errorf("Multiple planning modes specified at the same time")
+	}
+
+	if cfg.LinearMode != nil && cfg.LinearMode.ScaleFactorWeight <= 0 {
+		return nil, fmt.Errorf("The given value for the ScaleFactorWeight '%f' is not allowed. Only values > 0 are valid", cfg.LinearMode.ScaleFactorWeight)
 	}
 
 	return &CapacityPlanner{

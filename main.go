@@ -68,7 +68,7 @@ func main() {
 	if cfg.CapacityPlanner.ConstantMode.Enable {
 		constantMode = &capacityPlanner.ConstantMode{Offset: cfg.CapacityPlanner.ConstantMode.Offset}
 	} else if cfg.CapacityPlanner.LinearMode.Enable {
-		linearMode = &capacityPlanner.LinearMode{}
+		linearMode = &capacityPlanner.LinearMode{ScaleFactorWeight: float32(cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)}
 	}
 
 	capaCfg := capacityPlanner.Config{
