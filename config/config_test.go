@@ -21,4 +21,9 @@ func Test_NewDefaultConfig(t *testing.T) {
 	assert.Equal(t, time.Minute*10, config.ScaleAlertAggregator.AlertExpirationTime)
 	assert.NotNil(t, config.ScaleAlertAggregator.ScaleAlerts)
 	assert.Empty(t, config.ScaleAlertAggregator.ScaleAlerts)
+	assert.Equal(t, time.Second*80, config.CapacityPlanner.DownScaleCooldownPeriod)
+	assert.Equal(t, time.Second*60, config.CapacityPlanner.UpScaleCooldownPeriod)
+	assert.Equal(t, uint(1), config.CapacityPlanner.ConstantMode.Offset)
+	assert.True(t, config.CapacityPlanner.ConstantMode.Enable)
+	assert.False(t, config.CapacityPlanner.LinearMode.Enable)
 }
