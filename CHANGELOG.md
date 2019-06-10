@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.0.7 (TODO: Fill Date)
+## v0.0.7 (2019-06-10)
 
+- CapacityPlanner: With [#49](https://github.com/ThomasObenaus/sokar/issues/49), beside the constant mode, a new mode for the CapacityPlanner, the linear mode, was added. Per default, the constant mode will be still used though. For more details see [CapacityPlanner](capacityPlanner/README.md).
 - Config: With [#68](https://github.com/ThomasObenaus/sokar/issues/68) two new config parameters for scaling a nomad data-center on AWS where added. These parameters are:
   - `--sca.nomad.dc-aws.profile`
   - `--sca.nomad.dc-aws.region`
