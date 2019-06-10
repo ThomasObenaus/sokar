@@ -6,19 +6,18 @@ import "time"
 func (cp *CapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
 
 	plannedScale := uint(0)
-	planMode := "undefined"
 
 	if cp.constantMode != nil {
-		planMode = "constant"
-		plannedScale = cp.planConstant(scaleFactor, currentScale, cp.constantMode.Offset)
+		offset := cp.constantMode.Offset
+		plannedScale = cp.planConstant(scaleFactor, currentScale, offset)
+		cp.logger.Info().Msgf("Plan mode=constant, sf=%f, cs=%d, ps=%d, off=%d.", scaleFactor, currentScale, plannedScale, offset)
 	} else if cp.linearMode != nil {
-		planMode = "linear"
 		plannedScale = cp.planLinear(scaleFactor, currentScale)
+		cp.logger.Info().Msgf("Plan mode=linear, sf=%f, cs=%d, ps=%d.", scaleFactor, currentScale, plannedScale)
 	} else {
 		cp.logger.Error().Msgf("No planning mode defined")
 	}
 
-	cp.logger.Info().Msgf("Plan mode=%v, sf=%f, cs=%d, ps=%d.", planMode, scaleFactor, currentScale, plannedScale)
 	return plannedScale
 }
 
