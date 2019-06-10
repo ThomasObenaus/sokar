@@ -57,6 +57,14 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)
 	cfg.CapacityPlanner.UpScaleCooldownPeriod = cfg.viper.GetDuration(capUpScaleCoolDown.name)
 
+	cfg.CapacityPlanner.ConstantMode.Enable = cfg.viper.GetBool(capConstantModeEnable.name)
+	constModeOffset := cfg.viper.GetInt(capConstantModeOffset.name)
+	if constModeOffset <= 0 {
+		constModeOffset = 1
+	}
+	cfg.CapacityPlanner.ConstantMode.Offset = uint(constModeOffset)
+	cfg.CapacityPlanner.LinearMode.Enable = cfg.viper.GetBool(capLinearModeEnable.name)
+
 	// Context: Logging
 	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)
 	cfg.Logging.UxTimestamp = cfg.viper.GetBool(loggingUXTS.name)

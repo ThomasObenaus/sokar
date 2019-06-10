@@ -122,6 +122,30 @@ var capUpScaleCoolDown = configEntry{
 	usage:        "The time sokar waits between upscaling actions at min.",
 }
 
+var capConstantModeEnable = configEntry{
+	name:         "cap.constant-mode.enable",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: true,
+	usage:        "Enable/ disable the constant mode of the CapacityPlanner. Only one of the modes can be enabled at the same time.",
+}
+
+var capConstantModeOffset = configEntry{
+	name:         "cap.constant-mode.offset",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: uint(1),
+	usage:        "The constant offset value that should be used to increment/ decrement the count of the scale-object. Only values > 0 are valid.",
+}
+
+var capLinearModeEnable = configEntry{
+	name:         "cap.linear-mode.enable",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: false,
+	usage:        "Enable/ disable the linear mode of the CapacityPlanner. Only one of the modes can be enabled at the same time.",
+}
+
 // ###################### Context: Logging ################################################
 var loggingStructured = configEntry{
 	name:         "logging.structured",
@@ -239,4 +263,7 @@ var configEntries = []configEntry{
 	scaNomadDataCenterAWSRegion,
 	scaNomadMode,
 	scaNomadModeServerAddress,
+	capConstantModeEnable,
+	capConstantModeOffset,
+	capLinearModeEnable,
 }

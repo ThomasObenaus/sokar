@@ -36,6 +36,9 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--sca.nomad.server-address=http://nomad",
 		"--sca.nomad.dc-aws.region=region-test",
 		"--sca.nomad.dc-aws.profile=profile-test",
+		"--cap.constant-mode.enable=false",
+		"--cap.constant-mode.offset=106",
+		"--cap.linear-mode.enable=true",
 	}
 
 	err := cfg.ReadConfig(args)
@@ -65,6 +68,9 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, float32(1.2), cfg.ScaleAlertAggregator.ScaleAlerts[0].Weight)
 	assert.Equal(t, "This is an upscaling alert", cfg.ScaleAlertAggregator.ScaleAlerts[0].Description)
 	assert.Equal(t, time.Minute*5, cfg.ScaleAlertAggregator.AlertExpirationTime)
+	assert.False(t, cfg.CapacityPlanner.ConstantMode.Enable)
+	assert.Equal(t, uint(106), cfg.CapacityPlanner.ConstantMode.Offset)
+	assert.True(t, cfg.CapacityPlanner.LinearMode.Enable)
 }
 
 func Test_FillCfg_DeprecatedFlags(t *testing.T) {
