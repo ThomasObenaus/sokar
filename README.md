@@ -28,7 +28,7 @@ For details about the changes see the [changelog](CHANGELOG.md).
 
 ## Build and Run
 
-run on nomad, run for ASG
+- **TODO**: Fill this
 
 ## Links
 
