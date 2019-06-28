@@ -1,5 +1,13 @@
 # Configuration
 
+Sokar can be configured either through a config-file, environment variables or command-line parameters.
+The order they are applied is:
+
+1. Default values are overwritten by
+2. Parameters defined in the config-file ([full example](examples/config/full.yaml)), which are overwritten by
+3. Environment variables, which are overwritten by
+4. Command-Line parameters
+
 ## Global
 
 ### Config-File

@@ -35,3 +35,4 @@ run on nomad, run for ASG
 - For configuration see [Config.md](config/Config.md)
 - For metrics see [Metrics.md](Metrics.md)
 - Example Grafana dashboards can be found at [Dashboards.md](dashboards/Dashboards.md)
+- Structure and components of sokar are described at [Components.md](doc/Components.md)
