@@ -36,7 +36,3 @@ For details about the changes see the [changelog](CHANGELOG.md).
 - For metrics see [Metrics.md](Metrics.md)
 - Example Grafana dashboards can be found at [Dashboards.md](dashboards/Dashboards.md)
 - Structure and components of sokar are described at [Components.md](doc/Components.md)
-
-### License Information
-
-[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B12599%2Fgit%40github.com%3AThomasObenaus%2Fsokar.git.svg?type=large)](https://app.fossa.com/projects/custom%2B12599%2Fgit%40github.com%3AThomasObenaus%2Fsokar.git?ref=badge_large)
