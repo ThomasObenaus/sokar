@@ -7,3 +7,7 @@ nomad/debug\.test
 scaler/debug\.test
 
 all\.log
+
+test/service_test/app
+
+test/service_test/test_app
