@@ -7,5 +7,6 @@ jobs:
     steps:
       - checkout
       - run: make test.service
+      # read here: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
       - run: make all
       - run: make cover-upload
