@@ -2,7 +2,7 @@
 name 								:= "test_app"
 build_destination := "."
 
-all: tools test build finish
+all: run test stop
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
 # For all make targets the text after \#\# will be printed.
@@ -21,6 +21,14 @@ stop: ## Stops/ Kills the app
 	@echo "--> Stop $(name)"
 	@pkill $(name)
 
-test: run ## runs the test and starts the app beforehand
+deps-install: ## Install the dependencies.
+	@echo "--> install dependencies as listed in Gopkg.toml and Gopkg.lock"
+	@dep ensure -v
+
+test: ## runs the test and starts the app beforehand
 	@echo "--> Testing $(name)"
-	@go test -v .
+	go test -v .
+
+up:
+	@echo "--> Startup (+build) monitoring components"
+	@docker-compose up --build -d
