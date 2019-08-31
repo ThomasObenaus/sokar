@@ -4,7 +4,7 @@ FROM golang:1.11.5-alpine AS golang
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar
 ARG BINARY_NAME=sokar
-ARG SRC_DIR
+ARG SRC_DIR=.
 
 # Install needed tools
 RUN set -ex &&\ 
@@ -18,9 +18,15 @@ ENV GOPATH /work
 ENV GOBIN /work/bin
 ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 
-# Copy sources
+## Copy sources
 COPY ${SRC_DIR} /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
+
+# Install dep
+RUN go get -u github.com/golang/dep/cmd/dep
+
+# Deps
+RUN make deps-install
 
 # Test
 RUN make tools test
