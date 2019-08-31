@@ -25,7 +25,6 @@ RUN go get -u github.com/golang/dep/cmd/dep
 COPY . /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
-RUN make deps-install test
+RUN make deps-install
 
 ENTRYPOINT [ "make","test" ]
-#CMD [ "help" ]

@@ -31,4 +31,4 @@ test: ## runs the test and starts the app beforehand
 
 up:
 	@echo "--> Startup (+build) monitoring components"
-	@docker-compose up --build -d
+	@docker-compose up --build
