@@ -4,6 +4,7 @@ FROM golang:1.11.5-alpine AS golang
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar
 ARG BINARY_NAME=sokar
+ARG SRC_DIR
 
 # Install needed tools
 RUN set -ex &&\ 
@@ -18,7 +19,7 @@ ENV GOBIN /work/bin
 ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 
 # Copy sources
-COPY . /work/src/${PROJECT_PATH}
+COPY ${SRC_DIR} /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
 # Test

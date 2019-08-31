@@ -76,7 +76,7 @@ run.job: sep build ## Builds + runs sokar locally in job mode.
 
 docker.build: sep ## Builds the sokar docker image.
 	@echo "--> Build docker image thobe/sokar"
-	@docker build -t thobe/sokar -f ci/Dockerfile .
+	@docker build --build-arg SRC_DIR=. -t thobe/sokar -f ci/Dockerfile .
 
 docker.run: sep ## Runs the sokar docker image.
 	@echo "--> Run docker image $(docker_image)"
