@@ -6,5 +6,6 @@ jobs:
     working_directory: /go/src/github.com/thomasobenaus/sokar
     steps:
       - checkout
+      - run: make test.service
       - run: make all
       - run: make cover-upload
