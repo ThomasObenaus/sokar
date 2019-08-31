@@ -13,7 +13,7 @@ revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
 nomad_server := "http://${LOCAL_IP}:4646"
 
-all: tools test build finish
+all: deps-install tools test build finish
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
 # For all make targets the text after \#\# will be printed.
