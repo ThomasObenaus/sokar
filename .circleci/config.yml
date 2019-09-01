@@ -1,12 +1,18 @@
 version: 2
 jobs:
-  build:
+  #build:
+  #  docker:
+  #    - image: circleci/golang:1.11.5
+  #  working_directory: /go/src/github.com/thomasobenaus/sokar
+  #  steps:
+  #    - checkout
+  #    - run: make all
+  #    - run: make cover-upload
+  test:
     docker:
       - image: circleci/golang:1.11.5
     working_directory: /go/src/github.com/thomasobenaus/sokar
-    steps:
       - checkout
-      - run: make test.service
       # read here: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
-      - run: make all
-      - run: make cover-upload
+      - setup_remote_docker
+      - run: make test.service
