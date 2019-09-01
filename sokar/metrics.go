@@ -5,7 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	m "github.com/thomasobenaus/sokar/metrics"
 )
-sdsd
+
 // Metrics represents the collection of metrics internally set by sokar.
 type Metrics struct {
 	scaleEventsTotal                  m.Counter
