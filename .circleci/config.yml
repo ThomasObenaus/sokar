@@ -1,11 +1,4 @@
-version: 2.1
-workflows:
-  main:
-    jobs:
-      - build
-      - service-test:
-        requires:
-          - build
+version: 2
 jobs:
   build:
     machine:
@@ -23,3 +16,11 @@ jobs:
       - checkout
       - run: make docker.build
       - run: make test.service
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
+      - service-test:
+          requires:
+            - build
