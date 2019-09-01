@@ -16,4 +16,4 @@ test.only: ## Runs the service-test only. Sokar has to be started beforehand.
 
 test.complete-setup: ## Runs the service-test and ensures that sokar is running as well
 	@echo "--> Starting service-test and thobe/sokar:latest as test-object"
-	@docker-compose up --build --abort-on-container-exit --exit-code-from service_test
+	@docker-compose up --build --abort-on-container-exit --exit-code-from service_tests
