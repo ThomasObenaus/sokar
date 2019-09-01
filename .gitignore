@@ -1,8 +1,8 @@
-Gopkg.lock
 sokar-bin
 debug
 coverage.out
 nomad/debug\.test
+vendor
 
 scaler/debug\.test
 
