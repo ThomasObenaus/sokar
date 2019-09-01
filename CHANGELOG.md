@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.8 (2019-??-??)
+
+- Testing: Service-/ Integration Test added. Can be called with `make test.service`.
+
 ## v0.0.7 (2019-06-10)
 
 - CapacityPlanner: With [#49](https://github.com/ThomasObenaus/sokar/issues/49), beside the constant mode, a new mode for the CapacityPlanner, the linear mode, was added. Per default, the constant mode will be still used though. For more details see [CapacityPlanner](capacityPlanner/README.md).
