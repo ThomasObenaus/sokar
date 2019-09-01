@@ -6,4 +6,5 @@ jobs:
     working_directory: /home/circleci/.go_workspace/src/github.com/thomasobenaus/sokar
     steps:
       - checkout
+      - run: make docker.build
       - run: make test.service

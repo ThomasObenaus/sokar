@@ -3,20 +3,12 @@ services:
   service_test:
     build:
       context: .
-      dockerfile: Dockerfile
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      dockerfile: test.Dockerfile
+    depends_on:
+      - sokar
     network_mode: host
-#  sokar:
-#    build:
-#      context: ../../
-#      dockerfile: ci/Dockerfile
-#    deploy:
-#      replicas: 1
-#      restart_policy:
-#        condition: on-failure
-#    network_mode: host
-networks:
-  webnet:
+  sokar:
+    build:
+      context: .
+      dockerfile: sokar.Dockerfile
+    network_mode: host
