@@ -90,8 +90,6 @@ docker.push: sep ## Pushes the sokar docker image to docker-hub
 	@echo "--> Push image thobe/sokar:$(tag)"
 	@docker push thobe/sokar:$(tag)
 
-
-
 monitoring.up: ## Starts up a prometheus and a grafana instance, scraping metrics of sokar and providing a dashboard for sokar.
 	make -C examples/monitoring up
 
