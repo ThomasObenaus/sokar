@@ -1,6 +1,21 @@
 version: 2.1
+workflows:
+  main:
+    jobs:
+      - build
+      - service-test:
+        requires:
+          - build
 jobs:
   build:
+    machine:
+      image: circleci/classic:201808-01
+    working_directory: /home/circleci/.go_workspace/src/github.com/thomasobenaus/sokar
+    steps:
+      - checkout
+      - run: make all
+      - run: make cover-upload
+  service-test:
     machine:
       image: circleci/classic:201808-01
     working_directory: /home/circleci/.go_workspace/src/github.com/thomasobenaus/sokar
