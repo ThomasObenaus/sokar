@@ -96,8 +96,8 @@ monitoring.up: ## Starts up a prometheus and a grafana instance, scraping metric
 monitoring.down: ## Stops the monitoring setup.
 	make -C examples/monitoring down
 
-test.service:
-	make -C test/service_test up
+test.service: ## Run the service-test (integration test) for sokar
+	make -C test/service_test test.complete-setup
 
 sep:
 	@echo "----------------------------------------------------------------------------------"

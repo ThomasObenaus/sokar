@@ -20,11 +20,10 @@ ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 # Install dep
 RUN go get -u github.com/golang/dep/cmd/dep
 
-
 # Copy sources
 COPY . /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
 RUN make deps-install
 
-ENTRYPOINT [ "make","test" ]
+ENTRYPOINT [ "make","test.only" ]

@@ -9,7 +9,6 @@ import (
 )
 
 func Test_ConfigEndpoint(t *testing.T) {
-
 	resp, err := http.Get("http://localhost:11000/api/config")
 	require.NoError(t, err)
 	require.NotNil(t, resp)
