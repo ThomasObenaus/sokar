@@ -1,9 +1,7 @@
-
 ## The Build Image
 FROM golang:1.11.5-alpine AS golang
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar/test/service_test
-ARG BINARY_NAME=sokar-test
 
 # Install needed tools
 RUN set -ex &&\ 
@@ -26,4 +24,6 @@ WORKDIR /work/src/${PROJECT_PATH}
 
 RUN make deps-install
 
-ENTRYPOINT [ "make","test.only" ]
+# Just an empty cmd here. This docker file is intended to be called with 'make <make-target>'.
+# Where the make target is the test that should be executed.
+CMD [""]

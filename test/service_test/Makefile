@@ -10,10 +10,12 @@ deps-install: ## Install the dependencies.
 	@echo "--> install dependencies as listed in Gopkg.toml and Gopkg.lock"
 	@dep ensure -v
 
-test.only: ## Runs the service-test only. Sokar has to be started beforehand.
-	@echo "--> Start service-test"
-	go test -v .
+test.endpoints: ## Runs the service-tests for testing the endpoints. Sokar has to be started beforehand.
+	@echo "--> Start service-test (_EndPoints_)"
+	go test -v -run="_EndPoints_" .
 
 test.complete-setup: ## Runs the service-test and ensures that sokar is running as well
-	@echo "--> Starting service-test and thobe/sokar:latest as test-object"
-	@docker-compose up --build --abort-on-container-exit --exit-code-from service_test
+	@echo "############# END POINT TEST ##############################################################################"
+	@echo "--> Starting service-test for endpoints of sokar and thobe/sokar:latest as test-object"
+	@docker-compose -f endpoints.docker-compose.yml up --build --abort-on-container-exit --exit-code-from service_test
+	@echo "############# END POINT TEST COMPLETE #####################################################################"

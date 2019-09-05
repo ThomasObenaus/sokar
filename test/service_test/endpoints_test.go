@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ConfigEndpoint(t *testing.T) {
+func Test_EndPoints_ConfigEndpoint(t *testing.T) {
 	resp, err := http.Get("http://localhost:11000/api/config")
 	require.NoError(t, err)
 	require.NotNil(t, resp)
