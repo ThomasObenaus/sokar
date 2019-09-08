@@ -2,6 +2,9 @@
 
 ## v0.0.8 (2019-??-??)
 
+- Config: Removed deprecated/ unused config-parmeters:
+  - `--mode` was replaced by `--sca.nomad.mode`
+  - `--server-address` was replaced by `--sca.nomad.server-address`.
 - Testing: Service-/ Integration Test added. Can be called with `make test.service`.
 
 ## v0.0.7 (2019-06-10)

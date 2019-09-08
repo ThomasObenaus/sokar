@@ -30,8 +30,6 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--saa.eval-period-factor=105",
 		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
 		"--saa.alert-expiration-time=5m",
-		"--sca.mode=job",
-		"--nomad.server-address=INVALID",
 		"--sca.nomad.mode=dc",
 		"--sca.nomad.server-address=http://nomad",
 		"--sca.nomad.dc-aws.region=region-test",
@@ -73,37 +71,6 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, uint(106), cfg.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, cfg.CapacityPlanner.LinearMode.Enable)
 	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
-}
-
-func Test_FillCfg_DeprecatedFlags(t *testing.T) {
-
-	cfg := NewDefaultConfig()
-	args := []string{
-		"--dry-run",
-		"--port=1000",
-		"--scale-object.name=job",
-		"--scale-object.min=10",
-		"--scale-object.max=100",
-		"--logging.structured",
-		"--logging.unix-ts",
-		"--cap.down-scale-cooldown=90s",
-		"--cap.up-scale-cooldown=91s",
-		"--saa.no-alert-damping=100",
-		"--saa.up-thresh=101",
-		"--saa.down-thresh=102",
-		"--saa.eval-cycle=103s",
-		"--saa.cleanup-cycle=104s",
-		"--saa.eval-period-factor=105",
-		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
-		"--saa.alert-expiration-time=5m",
-		"--sca.mode=dc",
-		"--nomad.server-address=http://nomad",
-	}
-
-	err := cfg.ReadConfig(args)
-	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Nomad.Mode)
-	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 }
 
 func Test_AlertMapToAlerts(t *testing.T) {

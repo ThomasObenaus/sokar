@@ -15,27 +15,15 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Port = cfg.viper.GetInt(port.name)
 
 	// Context: Scaler
-	scaModeStr := cfg.viper.GetString(scalerMode.name)
 	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
 
-	// TODO: Remove since scalerMode.name is deprecated
-	// Currently the new parameter overrides the old one only if the old is not dc and the new is not empty.
-	if len(scaNomadModeStr) > 0 && scaModeStr != "dc" {
-		scaModeStr = scaNomadModeStr
-	}
-
-	scaMode, err := strToScalerMode(scaModeStr)
+	scaMode, err := strToScalerMode(scaNomadModeStr)
 	if err != nil {
 		return err
 	}
 	cfg.Scaler.Nomad.Mode = scaMode
 
-	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(nomadServerAddress.name)
-	nomadSrvAddressCfg := cfg.viper.GetString(scaNomadModeServerAddress.name)
-	if len(nomadSrvAddressCfg) > 0 {
-		cfg.Scaler.Nomad.ServerAddr = nomadSrvAddressCfg
-	}
-
+	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
 
