@@ -11,5 +11,7 @@ services:
   sokar:
     build:
       context: .
-      dockerfile: endpoints.sokar.Dockerfile
+      dockerfile: sokar.Dockerfile
+      args:
+        config_file: endpoints.config.yaml
     network_mode: host

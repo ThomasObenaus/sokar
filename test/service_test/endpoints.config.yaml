@@ -1,0 +1,18 @@
+dry-run: false
+port: 11000
+sca:
+  nomad:
+    server-address: "127.0.0.1"
+cap:
+  down-scale-cooldown: 150s
+  up-scale-cooldown: 160s
+saa:
+  no-alert-damping: 2.0
+  up-thresh: 30.0
+  down-thresh: -40.0
+  eval-cycle: 15s
+  eval-period-factor: 25
+  cleanup-cycle: 260s
+logging:
+  structured: false
+  unix-ts: false
