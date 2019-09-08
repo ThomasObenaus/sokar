@@ -29,15 +29,6 @@ var port = configEntry{
 }
 
 // ###################### Context: scaler ####################################################
-// TODO: [DEPRECATED] Remove this entry
-var scalerMode = configEntry{
-	name:         "sca.mode",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "job",
-	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
-}
-
 var scaNomadDataCenterAWSProfile = configEntry{
 	name:         "sca.nomad.dc-aws.profile",
 	bindEnv:      true,
@@ -64,16 +55,6 @@ var scaNomadMode = configEntry{
 
 var scaNomadModeServerAddress = configEntry{
 	name:         "sca.nomad.server-address",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "",
-	usage:        "Specifies the address of the nomad server.",
-}
-
-// TODO: [DEPRECATED] Remove this entry
-// ###################### Context: nomad ####################################################
-var nomadServerAddress = configEntry{
-	name:         "nomad.server-address",
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: "",
@@ -247,10 +228,6 @@ var configEntries = []configEntry{
 	configFile,
 	port,
 	dryRun,
-	// TODO: [DEPRECATED] Remove this entry
-	scalerMode,
-	// TODO: [DEPRECATED] Remove this entry
-	nomadServerAddress,
 	scaleObjectName,
 	scaleObjectMin,
 	scaleObjectMax,

@@ -97,34 +97,6 @@ The order they are applied is:
 | flag    | --sca.nomad.dc-aws.region                                                                                                                                                          |
 | env     | SK_SCA_NOMAD_DC_AWS_REGION                                                                                                                                                         |
 
-### [DEPRECATED] ScalingTarget
-
-- Replaced by `--sca.nomad.mode`
-
-|         |                                                                                                                                                                                                                          |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| name    | mode                                                                                                                                                                                                                     |
-| usage   | Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
-| type    | string (enum: job \| dc )                                                                                                                                                                                                |
-| default | job                                                                                                                                                                                                                      |
-| flag    | --sca.mode                                                                                                                                                                                                               |
-| env     | SK_SCA_MODE                                                                                                                                                                                                              |
-
-## [DEPRECATED] Nomad
-
-### [DEPRECATED] Server-Address
-
-- Replaced by `--sca.nomad.server-address`
-
-|         |                                            |
-| ------- | ------------------------------------------ |
-| name    | server-address                             |
-| usage   | Specifies the address of the nomad server. |
-| type    | string                                     |
-| default | ""                                         |
-| flag    | --nomad.server-address                     |
-| env     | SK_NOMAD_SERVER_ADDRESS                    |
-
 ## ScaleObject
 
 ### Name

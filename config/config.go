@@ -19,11 +19,9 @@ const (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port       int    `json:"port,omitempty"`
-	Scaler     Scaler `json:"scaler,omitempty"`
-	DryRunMode bool   `json:"dry_run_mode,omitempty"`
-	// TODO: [DEPRECATED] Remove this entry
-	Nomad                Nomad                `json:"nomad,omitempty"`
+	Port                 int                  `json:"port,omitempty"`
+	Scaler               Scaler               `json:"scaler,omitempty"`
+	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
 	Logging              Logging              `json:"logging,omitempty"`
 	ScaleObject          ScaleObject          `json:"scale_object,omitempty"`
 	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator,omitempty"`
@@ -37,9 +35,7 @@ type Config struct {
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
-	// TODO: [DEPRECATED] Remove this entry
-	Mode  ScalerMode `json:"mode,omitempty"`
-	Nomad SCANomad   `json:"nomad,omitempty"`
+	Nomad SCANomad `json:"nomad,omitempty"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
@@ -53,13 +49,6 @@ type SCANomad struct {
 type SCANomadDataCenterAWS struct {
 	Profile string `json:"profile,omitempty"`
 	Region  string `json:"region,omitempty"`
-}
-
-// Nomad represents the configuration for the scaling target nomad
-// TODO: [DEPRECATED] Remove this entry
-type Nomad struct {
-	// TODO: [DEPRECATED] Remove this entry
-	ServerAddr string `json:"server_addr,omitempty"`
 }
 
 // ScaleObject represents the definition for the object that should be scaled.
@@ -122,7 +111,6 @@ func NewDefaultConfig() Config {
 	cfg := Config{
 		Port:        11000,
 		DryRunMode:  false,
-		Nomad:       Nomad{},
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
