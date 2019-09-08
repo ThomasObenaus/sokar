@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: test.Dockerfile
-    command: ["make", "test.endpoints"]
+    command: ["make", "tc.endpoints"]
     depends_on:
       - sokar
     network_mode: host
