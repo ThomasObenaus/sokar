@@ -2,7 +2,7 @@ dry-run: false
 port: 11000
 sca:
   nomad:
-    server-address: "127.0.0.1"
+    server-address: "http://127.0.0.1:4646"
 cap:
   down-scale-cooldown: 150s
   up-scale-cooldown: 160s

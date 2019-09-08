@@ -24,6 +24,8 @@ WORKDIR /work/src/${PROJECT_PATH}
 
 RUN make deps-install
 
+EXPOSE 4646
+
 # Just an empty cmd here. This docker file is intended to be called with 'make <make-target>'.
 # Where the make target is the test that should be executed.
 CMD [""]
