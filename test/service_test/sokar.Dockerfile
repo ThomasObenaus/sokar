@@ -1,9 +1,13 @@
 FROM thobe/sokar:latest
 LABEL maintainer="Thomas Obenaus"
+ARG PROJECT_PATH=github.com/thomasobenaus/sokar
+
+## Specifies the config.yaml that should be loaded and used for this test
+ARG config_file
 
 WORKDIR /app
-#COPY --from=golang /work/src/${PROJECT_PATH}/ci/config.yaml config.yaml
+COPY $config_file config.yaml
 
 EXPOSE 11000
 
-ENTRYPOINT [ "./sokar","--sca.nomad.mode=dc" ]
+ENTRYPOINT [ "./sokar","--config-file=config.yaml"]

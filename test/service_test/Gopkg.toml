@@ -8,3 +8,7 @@
   name = "github.com/stretchr/testify"
   version = "1.3.0"
 
+
+[[constraint]]
+  name = "github.com/thomasobenaus/sokar"
+  version = "0.0.7"
