@@ -35,7 +35,7 @@ type Scaler struct {
 	scaleTicketChan       chan ScalingTicket
 
 	// desiredScale reflects the last successfully applied scale
-	desiredScale *uint
+	desiredScale optionalValue
 
 	// channel used to signal teardown/ stop
 	stopChan chan struct{}
@@ -82,7 +82,7 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 		maxOpenScalingTickets: cfg.MaxOpenScalingTickets,
 		scaleTicketChan:       make(chan ScalingTicket, cfg.MaxOpenScalingTickets+1),
 		metrics:               metrics,
-		desiredScale:          nil,
+		desiredScale:          optionalValue{isKnown: false},
 	}, nil
 }
 

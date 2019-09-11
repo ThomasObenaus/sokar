@@ -7,13 +7,13 @@ import "strconv"
 // of allocations is "out of bounds" regarding the defined min/ max of the scalingObject.
 // Or if a the current count does not correlate to the desired amount of allocations
 // being deployed.
-func countMeetsExpectations(current uint, min uint, max uint, desired *uint) (asExpected bool, expectedCount uint) {
+func countMeetsExpectations(current uint, min uint, max uint, desired optionalValue) (asExpected bool, expectedCount uint) {
 
 	asExpected = true
 	expectedCount = current
 
-	if desired != nil {
-		expectedCount = *desired
+	if desired.isKnown {
+		expectedCount = desired.value
 	}
 
 	if current != expectedCount {
@@ -48,8 +48,8 @@ func (s *Scaler) ensureScalingObjectCount() error {
 		}
 	} else {
 		desiredStr := "n/a"
-		if s.desiredScale != nil {
-			desiredStr = strconv.Itoa(int(*s.desiredScale))
+		if s.desiredScale.isKnown {
+			desiredStr = strconv.Itoa(int(s.desiredScale.value))
 		}
 		s.logger.Debug().Uint("count", count).Str("desired", desiredStr).Uint("expected", expected).Msg("Count as expected, no adjustment needed.")
 	}

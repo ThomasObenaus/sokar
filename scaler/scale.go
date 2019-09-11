@@ -153,7 +153,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
 	// Set the new scalingObject count
-	s.desiredScale = &newCount
+	s.desiredScale.setValue(newCount)
 	err = s.scalingTarget.SetScalingObjectCount(s.scalingObjectCfg.name, newCount)
 	if err != nil {
 		return scaleResult{

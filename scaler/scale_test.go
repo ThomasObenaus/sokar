@@ -7,8 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/metrics"
-	"github.com/thomasobenaus/sokar/test/scaler"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
 
 func TestScale_ScalingObjectDead(t *testing.T) {
@@ -56,7 +56,7 @@ func TestScale_Up(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(2)).Return(nil)
 	result := scaler.scale(2, 0, false)
-	assert.Equal(t, uint(2), *scaler.desiredScale)
+	assert.Equal(t, uint(2), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - max hit
@@ -66,7 +66,7 @@ func TestScale_Up(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(5)).Return(nil)
 	result = scaler.scale(6, 0, false)
-	assert.Equal(t, uint(5), *scaler.desiredScale)
+	assert.Equal(t, uint(5), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 
@@ -91,7 +91,7 @@ func TestScale_Down(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
 	result := scaler.scale(1, 4, false)
-	assert.Equal(t, uint(1), *scaler.desiredScale)
+	assert.Equal(t, uint(1), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
 
 	// scale up - min hit
@@ -101,7 +101,7 @@ func TestScale_Down(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
 	result = scaler.scale(0, 2, false)
-	assert.Equal(t, uint(1), *scaler.desiredScale)
+	assert.Equal(t, uint(1), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 
@@ -121,7 +121,7 @@ func TestScale_NoScale(t *testing.T) {
 	// scale down
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	result := scaler.scale(2, 2, false)
-	assert.Nil(t, scaler.desiredScale)
+	assert.False(t, scaler.desiredScale.isKnown)
 	assert.NotEqual(t, scaleFailed, result.state)
 }
 
