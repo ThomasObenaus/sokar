@@ -34,6 +34,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--sca.nomad.server-address=http://nomad",
 		"--sca.nomad.dc-aws.region=region-test",
 		"--sca.nomad.dc-aws.profile=profile-test",
+		"--sca.watcher-interval=50s",
 		"--cap.constant-mode.enable=false",
 		"--cap.constant-mode.offset=106",
 		"--cap.linear-mode.enable=true",
@@ -46,6 +47,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.Region)
 	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
+	assert.Equal(t, time.Duration(time.Second*50), cfg.Scaler.WatcherInterval)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
 	assert.Equal(t, "job", cfg.ScaleObject.Name)

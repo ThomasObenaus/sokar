@@ -35,7 +35,8 @@ type Config struct {
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
-	Nomad SCANomad `json:"nomad,omitempty"`
+	Nomad           SCANomad      `json:"nomad,omitempty"`
+	WatcherInterval time.Duration `json:"watcher_interval,omitempty"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
@@ -114,7 +115,8 @@ func NewDefaultConfig() Config {
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
-			Nomad: SCANomad{Mode: ScalerModeJob},
+			Nomad:           SCANomad{Mode: ScalerModeJob},
+			WatcherInterval: time.Second * 5,
 		},
 		ScaleAlertAggregator: ScaleAlertAggregator{
 			EvaluationCycle:        time.Second * 1,

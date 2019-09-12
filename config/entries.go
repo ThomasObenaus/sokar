@@ -61,6 +61,14 @@ var scaNomadModeServerAddress = configEntry{
 	usage:        "Specifies the address of the nomad server.",
 }
 
+var scaWatcherInterval = configEntry{
+	name:         "sca.watcher-interval",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "5s",
+	usage:        "The interval the Scaler will check if the scalingObject count still matches the desired state.",
+}
+
 // ###################### Context: scale-object ####################################################
 var scaleObjectName = configEntry{
 	name:         "scale-object.name",
@@ -248,6 +256,7 @@ var configEntries = []configEntry{
 	scaNomadDataCenterAWSRegion,
 	scaNomadMode,
 	scaNomadModeServerAddress,
+	scaWatcherInterval,
 	capConstantModeEnable,
 	capConstantModeOffset,
 	capLinearModeEnable,
