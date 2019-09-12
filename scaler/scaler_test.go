@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/metrics"
-	"github.com/thomasobenaus/sokar/test/scaler"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
 
 func Test_New(t *testing.T) {
@@ -27,7 +27,7 @@ func Test_New(t *testing.T) {
 	cfg = Config{}
 	scaler, err = cfg.New(scaTgt, metrics)
 	assert.NoError(t, err)
-	assert.NotNil(t, scaler)
+	require.NotNil(t, scaler)
 	assert.NotNil(t, scaler.stopChan)
 	assert.NotNil(t, scaler.scaleTicketChan)
 	assert.NotNil(t, scaler.scalingTarget)
