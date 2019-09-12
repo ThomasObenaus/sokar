@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.0.9 (2019-??-??)
+- Config: With [#88](https://github.com/ThomasObenaus/sokar/issues/88) the interval sokar checks if someone externally (e.g. a deplyoment) has changed the scale of the scale-object is now configurable (`--sca.watcher-interval`).
+
 ## v0.0.8 (2019-09-12)
 - Fix: With [#86](https://github.com/ThomasObenaus/sokar/issues/86) the issue that the scale watchers desired scale value could be changed unwanted due to side-effects was fixed.
 - Config: Removed deprecated/ unused config-parmeters:
