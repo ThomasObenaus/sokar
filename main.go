@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
@@ -59,7 +60,7 @@ func main() {
 	logger.Info().Msg("4. Setup: Scaler")
 	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
 
-	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, scalingTarget, loggingFactory)).(*scaler.Scaler)
+	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory)).(*scaler.Scaler)
 
 	logger.Info().Msg("5. Setup: CapacityPlanner")
 
@@ -250,7 +251,7 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 }
 
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
-func setupScaler(scalingObjName string, min uint, max uint, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time.Duration, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory) (*scaler.Scaler, error) {
 
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
@@ -261,10 +262,11 @@ func setupScaler(scalingObjName string, min uint, max uint, scalingTarget scaler
 	}
 
 	scaCfg := scaler.Config{
-		Name:     scalingObjName,
-		MinCount: min,
-		MaxCount: max,
-		Logger:   logF.NewNamedLogger("sokar.scaler"),
+		Name:            scalingObjName,
+		MinCount:        min,
+		MaxCount:        max,
+		Logger:          logF.NewNamedLogger("sokar.scaler"),
+		WatcherInterval: watcherInterval,
 	}
 
 	scaler, err := scaCfg.New(scalingTarget, scaler.NewMetrics())

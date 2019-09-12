@@ -97,6 +97,17 @@ The order they are applied is:
 | flag    | --sca.nomad.dc-aws.region                                                                                                                                                          |
 | env     | SK_SCA_NOMAD_DC_AWS_REGION                                                                                                                                                         |
 
+### ScalingObjectWatcherInterval
+
+|         |                                            |
+| ------- | ------------------------------------------ |
+| name    | watcher-interval                             |
+| usage   | The interval the Scaler will check if the scalingObject count still matches the desired state. |
+| type    | duration                                     |
+| default | 5s                                         |
+| flag    | --sca.watcher-interval                 |
+| env     | SK_SCA_WATCHER_INTERVAL                |
+
 ## ScaleObject
 
 ### Name

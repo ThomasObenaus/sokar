@@ -19,9 +19,9 @@ type Scaler struct {
 	// scalingObjectCfg is the configuration for the scalingObject
 	scalingObjectCfg scalingObjectConfig
 
-	// scalingObjectWatcherCycle the cycle the Scaler will check if
+	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
-	scalingObjectWatcherCycle time.Duration
+	watcherInterval time.Duration
 
 	// numOpenScalingTickets represents the number
 	// of Scaling Tickets that where issued but not yet
@@ -52,6 +52,7 @@ type Config struct {
 	MaxCount              uint
 	Logger                zerolog.Logger
 	MaxOpenScalingTickets uint
+	WatcherInterval       time.Duration
 }
 
 // scalingObjectConfig config of the scalingObject to be scaled
@@ -68,10 +69,14 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 		return nil, fmt.Errorf("Given ScalingTarget is nil")
 	}
 
+	if cfg.WatcherInterval <= time.Second*0 {
+		return nil, fmt.Errorf("WatcherInterval is %s which is a too small value and thus not supported", cfg.WatcherInterval.String())
+	}
+
 	return &Scaler{
-		logger:                    cfg.Logger,
-		scalingTarget:             scalingTarget,
-		scalingObjectWatcherCycle: time.Second * 5,
+		logger:          cfg.Logger,
+		scalingTarget:   scalingTarget,
+		watcherInterval: cfg.WatcherInterval,
 		scalingObjectCfg: scalingObjectConfig{
 			name:     cfg.Name,
 			minCount: cfg.MinCount,
@@ -107,7 +112,7 @@ func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
 	go s.scaleTicketProcessor(s.scaleTicketChan)
 	// handler that checks periodically if the desired count is still valid
-	go s.scalingObjectWatcher(s.scalingObjectWatcherCycle)
+	go s.scalingObjectWatcher(s.watcherInterval)
 }
 
 // Stop tears down scaler

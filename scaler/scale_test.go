@@ -3,6 +3,7 @@ package scaler
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestScale_ScalingObjectDead(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName}
+	cfg := Config{Name: sObjName, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -44,7 +45,7 @@ func TestScale_Up(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -79,7 +80,7 @@ func TestScale_Down(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -114,7 +115,7 @@ func TestScale_NoScale(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -182,7 +183,7 @@ func TestScale_UpDryRun(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 
@@ -205,7 +206,7 @@ func TestScale_DownDryRun(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	sObjName := "any"
-	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 

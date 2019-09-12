@@ -6,6 +6,7 @@ sca:
     server-address: "http://192.168.0.236:4646"
     datacenter-aws:
       region: "us-east-1"
+  watcher-interval: 5s
 scale-object:
   name: "fail-service"
   min: 1

@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/metrics"
-	"github.com/thomasobenaus/sokar/test/scaler"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
 
 func Test_New(t *testing.T) {
@@ -24,10 +24,10 @@ func Test_New(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg = Config{}
+	cfg = Config{WatcherInterval: time.Second * 5}
 	scaler, err = cfg.New(scaTgt, metrics)
 	assert.NoError(t, err)
-	assert.NotNil(t, scaler)
+	require.NotNil(t, scaler)
 	assert.NotNil(t, scaler.stopChan)
 	assert.NotNil(t, scaler.scaleTicketChan)
 	assert.NotNil(t, scaler.scalingTarget)
@@ -42,7 +42,7 @@ func Test_GetCount(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(10), nil)
 
-	cfg := Config{Name: "any"}
+	cfg := Config{Name: "any", WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -64,7 +64,7 @@ func Test_RunJoinStop(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{}
+	cfg := Config{WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -113,7 +113,7 @@ func Test_OpenScalingTicket(t *testing.T) {
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{}
+	cfg := Config{WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -143,7 +143,7 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil)
 	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil)
 
-	cfg := Config{Name: "any"}
+	cfg := Config{Name: "any", WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -169,7 +169,7 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil).MaxTimes(11)
 	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil).MaxTimes(11)
 
-	cfg := Config{Name: "any", MaxOpenScalingTickets: 10}
+	cfg := Config{Name: "any", MaxOpenScalingTickets: 10, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)

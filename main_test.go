@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
@@ -9,8 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/config"
-	"github.com/thomasobenaus/sokar/test/logging"
-	"github.com/thomasobenaus/sokar/test/scaler"
+	mock_logging "github.com/thomasobenaus/sokar/test/logging"
+	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
 
 func Test_CliAndConfig(t *testing.T) {
@@ -53,11 +54,16 @@ func Test_SetupScaler_Failures(t *testing.T) {
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
 
 	// no logging factory
-	scaler, err := setupScaler("any", 0, 1, nil, nil)
+	scaler, err := setupScaler("any", 0, 1, time.Second*1, nil, nil)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
-	scaler, err = setupScaler("any", 0, 1, nil, logF)
+	scaler, err = setupScaler("any", 0, 1, time.Second*1, nil, logF)
+	assert.Error(t, err)
+	assert.Nil(t, scaler)
+
+	// invalid watcher-interval
+	scaler, err = setupScaler("any", 0, 1, time.Second*0, nil, nil)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 }
@@ -70,7 +76,7 @@ func Test_SetupScaler(t *testing.T) {
 	scalingTarget := mock_scaler.NewMockScalingTarget(mockCtrl)
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 
-	scaler, err := setupScaler("any", 0, 1, scalingTarget, logF)
+	scaler, err := setupScaler("any", 0, 1, time.Second*1, scalingTarget, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scaler)
 }

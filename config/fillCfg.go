@@ -26,6 +26,7 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
+	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)

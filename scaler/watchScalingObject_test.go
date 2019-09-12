@@ -3,6 +3,7 @@ package scaler
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -52,7 +53,7 @@ func TestEnsureScalingObjectCount_NoScale(t *testing.T) {
 	metrics, _ := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -76,7 +77,7 @@ func TestEnsureScalingObjectCount_MinViolated(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
@@ -97,7 +98,7 @@ func TestEnsureScalingObjectCount_MaxViolated(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5}
+	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
 	scaler, err := cfg.New(scaTgt, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
