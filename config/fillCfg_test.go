@@ -30,10 +30,12 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--saa.eval-period-factor=105",
 		"--saa.scale-alerts=alert 1:1.2:This is an upscaling alert",
 		"--saa.alert-expiration-time=5m",
-		"--sca.nomad.mode=dc",
+		"--sca.mode=aws-ec2",
 		"--sca.nomad.server-address=http://nomad",
 		"--sca.nomad.dc-aws.region=region-test",
 		"--sca.nomad.dc-aws.profile=profile-test",
+		"--sca.aws-ec2.profile=profile-test",
+		"--sca.aws-ec2.region=region-test",
 		"--sca.watcher-interval=50s",
 		"--cap.constant-mode.enable=false",
 		"--cap.constant-mode.offset=106",
@@ -43,10 +45,12 @@ func Test_FillCfg_Flags(t *testing.T) {
 
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeDataCenter, cfg.Scaler.Nomad.Mode)
+	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
 	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.Region)
 	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
+	assert.Equal(t, "profile-test", cfg.Scaler.AwsEc2.Profile)
+	assert.Equal(t, "region-test", cfg.Scaler.AwsEc2.Region)
 	assert.Equal(t, time.Duration(time.Second*50), cfg.Scaler.WatcherInterval)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
@@ -223,4 +227,22 @@ func Test_StrToScalerMode(t *testing.T) {
 	mode, err = strToScalerMode("Dc")
 	assert.NoError(t, err)
 	assert.Equal(t, ScalerModeDataCenter, mode)
+
+	mode, err = strToScalerMode("aws-eC2")
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeAwsEc2, mode)
+}
+
+// TODO: Remove as soon as the sca.nomad.mode flag has been removed
+func Test_FillCfg_SupportDeprecatedFlags(t *testing.T) {
+
+	cfg := NewDefaultConfig()
+	args := []string{
+		"--sca.nomad.mode=aws-ec2",
+		"--sca.mode=job",
+	}
+
+	err := cfg.ReadConfig(args)
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
 }

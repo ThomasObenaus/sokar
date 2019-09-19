@@ -15,18 +15,33 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Port = cfg.viper.GetInt(port.name)
 
 	// Context: Scaler
-	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
+	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
 
-	scaMode, err := strToScalerMode(scaNomadModeStr)
+	scaModeStr := cfg.viper.GetString(scaMode.name)
+	scaMode, err := strToScalerMode(scaModeStr)
 	if err != nil {
 		return err
 	}
-	cfg.Scaler.Nomad.Mode = scaMode
+	cfg.Scaler.Mode = scaMode
 
+	// TODO: DEPRECATED, Remove it
+	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
+	if len(scaNomadModeStr) > 0 {
+		scaMode, err = strToScalerMode(scaNomadModeStr)
+		if err != nil {
+			return err
+		}
+		cfg.Scaler.Mode = scaMode
+	}
+
+	// Context: Scaler - AWS EC2
+	cfg.Scaler.AwsEc2.Profile = cfg.viper.GetString(scaAWSEC2Profile.name)
+	cfg.Scaler.AwsEc2.Region = cfg.viper.GetString(scaAWSEC2Region.name)
+
+	// Context: Scaler - Nomad
 	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
-	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
@@ -176,6 +191,9 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 	if mode == string(ScalerModeDataCenter) {
 		return ScalerModeDataCenter, nil
+	}
+	if mode == string(ScalerModeAwsEc2) {
+		return ScalerModeAwsEc2, nil
 	}
 
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)

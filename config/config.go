@@ -15,6 +15,8 @@ const (
 	ScalerModeJob ScalerMode = "job"
 	// ScalerModeDataCenter that the number of instances/ workers of a data-center will be scaled
 	ScalerModeDataCenter ScalerMode = "dc"
+	// ScalerModeAwsEc2 that the number of instances/ workers of a AWS EC2 ASG will be scaled
+	ScalerModeAwsEc2 ScalerMode = "aws-ec2"
 )
 
 // Config is a structure containing the configuration for sokar
@@ -35,13 +37,20 @@ type Config struct {
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
+	Mode            ScalerMode    `json:"mode,omitempty"`
 	Nomad           SCANomad      `json:"nomad,omitempty"`
+	AwsEc2          SCAAwsEc2     `json:"aws_ec2,omitempty"`
 	WatcherInterval time.Duration `json:"watcher_interval,omitempty"`
+}
+
+// SCAAwsEc2 represents the parameters for a AWS EC2 based scaler.
+type SCAAwsEc2 struct {
+	Profile string `json:"profile,omitempty"`
+	Region  string `json:"region,omitempty"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
 type SCANomad struct {
-	Mode          ScalerMode            `json:"mode,omitempty"`
 	ServerAddr    string                `json:"server_addr,omitempty"`
 	DataCenterAWS SCANomadDataCenterAWS `json:"datacenter_aws,omitempty"`
 }
@@ -115,7 +124,8 @@ func NewDefaultConfig() Config {
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
-			Nomad:           SCANomad{Mode: ScalerModeJob},
+			Mode:            ScalerModeJob,
+			Nomad:           SCANomad{},
 			WatcherInterval: time.Second * 5,
 		},
 		ScaleAlertAggregator: ScaleAlertAggregator{

@@ -123,9 +123,9 @@ func Test_SetupScalingTarget(t *testing.T) {
 	assert.Nil(t, scalingTarget)
 
 	cfg = config.Scaler{
+		Mode: config.ScalerModeDataCenter,
 		Nomad: config.SCANomad{
 			ServerAddr:    "http://nomad",
-			Mode:          config.ScalerModeDataCenter,
 			DataCenterAWS: config.SCANomadDataCenterAWS{Region: "eu-central-1"},
 		},
 	}
@@ -135,7 +135,8 @@ func Test_SetupScalingTarget(t *testing.T) {
 	assert.NotNil(t, scalingTarget)
 
 	cfg = config.Scaler{
-		Nomad: config.SCANomad{ServerAddr: "http://nomad", Mode: config.ScalerModeJob},
+		Mode:  config.ScalerModeJob,
+		Nomad: config.SCANomad{ServerAddr: "http://nomad"},
 	}
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 	scalingTarget, err = setupScalingTarget(cfg, logF)

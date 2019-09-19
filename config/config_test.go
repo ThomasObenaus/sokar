@@ -10,7 +10,7 @@ import (
 func Test_NewDefaultConfig(t *testing.T) {
 	config := NewDefaultConfig()
 	assert.Equal(t, 11000, config.Port)
-	assert.Equal(t, ScalerModeJob, config.Scaler.Nomad.Mode)
+	assert.Equal(t, ScalerModeJob, config.Scaler.Mode)
 	assert.Equal(t, time.Duration(time.Second*5), config.Scaler.WatcherInterval)
 	assert.Equal(t, false, config.DryRunMode)
 	assert.Equal(t, float32(1), config.ScaleAlertAggregator.NoAlertScaleDamping)
