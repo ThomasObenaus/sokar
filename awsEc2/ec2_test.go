@@ -1,4 +1,4 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/awsEc2"
 )
 
 func Test_CreateSession(t *testing.T) {

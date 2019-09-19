@@ -1,12 +1,12 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
+	iface "github.com/thomasobenaus/sokar/awsEc2/iface"
 	"github.com/thomasobenaus/sokar/helper"
-	iface "github.com/thomasobenaus/sokar/nomadWorker/iface"
 )
 
 type autoScalingFactoryImpl struct {

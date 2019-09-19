@@ -1,4 +1,4 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"testing"

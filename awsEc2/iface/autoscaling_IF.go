@@ -1,4 +1,4 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"github.com/aws/aws-sdk-go/aws/session"

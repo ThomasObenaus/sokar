@@ -1,11 +1,11 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rs/zerolog"
-	iface "github.com/thomasobenaus/sokar/nomadWorker/iface"
+	iface "github.com/thomasobenaus/sokar/awsEc2/iface"
 )
 
 // Connector is a object that allows to interact with nomad worker
