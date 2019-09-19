@@ -142,4 +142,10 @@ func Test_SetupScalingTarget(t *testing.T) {
 	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.NoError(t, err)
 	assert.NotNil(t, scalingTarget)
+
+	cfg = config.Scaler{
+		Mode: config.ScalerModeAwsEc2,
+	}
+	scalingTarget, err = setupScalingTarget(cfg, logF)
+	assert.Error(t, err)
 }

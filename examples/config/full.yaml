@@ -1,8 +1,8 @@
 dry-run: false
 port: 11000
 sca:
+  mode: "job"
   nomad:
-    mode: "job"
     server-address: "http://192.168.0.236:4646"
     datacenter-aws:
       region: "us-east-1"
