@@ -11,6 +11,7 @@ func Test_NewDefaultConfig(t *testing.T) {
 	config := NewDefaultConfig()
 	assert.Equal(t, 11000, config.Port)
 	assert.Equal(t, ScalerModeNomadJob, config.Scaler.Mode)
+	assert.Equal(t, "scale-object", config.Scaler.AwsEc2.ASGTagKey)
 	assert.Equal(t, time.Duration(time.Second*5), config.Scaler.WatcherInterval)
 	assert.Equal(t, false, config.DryRunMode)
 	assert.Equal(t, float32(1), config.ScaleAlertAggregator.NoAlertScaleDamping)

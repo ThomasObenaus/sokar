@@ -75,7 +75,7 @@ var scaAWSEC2ASGTagKey = configEntry{
 	name:         "sca.aws-ec2.asg-tag-key",
 	bindEnv:      true,
 	bindFlag:     true,
-	defaultValue: "scaling-object",
+	defaultValue: "scale-object",
 	usage:        "This parameter specifies which tag on an AWS AutoScalingGroup shall be used to find the ASG that should be automatically scaled.",
 }
 

@@ -129,6 +129,7 @@ func NewDefaultConfig() Config {
 			Mode:            ScalerModeNomadJob,
 			Nomad:           SCANomad{},
 			WatcherInterval: time.Second * 5,
+			AwsEc2:          SCAAwsEc2{ASGTagKey: "scale-object"},
 		},
 		ScaleAlertAggregator: ScaleAlertAggregator{
 			EvaluationCycle:        time.Second * 1,
