@@ -3,18 +3,14 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/thomasobenaus/sokar/helper"
 )
 
-func (cfg *Config) fillCfgValues() error {
-	// Context: main
-	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
-	cfg.Port = cfg.viper.GetInt(port.name)
-
-	// Context: Scaler
+func (cfg *Config) fillScaler() error {
 	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
 
 	scaModeStr := cfg.viper.GetString(scaMode.name)
@@ -42,6 +38,52 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
+
+	return validateScaler(cfg.Scaler)
+}
+
+func validateScaler(scaler Scaler) error {
+
+	switch mode := scaler.Mode; mode {
+	case ScalerModeJob:
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+		}
+	case ScalerModeDataCenter:
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+		}
+		if len(scaler.Nomad.DataCenterAWS.Profile) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.name, mode)
+		}
+		if len(scaler.Nomad.DataCenterAWS.Region) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSRegion.name, mode)
+		}
+	case ScalerModeAwsEc2:
+		if len(scaler.AwsEc2.Profile) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2Profile.name, mode)
+		}
+		if len(scaler.AwsEc2.Region) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2Region.name, mode)
+		}
+	default:
+		return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaMode.name, mode)
+	}
+
+	if scaler.WatcherInterval <= time.Millisecond*500 {
+		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.name)
+	}
+
+	return nil
+}
+
+func (cfg *Config) fillCfgValues() error {
+	// Context: main
+	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
+	cfg.Port = cfg.viper.GetInt(port.name)
+
+	// Context: Scaler
+	cfg.fillScaler()
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)

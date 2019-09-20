@@ -79,6 +79,43 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
 }
 
+func Test_ValidateScaler(t *testing.T) {
+	sca := Scaler{}
+	err := validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeJob}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeAwsEc2}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeAwsEc2, AwsEc2: SCAAwsEc2{Profile: "profile"}}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeDataCenter}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com"}}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com", DataCenterAWS: SCANomadDataCenterAWS{Profile: "profile"}}}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Millisecond * 499}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Second * 5}
+	err = validateScaler(sca)
+	assert.NoError(t, err)
+}
 func Test_AlertMapToAlerts(t *testing.T) {
 
 	alerts, err := alertMapToAlerts(nil)
