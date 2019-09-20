@@ -34,6 +34,7 @@ func (m *MockScalingTarget) EXPECT() *MockScalingTargetMockRecorder {
 
 // SetScalingObjectCount mocks base method
 func (m *MockScalingTarget) SetScalingObjectCount(scalingObject string, count uint) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetScalingObjectCount", scalingObject, count)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -41,11 +42,13 @@ func (m *MockScalingTarget) SetScalingObjectCount(scalingObject string, count ui
 
 // SetScalingObjectCount indicates an expected call of SetScalingObjectCount
 func (mr *MockScalingTargetMockRecorder) SetScalingObjectCount(scalingObject, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).SetScalingObjectCount), scalingObject, count)
 }
 
 // GetScalingObjectCount mocks base method
 func (m *MockScalingTarget) GetScalingObjectCount(scalingObject string) (uint, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetScalingObjectCount", scalingObject)
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
@@ -54,11 +57,13 @@ func (m *MockScalingTarget) GetScalingObjectCount(scalingObject string) (uint, e
 
 // GetScalingObjectCount indicates an expected call of GetScalingObjectCount
 func (mr *MockScalingTargetMockRecorder) GetScalingObjectCount(scalingObject interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).GetScalingObjectCount), scalingObject)
 }
 
 // IsScalingObjectDead mocks base method
 func (m *MockScalingTarget) IsScalingObjectDead(scalingObject string) (bool, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsScalingObjectDead", scalingObject)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
@@ -67,5 +72,6 @@ func (m *MockScalingTarget) IsScalingObjectDead(scalingObject string) (bool, err
 
 // IsScalingObjectDead indicates an expected call of IsScalingObjectDead
 func (mr *MockScalingTargetMockRecorder) IsScalingObjectDead(scalingObject interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsScalingObjectDead", reflect.TypeOf((*MockScalingTarget)(nil).IsScalingObjectDead), scalingObject)
 }
