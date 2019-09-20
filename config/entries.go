@@ -42,7 +42,7 @@ var scaMode = configEntry{
 	name:         "sca.mode",
 	bindEnv:      true,
 	bindFlag:     true,
-	defaultValue: "job",
+	defaultValue: "nomad-job",
 	usage:        "Scaling target mode is either job based, instance-based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
 }
 

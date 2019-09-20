@@ -84,7 +84,7 @@ func Test_ValidateScaler(t *testing.T) {
 	err := validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeJob}
+	sca = Scaler{Mode: ScalerModeNomadJob}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
@@ -96,23 +96,23 @@ func Test_ValidateScaler(t *testing.T) {
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeDataCenter}
+	sca = Scaler{Mode: ScalerModeNomadDataCenter}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com"}}
+	sca = Scaler{Mode: ScalerModeNomadDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com"}}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com", DataCenterAWS: SCANomadDataCenterAWS{Profile: "profile"}}}
+	sca = Scaler{Mode: ScalerModeNomadDataCenter, Nomad: SCANomad{ServerAddr: "http://test.com", DataCenterAWS: SCANomadDataCenterAWS{Profile: "profile"}}}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Millisecond * 499}
+	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Millisecond * 499}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Second * 5}
+	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Second * 5}
 	err = validateScaler(sca)
 	assert.NoError(t, err)
 }
@@ -259,11 +259,11 @@ func Test_StrToScalerMode(t *testing.T) {
 
 	mode, err = strToScalerMode("JOB")
 	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeJob, mode)
+	assert.Equal(t, ScalerModeNomadJob, mode)
 
 	mode, err = strToScalerMode("Dc")
 	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeDataCenter, mode)
+	assert.Equal(t, ScalerModeNomadDataCenter, mode)
 
 	mode, err = strToScalerMode("aws-eC2")
 	assert.NoError(t, err)
@@ -282,4 +282,24 @@ func Test_FillCfg_SupportDeprecatedFlags(t *testing.T) {
 	err := cfg.ReadConfig(args)
 	assert.NoError(t, err)
 	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
+
+	// old job
+	cfg = NewDefaultConfig()
+	args = []string{
+		"--sca.mode=job",
+	}
+
+	err = cfg.ReadConfig(args)
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeNomadJob, cfg.Scaler.Mode)
+
+	// old dc
+	cfg = NewDefaultConfig()
+	args = []string{
+		"--sca.mode=dc",
+	}
+
+	err = cfg.ReadConfig(args)
+	assert.NoError(t, err)
+	assert.Equal(t, ScalerModeNomadDataCenter, cfg.Scaler.Mode)
 }

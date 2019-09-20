@@ -11,10 +11,10 @@ import (
 type ScalerMode string
 
 const (
-	// ScalerModeJob that the number of allocations of a job will be scaled
-	ScalerModeJob ScalerMode = "job"
-	// ScalerModeDataCenter that the number of instances/ workers of a data-center will be scaled
-	ScalerModeDataCenter ScalerMode = "dc"
+	// ScalerModeNomadJob that the number of allocations of a job will be scaled
+	ScalerModeNomadJob ScalerMode = "nomad-job"
+	// ScalerModeNomadDataCenter that the number of instances/ workers of a data-center will be scaled
+	ScalerModeNomadDataCenter ScalerMode = "nomad-dc"
 	// ScalerModeAwsEc2 that the number of instances/ workers of a AWS EC2 ASG will be scaled
 	ScalerModeAwsEc2 ScalerMode = "aws-ec2"
 )
@@ -124,7 +124,7 @@ func NewDefaultConfig() Config {
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
-			Mode:            ScalerModeJob,
+			Mode:            ScalerModeNomadJob,
 			Nomad:           SCANomad{},
 			WatcherInterval: time.Second * 5,
 		},

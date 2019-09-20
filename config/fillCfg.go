@@ -45,11 +45,11 @@ func (cfg *Config) fillScaler() error {
 func validateScaler(scaler Scaler) error {
 
 	switch mode := scaler.Mode; mode {
-	case ScalerModeJob:
+	case ScalerModeNomadJob:
 		if len(scaler.Nomad.ServerAddr) == 0 {
 			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
 		}
-	case ScalerModeDataCenter:
+	case ScalerModeNomadDataCenter:
 		if len(scaler.Nomad.ServerAddr) == 0 {
 			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
 		}
@@ -228,11 +228,17 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 
 	mode = strings.ToLower(mode)
-	if mode == string(ScalerModeJob) {
-		return ScalerModeJob, nil
+	if mode == "job" {
+		return ScalerModeNomadJob, nil
 	}
-	if mode == string(ScalerModeDataCenter) {
-		return ScalerModeDataCenter, nil
+	if mode == string(ScalerModeNomadJob) {
+		return ScalerModeNomadJob, nil
+	}
+	if mode == string(ScalerModeNomadDataCenter) {
+		return ScalerModeNomadDataCenter, nil
+	}
+	if mode == "dc" {
+		return ScalerModeNomadDataCenter, nil
 	}
 	if mode == string(ScalerModeAwsEc2) {
 		return ScalerModeAwsEc2, nil
