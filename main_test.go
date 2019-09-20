@@ -129,6 +129,7 @@ func Test_SetupScalingTarget(t *testing.T) {
 			DataCenterAWS: config.SCANomadDataCenterAWS{Region: "eu-central-1"},
 		},
 	}
+
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.NoError(t, err)
@@ -146,6 +147,7 @@ func Test_SetupScalingTarget(t *testing.T) {
 	cfg = config.Scaler{
 		Mode: config.ScalerModeAwsEc2,
 	}
+	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.Error(t, err)
 }
