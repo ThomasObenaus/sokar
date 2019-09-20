@@ -5,7 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rs/zerolog"
-	iface "github.com/thomasobenaus/sokar/awsEc2/iface"
+	"github.com/thomasobenaus/sokar/aws"
+	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
 // Connector is a object that allows to interact with nomad worker
@@ -62,9 +63,9 @@ func (cfg *Config) New() (*Connector, error) {
 	nc := &Connector{
 		log:                        cfg.Logger,
 		tagKey:                     "datacenter",
-		autoScalingFactory:         &autoScalingFactoryImpl{},
-		fnCreateSession:            newAWSSession,
-		fnCreateSessionFromProfile: newAWSSessionFromProfile,
+		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
+		fnCreateSession:            aws.NewAWSSession,
+		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 		awsProfile:                 cfg.AWSProfile,
 		awsRegion:                  cfg.AWSRegion,
 	}

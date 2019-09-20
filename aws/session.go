@@ -1,4 +1,4 @@
-package awsEc2
+package aws
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 )
 
-func newAWSSessionFromProfile(profile string) (*session.Session, error) {
+// NewAWSSessionFromProfile creates a new session needed for interaction with the aws api. Here a profile can be specified.
+func NewAWSSessionFromProfile(profile string) (*session.Session, error) {
 	verboseCredErrors := true
 
 	cfg := aws.Config{CredentialsChainVerboseErrors: &verboseCredErrors}
@@ -16,7 +17,8 @@ func newAWSSessionFromProfile(profile string) (*session.Session, error) {
 	return session.NewSessionWithOptions(sessionOpts)
 }
 
-func newAWSSession(region string) (*session.Session, error) {
+// NewAWSSession creates a new session needed for interaction with the aws api
+func NewAWSSession(region string) (*session.Session, error) {
 	if len(region) == 0 {
 		return nil, fmt.Errorf("Required region parameter is empty")
 	}

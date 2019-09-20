@@ -23,7 +23,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./awsEc2 ./ -covermode=count -coverprofile=coverage.out
+	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
@@ -52,7 +52,7 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
 	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go
-	@mockgen -source=awsEc2/iface/autoscaling_IF.go -destination test/awsEc2/mock_autoscaling_IF.go 
+	@mockgen -source=aws/iface/autoscaling_IF.go -destination test/aws/mock_autoscaling_IF.go 
 	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 

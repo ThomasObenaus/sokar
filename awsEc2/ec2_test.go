@@ -7,7 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_nomadWorker "github.com/thomasobenaus/sokar/test/awsEc2"
+	"github.com/thomasobenaus/sokar/aws"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/aws"
 )
 
 func Test_CreateSession(t *testing.T) {
@@ -27,7 +28,7 @@ func Test_CreateSession(t *testing.T) {
 	// success, profile
 	connector = Connector{
 		awsProfile:                 "xyz",
-		fnCreateSessionFromProfile: newAWSSessionFromProfile,
+		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 	}
 	sess, err = connector.createSession()
 	assert.NoError(t, err)
@@ -36,7 +37,7 @@ func Test_CreateSession(t *testing.T) {
 	// success, no profile
 	connector = Connector{
 		awsRegion:       "xyz",
-		fnCreateSession: newAWSSession,
+		fnCreateSession: aws.NewAWSSession,
 	}
 	sess, err = connector.createSession()
 	assert.NoError(t, err)

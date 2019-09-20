@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/thomasobenaus/sokar/aws"
 )
 
 // SetScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
@@ -16,13 +17,13 @@ func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
 	}
 	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
 
-	asgQuery := autoScalingGroupQuery{
-		asgIF:    autoScalingIF,
-		tagKey:   c.tagKey,
-		tagValue: datacenter,
+	asgQuery := aws.AutoScalingGroupQuery{
+		AsgIF:    autoScalingIF,
+		TagKey:   c.tagKey,
+		TagValue: datacenter,
 	}
 
-	asgName, err := asgQuery.getAutoScalingGroupName()
+	asgName, err := asgQuery.GetAutoScalingGroupName()
 	if err != nil {
 		return err
 	}
@@ -53,12 +54,12 @@ func (c *Connector) GetScalingObjectCount(datacenter string) (uint, error) {
 	}
 	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
 
-	asgQuery := autoScalingGroupQuery{
-		asgIF:    autoScalingIF,
-		tagKey:   c.tagKey,
-		tagValue: datacenter,
+	asgQuery := aws.AutoScalingGroupQuery{
+		AsgIF:    autoScalingIF,
+		TagKey:   c.tagKey,
+		TagValue: datacenter,
 	}
-	min, desired, max, err := asgQuery.getScaleNumbers()
+	min, desired, max, err := asgQuery.GetScaleNumbers()
 	if err != nil {
 		return 0, err
 	}
@@ -75,12 +76,12 @@ func (c *Connector) IsScalingObjectDead(datacenter string) (bool, error) {
 		return true, err
 	}
 	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
-	asgs, err := getAutoScalingGroups(autoScalingIF)
+	asgs, err := aws.GetAutoScalingGroups(autoScalingIF)
 	if err != nil {
 		return true, err
 	}
 
-	asg := filterAutoScalingGroupByTag(c.tagKey, datacenter, asgs)
+	asg := aws.FilterAutoScalingGroupByTag(c.tagKey, datacenter, asgs)
 
 	if asg == nil {
 		c.log.Warn().Msgf("AutoScalingGroup with %s=%s not found", c.tagKey, datacenter)
