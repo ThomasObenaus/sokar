@@ -1,4 +1,4 @@
-package nomadWorker
+package aws
 
 import (
 	"fmt"
@@ -8,19 +8,19 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/aws"
 )
 
 func Test_CreateAutoScaling(t *testing.T) {
 
-	asgF := autoScalingFactoryImpl{}
+	asgF := AutoScalingFactoryImpl{}
 
 	// nil, no session
 	as := asgF.CreateAutoScaling(nil)
 	assert.Nil(t, as)
 
 	//  no session
-	sess, _ := newAWSSession("eu-central-1")
+	sess, _ := NewAWSSession("eu-central-1")
 	as = asgF.CreateAutoScaling(sess)
 	assert.NotNil(t, as)
 }
@@ -71,13 +71,13 @@ func TestFilterAutoScalingGroupByTag(t *testing.T) {
 	var autoScalingGroups []*autoscaling.Group
 
 	// none, empty
-	asg := filterAutoScalingGroupByTag("key", "value", autoScalingGroups)
+	asg := FilterAutoScalingGroupByTag("key", "value", autoScalingGroups)
 	assert.Nil(t, asg)
 
 	// none, no match
 	asgIn := autoscaling.Group{}
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	asg = filterAutoScalingGroupByTag("key", "value", autoScalingGroups)
+	asg = FilterAutoScalingGroupByTag("key", "value", autoScalingGroups)
 	assert.Nil(t, asg)
 
 	// found, match
@@ -90,20 +90,20 @@ func TestFilterAutoScalingGroupByTag(t *testing.T) {
 	tags = append(tags, &td)
 	asgIn = autoscaling.Group{Tags: tags, AutoScalingGroupName: &asgName}
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	asg = filterAutoScalingGroupByTag(key, tagVal, autoScalingGroups)
+	asg = FilterAutoScalingGroupByTag(key, tagVal, autoScalingGroups)
 	require.NotNil(t, asg)
 	assert.Equal(t, asgName, *asg.AutoScalingGroupName)
 
 	// not found, no match
 	autoScalingGroups = make([]*autoscaling.Group, 0)
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	asg = filterAutoScalingGroupByTag(key, "tagVal", autoScalingGroups)
+	asg = FilterAutoScalingGroupByTag(key, "tagVal", autoScalingGroups)
 	assert.Nil(t, asg)
 
 	// robust against nil
 	autoScalingGroups = make([]*autoscaling.Group, 0)
 	autoScalingGroups = append(autoScalingGroups, nil)
-	asg = filterAutoScalingGroupByTag(key, "tagVal", autoScalingGroups)
+	asg = FilterAutoScalingGroupByTag(key, "tagVal", autoScalingGroups)
 	assert.Nil(t, asg)
 }
 
@@ -115,13 +115,13 @@ func Test_GetAutoScalingGroups(t *testing.T) {
 
 	// no result, error
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, fmt.Errorf("ERR"))
-	asgList, err := getAutoScalingGroups(asgIF)
+	asgList, err := GetAutoScalingGroups(asgIF)
 	assert.Error(t, err)
 	assert.Empty(t, asgList)
 
 	// no result, result is nil
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	asgList, err = getAutoScalingGroups(asgIF)
+	asgList, err = GetAutoScalingGroups(asgIF)
 	assert.Error(t, err)
 	assert.Empty(t, asgList)
 
@@ -131,7 +131,7 @@ func Test_GetAutoScalingGroups(t *testing.T) {
 	asgOut = append(asgOut, &group)
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: asgOut}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	asgList, err = getAutoScalingGroups(asgIF)
+	asgList, err = GetAutoScalingGroups(asgIF)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, asgList)
 }
@@ -142,15 +142,15 @@ func Test_GetScaleNumbers(t *testing.T) {
 
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	asgQ := autoScalingGroupQuery{
-		asgIF:    asgIF,
-		tagKey:   "key",
-		tagValue: "value",
+	asgQ := AutoScalingGroupQuery{
+		AsgIF:    asgIF,
+		TagKey:   "key",
+		TagValue: "value",
 	}
 
 	// no result, error
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, fmt.Errorf("ERR"))
-	min, desired, max, err := asgQ.getScaleNumbers()
+	min, desired, max, err := asgQ.GetScaleNumbers()
 	assert.Error(t, err)
 	assert.Equal(t, uint(0), min)
 	assert.Equal(t, uint(0), desired)
@@ -176,20 +176,20 @@ func Test_GetScaleNumbers(t *testing.T) {
 
 	// no result, tag not match
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	min, desired, max, err = asgQ.getScaleNumbers()
+	min, desired, max, err = asgQ.GetScaleNumbers()
 	assert.Error(t, err)
 	assert.Equal(t, uint(0), min)
 	assert.Equal(t, uint(0), desired)
 	assert.Equal(t, uint(0), max)
 
 	// result
-	asgQ = autoScalingGroupQuery{
-		asgIF:    asgIF,
-		tagKey:   "datacenter",
-		tagValue: "private-services",
+	asgQ = AutoScalingGroupQuery{
+		AsgIF:    asgIF,
+		TagKey:   "datacenter",
+		TagValue: "private-services",
 	}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	min, desired, max, err = asgQ.getScaleNumbers()
+	min, desired, max, err = asgQ.GetScaleNumbers()
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), min)
 	assert.Equal(t, uint(2), desired)
@@ -202,15 +202,15 @@ func Test_GetAutoScalingGroupName(t *testing.T) {
 
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	asgQ := autoScalingGroupQuery{
-		asgIF:    asgIF,
-		tagKey:   "key",
-		tagValue: "value",
+	asgQ := AutoScalingGroupQuery{
+		AsgIF:    asgIF,
+		TagKey:   "key",
+		TagValue: "value",
 	}
 
 	// no result, error
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, fmt.Errorf("ERR"))
-	name, err := asgQ.getAutoScalingGroupName()
+	name, err := asgQ.GetAutoScalingGroupName()
 	assert.Error(t, err)
 	assert.Empty(t, name)
 
@@ -230,18 +230,18 @@ func Test_GetAutoScalingGroupName(t *testing.T) {
 
 	// no result, tag not match
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	name, err = asgQ.getAutoScalingGroupName()
+	name, err = asgQ.GetAutoScalingGroupName()
 	assert.Error(t, err)
 	assert.Empty(t, name)
 
 	// result
-	asgQ = autoScalingGroupQuery{
-		asgIF:    asgIF,
-		tagKey:   "datacenter",
-		tagValue: "private-services",
+	asgQ = AutoScalingGroupQuery{
+		AsgIF:    asgIF,
+		TagKey:   "datacenter",
+		TagValue: "private-services",
 	}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	name, err = asgQ.getAutoScalingGroupName()
+	name, err = asgQ.GetAutoScalingGroupName()
 	assert.NoError(t, err)
 	assert.Equal(t, "myASG", name)
 }

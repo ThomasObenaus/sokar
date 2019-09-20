@@ -1,4 +1,4 @@
-package nomadWorker
+package aws
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestAWSNewSessionFromProfile(t *testing.T) {
-	session, err := newAWSSessionFromProfile("invalid")
+	session, err := NewAWSSessionFromProfile("invalid")
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 	assert.True(t, *session.Config.CredentialsChainVerboseErrors)
@@ -15,11 +15,11 @@ func TestAWSNewSessionFromProfile(t *testing.T) {
 
 func TestAWSNewSession(t *testing.T) {
 
-	session, err := newAWSSession("")
+	session, err := NewAWSSession("")
 	assert.Error(t, err)
 	assert.Nil(t, session)
 
-	session, err = newAWSSession("eu-central-1")
+	session, err = NewAWSSession("eu-central-1")
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 	assert.True(t, *session.Config.CredentialsChainVerboseErrors)

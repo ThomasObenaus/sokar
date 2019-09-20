@@ -3,11 +3,82 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/thomasobenaus/sokar/helper"
 )
+
+func (cfg *Config) fillScaler() error {
+	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
+
+	scaModeStr := cfg.viper.GetString(scaMode.name)
+	scaMode, err := strToScalerMode(scaModeStr)
+	if err != nil {
+		return err
+	}
+	cfg.Scaler.Mode = scaMode
+
+	// TODO: DEPRECATED, Remove it
+	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
+	if len(scaNomadModeStr) > 0 {
+		scaMode, err = strToScalerMode(scaNomadModeStr)
+		if err != nil {
+			return err
+		}
+		cfg.Scaler.Mode = scaMode
+	}
+
+	// Context: Scaler - AWS EC2
+	cfg.Scaler.AwsEc2.Profile = cfg.viper.GetString(scaAWSEC2Profile.name)
+	cfg.Scaler.AwsEc2.Region = cfg.viper.GetString(scaAWSEC2Region.name)
+	cfg.Scaler.AwsEc2.ASGTagKey = cfg.viper.GetString(scaAWSEC2ASGTagKey.name)
+	// Context: Scaler - Nomad
+	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
+	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
+	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
+
+	return validateScaler(cfg.Scaler)
+}
+
+func validateScaler(scaler Scaler) error {
+
+	switch mode := scaler.Mode; mode {
+	case ScalerModeNomadJob:
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+		}
+	case ScalerModeNomadDataCenter:
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+		}
+		if len(scaler.Nomad.DataCenterAWS.Profile) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.name, mode)
+		}
+		if len(scaler.Nomad.DataCenterAWS.Region) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSRegion.name, mode)
+		}
+	case ScalerModeAwsEc2:
+		if len(scaler.AwsEc2.Profile) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2Profile.name, mode)
+		}
+		if len(scaler.AwsEc2.Region) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2Region.name, mode)
+		}
+		if len(scaler.AwsEc2.ASGTagKey) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2ASGTagKey.name, mode)
+		}
+	default:
+		return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaMode.name, mode)
+	}
+
+	if scaler.WatcherInterval <= time.Millisecond*500 {
+		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.name)
+	}
+
+	return nil
+}
 
 func (cfg *Config) fillCfgValues() error {
 	// Context: main
@@ -15,18 +86,7 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.Port = cfg.viper.GetInt(port.name)
 
 	// Context: Scaler
-	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
-
-	scaMode, err := strToScalerMode(scaNomadModeStr)
-	if err != nil {
-		return err
-	}
-	cfg.Scaler.Nomad.Mode = scaMode
-
-	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
-	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
-	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
-	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
+	cfg.fillScaler()
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
@@ -171,11 +231,20 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 
 	mode = strings.ToLower(mode)
-	if mode == string(ScalerModeJob) {
-		return ScalerModeJob, nil
+	if mode == "job" {
+		return ScalerModeNomadJob, nil
 	}
-	if mode == string(ScalerModeDataCenter) {
-		return ScalerModeDataCenter, nil
+	if mode == string(ScalerModeNomadJob) {
+		return ScalerModeNomadJob, nil
+	}
+	if mode == string(ScalerModeNomadDataCenter) {
+		return ScalerModeNomadDataCenter, nil
+	}
+	if mode == "dc" {
+		return ScalerModeNomadDataCenter, nil
+	}
+	if mode == string(ScalerModeAwsEc2) {
+		return ScalerModeAwsEc2, nil
 	}
 
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)

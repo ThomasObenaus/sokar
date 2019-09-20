@@ -1,11 +1,12 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rs/zerolog"
-	iface "github.com/thomasobenaus/sokar/nomadWorker/iface"
+	"github.com/thomasobenaus/sokar/aws"
+	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
 // Connector is a object that allows to interact with nomad worker
@@ -50,6 +51,9 @@ type Config struct {
 	// AWSRegion is an optional parameter and is regarded only if the parameter AWSProfile is empty.
 	// The AWSRegion has to specify the region in which the data-center to be scaled resides in.
 	AWSRegion string
+
+	// ASGTagKey is a optional parameter that can be used to define which tag is used to find the AWS ASG that should be scaled/ modified.
+	ASGTagKey string
 }
 
 // New creates a new nomad connector
@@ -59,12 +63,16 @@ func (cfg *Config) New() (*Connector, error) {
 		return nil, fmt.Errorf("The parameters AWSRegion and AWSProfile are empty")
 	}
 
+	if len(cfg.ASGTagKey) == 0 {
+		return nil, fmt.Errorf("The parameter ASGTagKey is empty")
+	}
+
 	nc := &Connector{
 		log:                        cfg.Logger,
-		tagKey:                     "datacenter",
-		autoScalingFactory:         &autoScalingFactoryImpl{},
-		fnCreateSession:            newAWSSession,
-		fnCreateSessionFromProfile: newAWSSessionFromProfile,
+		tagKey:                     cfg.ASGTagKey,
+		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
+		fnCreateSession:            aws.NewAWSSession,
+		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 		awsProfile:                 cfg.AWSProfile,
 		awsRegion:                  cfg.AWSRegion,
 	}

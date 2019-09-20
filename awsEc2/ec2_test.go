@@ -1,4 +1,4 @@
-package nomadWorker
+package awsEc2
 
 import (
 	"testing"
@@ -7,7 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	"github.com/thomasobenaus/sokar/aws"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/aws"
 )
 
 func Test_CreateSession(t *testing.T) {
@@ -27,7 +28,7 @@ func Test_CreateSession(t *testing.T) {
 	// success, profile
 	connector = Connector{
 		awsProfile:                 "xyz",
-		fnCreateSessionFromProfile: newAWSSessionFromProfile,
+		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 	}
 	sess, err = connector.createSession()
 	assert.NoError(t, err)
@@ -36,7 +37,7 @@ func Test_CreateSession(t *testing.T) {
 	// success, no profile
 	connector = Connector{
 		awsRegion:       "xyz",
-		fnCreateSession: newAWSSession,
+		fnCreateSession: aws.NewAWSSession,
 	}
 	sess, err = connector.createSession()
 	assert.NoError(t, err)
@@ -51,7 +52,8 @@ func TestSetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -70,7 +72,6 @@ func TestSetScalingObjectCount(t *testing.T) {
 	desiredCount := int64(123)
 	maxCount := int64(3)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription
@@ -98,7 +99,8 @@ func TestGetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -118,7 +120,6 @@ func TestGetScalingObjectCount(t *testing.T) {
 	desiredCount := int64(123)
 	maxCount := int64(3)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription
@@ -147,7 +148,8 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -175,7 +177,6 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	// no error, found, NOT dead
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription

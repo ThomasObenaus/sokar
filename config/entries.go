@@ -29,6 +29,57 @@ var port = configEntry{
 }
 
 // ###################### Context: scaler ####################################################
+// TODO: DEPRECATED, remove it
+var scaNomadMode = configEntry{
+	name:         "sca.nomad.mode",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "",
+	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
+}
+
+var scaMode = configEntry{
+	name:         "sca.mode",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "nomad-job",
+	usage:        "Scaling target mode is either job based, instance-based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
+}
+
+var scaWatcherInterval = configEntry{
+	name:         "sca.watcher-interval",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "5s",
+	usage:        "The interval the Scaler will check if the scalingObject count still matches the desired state.",
+}
+
+// ###################### Context: scaler AWS EC2 ############################################
+var scaAWSEC2Profile = configEntry{
+	name:         "sca.aws-ec2.profile",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "",
+	usage:        "This parameter represents the name of the aws profile that shall be used to access the resources to scale the data-center. This parameter is optional. If it is empty the instance where sokar runs on has to have enough permissions to access the resources (ASG) for scaling. In this case the AWSRegion parameter has to be specified as well.",
+}
+
+var scaAWSEC2Region = configEntry{
+	name:         "sca.aws-ec2.region",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "eu-central-1",
+	usage:        "This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in.",
+}
+
+var scaAWSEC2ASGTagKey = configEntry{
+	name:         "sca.aws-ec2.asg-tag-key",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "scale-object",
+	usage:        "This parameter specifies which tag on an AWS AutoScalingGroup shall be used to find the ASG that should be automatically scaled.",
+}
+
+// ###################### Context: scaler Nomad ###############################################
 var scaNomadDataCenterAWSProfile = configEntry{
 	name:         "sca.nomad.dc-aws.profile",
 	bindEnv:      true,
@@ -45,28 +96,12 @@ var scaNomadDataCenterAWSRegion = configEntry{
 	usage:        "This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in.",
 }
 
-var scaNomadMode = configEntry{
-	name:         "sca.nomad.mode",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "job",
-	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
-}
-
 var scaNomadModeServerAddress = configEntry{
 	name:         "sca.nomad.server-address",
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: "",
 	usage:        "Specifies the address of the nomad server.",
-}
-
-var scaWatcherInterval = configEntry{
-	name:         "sca.watcher-interval",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "5s",
-	usage:        "The interval the Scaler will check if the scalingObject count still matches the desired state.",
 }
 
 // ###################### Context: scale-object ####################################################
@@ -252,11 +287,15 @@ var configEntries = []configEntry{
 	saaCleanupCylce,
 	saaScaleAlerts,
 	saaAlertExpirationTime,
+	scaMode,
+	scaWatcherInterval,
+	scaAWSEC2Profile,
+	scaAWSEC2Region,
+	scaAWSEC2ASGTagKey,
 	scaNomadDataCenterAWSProfile,
 	scaNomadDataCenterAWSRegion,
 	scaNomadMode,
 	scaNomadModeServerAddress,
-	scaWatcherInterval,
 	capConstantModeEnable,
 	capConstantModeOffset,
 	capLinearModeEnable,

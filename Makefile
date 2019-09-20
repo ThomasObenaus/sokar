@@ -23,7 +23,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./nomadWorker ./ -covermode=count -coverprofile=coverage.out
+	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
@@ -51,8 +51,8 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
-	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go 
-	@mockgen -source=nomadWorker/iface/autoscaling_IF.go -destination test/nomadWorker/mock_autoscaling_IF.go 
+	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go
+	@mockgen -source=aws/iface/autoscaling_IF.go -destination test/aws/mock_autoscaling_IF.go 
 	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
@@ -65,10 +65,13 @@ gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defi
 	@echo "--> generate Metrics.md"
 	@python3 gen_metrics_doc.py > Metrics.md
 
+run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
+	@echo "--> Run $(sokar_file_name)"
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.mode="aws-ec2"
 
 run.dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.nomad.mode="dc"
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
 
 run.job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"

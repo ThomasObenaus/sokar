@@ -11,10 +11,12 @@ import (
 type ScalerMode string
 
 const (
-	// ScalerModeJob that the number of allocations of a job will be scaled
-	ScalerModeJob ScalerMode = "job"
-	// ScalerModeDataCenter that the number of instances/ workers of a data-center will be scaled
-	ScalerModeDataCenter ScalerMode = "dc"
+	// ScalerModeNomadJob that the number of allocations of a job will be scaled
+	ScalerModeNomadJob ScalerMode = "nomad-job"
+	// ScalerModeNomadDataCenter that the number of instances/ workers of a data-center will be scaled
+	ScalerModeNomadDataCenter ScalerMode = "nomad-dc"
+	// ScalerModeAwsEc2 that the number of instances/ workers of a AWS EC2 ASG will be scaled
+	ScalerModeAwsEc2 ScalerMode = "aws-ec2"
 )
 
 // Config is a structure containing the configuration for sokar
@@ -35,21 +37,30 @@ type Config struct {
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
+	Mode            ScalerMode    `json:"mode,omitempty"`
 	Nomad           SCANomad      `json:"nomad,omitempty"`
+	AwsEc2          SCAAwsEc2     `json:"aws_ec2,omitempty"`
 	WatcherInterval time.Duration `json:"watcher_interval,omitempty"`
+}
+
+// SCAAwsEc2 represents the parameters for a AWS EC2 based scaler.
+type SCAAwsEc2 struct {
+	Profile   string `json:"profile,omitempty"`
+	Region    string `json:"region,omitempty"`
+	ASGTagKey string `json:"asg_tag_key,omitempty"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
 type SCANomad struct {
-	Mode          ScalerMode            `json:"mode,omitempty"`
 	ServerAddr    string                `json:"server_addr,omitempty"`
 	DataCenterAWS SCANomadDataCenterAWS `json:"datacenter_aws,omitempty"`
 }
 
 // SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
 type SCANomadDataCenterAWS struct {
-	Profile string `json:"profile,omitempty"`
-	Region  string `json:"region,omitempty"`
+	Profile   string `json:"profile,omitempty"`
+	Region    string `json:"region,omitempty"`
+	ASGTagKey string `json:"asg_tag_key,omitempty"`
 }
 
 // ScaleObject represents the definition for the object that should be scaled.
@@ -115,8 +126,10 @@ func NewDefaultConfig() Config {
 		Logging:     Logging{Structured: false, UxTimestamp: false},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
-			Nomad:           SCANomad{Mode: ScalerModeJob},
+			Mode:            ScalerModeNomadJob,
+			Nomad:           SCANomad{},
 			WatcherInterval: time.Second * 5,
+			AwsEc2:          SCAAwsEc2{ASGTagKey: "scale-object"},
 		},
 		ScaleAlertAggregator: ScaleAlertAggregator{
 			EvaluationCycle:        time.Second * 1,

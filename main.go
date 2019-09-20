@@ -10,12 +10,12 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
+	"github.com/thomasobenaus/sokar/awsEc2"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
-	"github.com/thomasobenaus/sokar/nomadWorker"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -229,13 +229,20 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 
 	var scalingTarget scaler.ScalingTarget
 
-	if cfg.Nomad.Mode == config.ScalerModeDataCenter {
-		cfg := nomadWorker.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile}
+	if cfg.Mode == config.ScalerModeNomadDataCenter {
+		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile, ASGTagKey: "datacenter"}
 		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
 		}
 		scalingTarget = nomadWorker
+	} else if cfg.Mode == config.ScalerModeAwsEc2 {
+		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.aws-ec2"), AWSRegion: cfg.AwsEc2.Region, AWSProfile: cfg.AwsEc2.Profile, ASGTagKey: cfg.AwsEc2.ASGTagKey}
+		awsEc2, err := cfg.New()
+		if err != nil {
+			return nil, fmt.Errorf("Failed setting up aws-ec2 connector: %s", err)
+		}
+		scalingTarget = awsEc2
 	} else {
 		nomadConfig := nomad.NewDefaultConfig(cfg.Nomad.ServerAddr)
 		nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
