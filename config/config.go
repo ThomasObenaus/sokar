@@ -45,8 +45,9 @@ type Scaler struct {
 
 // SCAAwsEc2 represents the parameters for a AWS EC2 based scaler.
 type SCAAwsEc2 struct {
-	Profile string `json:"profile,omitempty"`
-	Region  string `json:"region,omitempty"`
+	Profile   string `json:"profile,omitempty"`
+	Region    string `json:"region,omitempty"`
+	ASGTagKey string `json:"asg_tag_key,omitempty"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
@@ -57,8 +58,9 @@ type SCANomad struct {
 
 // SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
 type SCANomadDataCenterAWS struct {
-	Profile string `json:"profile,omitempty"`
-	Region  string `json:"region,omitempty"`
+	Profile   string `json:"profile,omitempty"`
+	Region    string `json:"region,omitempty"`
+	ASGTagKey string `json:"asg_tag_key,omitempty"`
 }
 
 // ScaleObject represents the definition for the object that should be scaled.

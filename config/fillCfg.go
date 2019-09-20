@@ -33,7 +33,7 @@ func (cfg *Config) fillScaler() error {
 	// Context: Scaler - AWS EC2
 	cfg.Scaler.AwsEc2.Profile = cfg.viper.GetString(scaAWSEC2Profile.name)
 	cfg.Scaler.AwsEc2.Region = cfg.viper.GetString(scaAWSEC2Region.name)
-
+	cfg.Scaler.AwsEc2.ASGTagKey = cfg.viper.GetString(scaAWSEC2ASGTagKey.name)
 	// Context: Scaler - Nomad
 	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
 	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
@@ -65,6 +65,9 @@ func validateScaler(scaler Scaler) error {
 		}
 		if len(scaler.AwsEc2.Region) == 0 {
 			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2Region.name, mode)
+		}
+		if len(scaler.AwsEc2.ASGTagKey) == 0 {
+			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2ASGTagKey.name, mode)
 		}
 	default:
 		return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaMode.name, mode)

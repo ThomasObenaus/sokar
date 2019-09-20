@@ -93,6 +93,17 @@ The order they are applied is:
 | flag    | --sca.aws-ec2.region                                                                                                                                                          |
 | env     | SK_SCA_AWS_EC2_REGION                                                                                                                                                         |
 
+#### ASGTagKey
+
+|         |                                                                                                                                                                                                                                                                                                                                                    |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name    | asg_tag_key                                                                                                                                                                                                                                                                                                                                            |
+| usage   | This parameter specifies which tag on an AWS AutoScalingGroup shall be used to find the ASG that should be automatically scaled. |
+| type    | string                                                                                                                                                                                                                                                                                                                                             |
+| default | "scaling-object"                                                                                                                                                                                                                                                                                                                                                 |
+| flag    | --sca.aws-ec2.asg-tag-key                                                                                                                                                                                                                                                                                                                         |
+| env     | SK_SCA_AWS_EC2_ASG_TAG_KEY                                                                                                                                                                                                                                                                                                                        |
+
 ### Nomad
 
 - This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).

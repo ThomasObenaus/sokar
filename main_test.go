@@ -145,9 +145,10 @@ func Test_SetupScalingTarget(t *testing.T) {
 	assert.NotNil(t, scalingTarget)
 
 	cfg = config.Scaler{
-		Mode: config.ScalerModeAwsEc2,
+		Mode:   config.ScalerModeAwsEc2,
+		AwsEc2: config.SCAAwsEc2{Region: "eu-central-1", Profile: "test-profile", ASGTagKey: "key"},
 	}
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 	scalingTarget, err = setupScalingTarget(cfg, logF)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }

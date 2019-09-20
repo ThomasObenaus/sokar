@@ -36,6 +36,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--sca.nomad.dc-aws.profile=profile-test",
 		"--sca.aws-ec2.profile=profile-test",
 		"--sca.aws-ec2.region=region-test",
+		"--sca.aws-ec2.asg-tag-key=asg-tag-key",
 		"--sca.watcher-interval=50s",
 		"--cap.constant-mode.enable=false",
 		"--cap.constant-mode.offset=106",
@@ -51,6 +52,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 	assert.Equal(t, "profile-test", cfg.Scaler.AwsEc2.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.AwsEc2.Region)
+	assert.Equal(t, "asg-tag-key", cfg.Scaler.AwsEc2.ASGTagKey)
 	assert.Equal(t, time.Duration(time.Second*50), cfg.Scaler.WatcherInterval)
 	assert.True(t, cfg.DryRunMode)
 	assert.Equal(t, 1000, cfg.Port)
@@ -93,6 +95,10 @@ func Test_ValidateScaler(t *testing.T) {
 	assert.Error(t, err)
 
 	sca = Scaler{Mode: ScalerModeAwsEc2, AwsEc2: SCAAwsEc2{Profile: "profile"}}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeAwsEc2, AwsEc2: SCAAwsEc2{Profile: "profile", Region: "test-region"}}
 	err = validateScaler(sca)
 	assert.Error(t, err)
 

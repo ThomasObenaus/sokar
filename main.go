@@ -230,14 +230,14 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 	var scalingTarget scaler.ScalingTarget
 
 	if cfg.Mode == config.ScalerModeNomadDataCenter {
-		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile}
+		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile, ASGTagKey: "datacenter"}
 		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
 		}
 		scalingTarget = nomadWorker
 	} else if cfg.Mode == config.ScalerModeAwsEc2 {
-		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.aws-ec2"), AWSRegion: cfg.AwsEc2.Region, AWSProfile: cfg.AwsEc2.Profile}
+		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.aws-ec2"), AWSRegion: cfg.AwsEc2.Region, AWSProfile: cfg.AwsEc2.Profile, ASGTagKey: cfg.AwsEc2.ASGTagKey}
 		awsEc2, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up aws-ec2 connector: %s", err)

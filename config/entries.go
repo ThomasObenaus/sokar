@@ -71,6 +71,14 @@ var scaAWSEC2Region = configEntry{
 	usage:        "This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in.",
 }
 
+var scaAWSEC2ASGTagKey = configEntry{
+	name:         "sca.aws-ec2.asg-tag-key",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: "scaling-object",
+	usage:        "This parameter specifies which tag on an AWS AutoScalingGroup shall be used to find the ASG that should be automatically scaled.",
+}
+
 // ###################### Context: scaler Nomad ###############################################
 var scaNomadDataCenterAWSProfile = configEntry{
 	name:         "sca.nomad.dc-aws.profile",
@@ -283,6 +291,7 @@ var configEntries = []configEntry{
 	scaWatcherInterval,
 	scaAWSEC2Profile,
 	scaAWSEC2Region,
+	scaAWSEC2ASGTagKey,
 	scaNomadDataCenterAWSProfile,
 	scaNomadDataCenterAWSRegion,
 	scaNomadMode,

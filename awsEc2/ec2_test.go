@@ -52,7 +52,8 @@ func TestSetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -71,7 +72,6 @@ func TestSetScalingObjectCount(t *testing.T) {
 	desiredCount := int64(123)
 	maxCount := int64(3)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription
@@ -99,7 +99,8 @@ func TestGetScalingObjectCount(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -119,7 +120,6 @@ func TestGetScalingObjectCount(t *testing.T) {
 	desiredCount := int64(123)
 	maxCount := int64(3)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription
@@ -148,7 +148,8 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz"}
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
 	connector, err := cfg.New()
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -176,7 +177,6 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	// no error, found, NOT dead
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	autoScalingGroups := make([]*autoscaling.Group, 0)
-	key := "datacenter"
 	tagVal := "private-services"
 	asgName := "my-asg"
 	var tags []*autoscaling.TagDescription
