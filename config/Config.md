@@ -109,7 +109,7 @@ The order they are applied is:
 - This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
 
 #### [DEPRECATED] Mode
-* The parameter `sca.nomad.mode` will be replaced by `sca.mode`
+- The parameter `sca.nomad.mode` will be replaced by `sca.mode`
 
 |         |                                                                                                                                                                                                                          |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
