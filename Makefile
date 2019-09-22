@@ -69,11 +69,11 @@ run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 	@echo "--> Run $(sokar_file_name)"
 	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.mode="aws-ec2"
 
-run.dc: sep build ## Builds + runs sokar locally in data-center mode.
+run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
 	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
 
-run.job: sep build ## Builds + runs sokar locally in job mode.
+run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"
 	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server)
 

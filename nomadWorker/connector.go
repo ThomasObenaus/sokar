@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/aws"
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
@@ -59,24 +58,26 @@ type Config struct {
 // New creates a new nomad connector
 func (cfg *Config) New() (*Connector, error) {
 
-	if len(cfg.AWSProfile) == 0 && len(cfg.AWSRegion) == 0 {
-		return nil, fmt.Errorf("The parameters AWSRegion and AWSProfile are empty")
-	}
+	return nil, fmt.Errorf("Not implemented yet")
 
-	if len(cfg.ASGTagKey) == 0 {
-		return nil, fmt.Errorf("The parameter ASGTagKey is empty")
-	}
-
-	nc := &Connector{
-		log:                        cfg.Logger,
-		tagKey:                     cfg.ASGTagKey,
-		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
-		fnCreateSession:            aws.NewAWSSession,
-		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
-		awsProfile:                 cfg.AWSProfile,
-		awsRegion:                  cfg.AWSRegion,
-	}
-
-	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
-	return nc, nil
+	//	if len(cfg.AWSProfile) == 0 && len(cfg.AWSRegion) == 0 {
+	//		return nil, fmt.Errorf("The parameters AWSRegion and AWSProfile are empty")
+	//	}
+	//
+	//	if len(cfg.ASGTagKey) == 0 {
+	//		return nil, fmt.Errorf("The parameter ASGTagKey is empty")
+	//	}
+	//
+	//	nc := &Connector{
+	//		log:                        cfg.Logger,
+	//		tagKey:                     cfg.ASGTagKey,
+	//		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
+	//		fnCreateSession:            aws.NewAWSSession,
+	//		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
+	//		awsProfile:                 cfg.AWSProfile,
+	//		awsRegion:                  cfg.AWSRegion,
+	//	}
+	//
+	//	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
+	//	return nc, nil
 }
