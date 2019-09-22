@@ -13,7 +13,7 @@ func (c *Connector) AdjustScalingObjectCount(datacenter string, from uint, to ui
 	if from < to { // upscale
 		return c.upscale(datacenter, to)
 	} else if from > to { // downscale
-		return fmt.Errorf("Downscaling is not yet implemented")
+		return c.downscale(datacenter, to)
 	}
 
 	c.log.Info().Msgf("No scale for datacenter %s needed. Current scale=%d equals desired scale=%d.", datacenter, from, to)
