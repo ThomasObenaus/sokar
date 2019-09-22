@@ -34,13 +34,17 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 
 	// 3. Drain the node [needs node id]
 	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
-	if err := drainNode(c.nodesIF, "346ff231-957d-a222-c781-0b247b8350f5", c.nodeDrainDeadline); err != nil {
+	_, err = drainNode(c.nodesIF, candidate.nodeID, c.nodeDrainDeadline)
+	if err != nil {
 		return err
 	}
 	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 4. Terminate the node using the AWS ASG [needs instance id]
 
+	if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -82,14 +86,46 @@ func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
 	}, nil
 }
 
-func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) error {
+func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) (nodeModifyIndex uint64, err error) {
 
 	drainSpec := nomadApi.DrainSpec{
 		Deadline:         deadline,
 		IgnoreSystemJobs: false,
 	}
 
-	_, err := nodesIF.UpdateDrain(nodeID, &drainSpec, false, nil)
+	resp, err := nodesIF.UpdateDrain(nodeID, &drainSpec, false, nil)
 
-	return err
+	//deadl := time.Now().Add(time.Second * -1)
+	//ctx := myCtx{
+	//	dl:   deadl,
+	//	done: make(chan struct{}),
+	//}
+	//fmt.Printf("DEDL: %v\n", deadl)
+	//events := nodesIF.MonitorDrain(ctx, nodeID, resp.NodeModifyIndex, false)
+	//
+	//fmt.Println("WAIT....")
+	//for ev := range events {
+	//	fmt.Println(ev)
+	//}
+	//
+	//fmt.Println("WAIT....done")
+	return resp.NodeModifyIndex, err
+}
+
+type myCtx struct {
+	done <-chan struct{}
+	dl   time.Time
+}
+
+func (ctx myCtx) Deadline() (deadline time.Time, ok bool) {
+	return ctx.dl, false
+}
+func (ctx myCtx) Done() <-chan struct{} {
+	return ctx.done
+}
+func (ctx myCtx) Err() error {
+	return fmt.Errorf("slödkjlsdfk")
+}
+func (ctx myCtx) Value(key interface{}) interface{} {
+	return nil
 }

@@ -5,6 +5,7 @@
 package mock_nomadWorker
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/hashicorp/nomad/api"
 	reflect "reflect"
@@ -71,4 +72,16 @@ func (m *MockNodes) UpdateDrain(nodeID string, spec *api.DrainSpec, markEligible
 // UpdateDrain indicates an expected call of UpdateDrain
 func (mr *MockNodesMockRecorder) UpdateDrain(nodeID, spec, markEligible, q interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDrain", reflect.TypeOf((*MockNodes)(nil).UpdateDrain), nodeID, spec, markEligible, q)
+}
+
+// MonitorDrain mocks base method
+func (m *MockNodes) MonitorDrain(ctx context.Context, nodeID string, index uint64, ignoreSys bool) <-chan *api.MonitorMessage {
+	ret := m.ctrl.Call(m, "MonitorDrain", ctx, nodeID, index, ignoreSys)
+	ret0, _ := ret[0].(<-chan *api.MonitorMessage)
+	return ret0
+}
+
+// MonitorDrain indicates an expected call of MonitorDrain
+func (mr *MockNodesMockRecorder) MonitorDrain(ctx, nodeID, index, ignoreSys interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MonitorDrain", reflect.TypeOf((*MockNodes)(nil).MonitorDrain), ctx, nodeID, index, ignoreSys)
 }

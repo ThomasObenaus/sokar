@@ -97,8 +97,11 @@ func TestDrainNode(t *testing.T) {
 	defer mockCtrl.Finish()
 	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
 
+	nodeDrainResp := nomadApi.NodeDrainUpdateResponse{NodeModifyIndex: 1234}
+
 	nodeID := "1234"
-	nodesIF.EXPECT().UpdateDrain(nodeID, gomock.Any(), false, nil).Return(nil, nil)
-	err := drainNode(nodesIF, nodeID, time.Second*20)
+	nodesIF.EXPECT().UpdateDrain(nodeID, gomock.Any(), false, nil).Return(&nodeDrainResp, nil)
+	idx, err := drainNode(nodesIF, nodeID, time.Second*20)
 	assert.NoError(t, err)
+	assert.Equal(t, uint64(1234), idx)
 }
