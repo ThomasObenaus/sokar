@@ -81,13 +81,27 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
 }
 
-func Test_ValidateScaler(t *testing.T) {
+func Test_ValidateScaler_NomadJob(t *testing.T) {
 	sca := Scaler{}
 	err := validateScaler(sca)
 	assert.Error(t, err)
 
 	sca = Scaler{Mode: ScalerModeNomadJob}
 	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Millisecond * 499}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Second * 5}
+	err = validateScaler(sca)
+	assert.NoError(t, err)
+}
+
+func Test_ValidateScaler_AwsEc2(t *testing.T) {
+	sca := Scaler{}
+	err := validateScaler(sca)
 	assert.Error(t, err)
 
 	sca = Scaler{Mode: ScalerModeAwsEc2}
@@ -102,6 +116,20 @@ func Test_ValidateScaler(t *testing.T) {
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
+	sca = Scaler{Mode: ScalerModeAwsEc2, AwsEc2: SCAAwsEc2{Profile: "profile", ASGTagKey: "datacenter"}}
+	err = validateScaler(sca)
+	assert.Error(t, err)
+
+	sca = Scaler{Mode: ScalerModeAwsEc2, AwsEc2: SCAAwsEc2{Profile: "profile", ASGTagKey: "datacenter"}, WatcherInterval: time.Second * 2}
+	err = validateScaler(sca)
+	assert.NoError(t, err)
+}
+
+func Test_ValidateScaler_NomadDatacenter(t *testing.T) {
+	sca := Scaler{}
+	err := validateScaler(sca)
+	assert.Error(t, err)
+
 	sca = Scaler{Mode: ScalerModeNomadDataCenter}
 	err = validateScaler(sca)
 	assert.Error(t, err)
@@ -114,11 +142,7 @@ func Test_ValidateScaler(t *testing.T) {
 	err = validateScaler(sca)
 	assert.Error(t, err)
 
-	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Millisecond * 499}
-	err = validateScaler(sca)
-	assert.Error(t, err)
-
-	sca = Scaler{Mode: ScalerModeNomadJob, Nomad: SCANomad{ServerAddr: "http://test.com"}, WatcherInterval: time.Second * 5}
+	sca = Scaler{Mode: ScalerModeNomadDataCenter, WatcherInterval: time.Second * 2, Nomad: SCANomad{ServerAddr: "http://test.com", DataCenterAWS: SCANomadDataCenterAWS{Profile: "profile"}}}
 	err = validateScaler(sca)
 	assert.NoError(t, err)
 }
