@@ -2,7 +2,6 @@ package nomadWorker
 
 import (
 	"fmt"
-	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 )
@@ -24,21 +23,22 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 		return err
 	}
 
-	c.log.Info().Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 2. Make the node ineligible [needs node id]
 	//if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
 	//	return err
 	//}
-	c.log.Info().Msgf("2. [Ineligible] Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Ineligible] Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 3. Drain the node [needs node id]
-	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
-	_, err = drainNode(c.nodesIF, candidate.nodeID, c.nodeDrainDeadline)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	nodeModifyIndex, err := drainNode(c.nodesIF, candidate.nodeID, c.nodeDrainDeadline)
 	if err != nil {
 		return err
 	}
-	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	monitorDrainNode(c.nodesIF, candidate.nodeID, nodeModifyIndex, c.log)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 4. Terminate the node using the AWS ASG [needs instance id]
 
@@ -84,48 +84,4 @@ func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
 		nodeID:     node.ID,
 		datacenter: node.Datacenter,
 	}, nil
-}
-
-func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) (nodeModifyIndex uint64, err error) {
-
-	drainSpec := nomadApi.DrainSpec{
-		Deadline:         deadline,
-		IgnoreSystemJobs: false,
-	}
-
-	resp, err := nodesIF.UpdateDrain(nodeID, &drainSpec, false, nil)
-
-	//deadl := time.Now().Add(time.Second * -1)
-	//ctx := myCtx{
-	//	dl:   deadl,
-	//	done: make(chan struct{}),
-	//}
-	//fmt.Printf("DEDL: %v\n", deadl)
-	//events := nodesIF.MonitorDrain(ctx, nodeID, resp.NodeModifyIndex, false)
-	//
-	//fmt.Println("WAIT....")
-	//for ev := range events {
-	//	fmt.Println(ev)
-	//}
-	//
-	//fmt.Println("WAIT....done")
-	return resp.NodeModifyIndex, err
-}
-
-type myCtx struct {
-	done <-chan struct{}
-	dl   time.Time
-}
-
-func (ctx myCtx) Deadline() (deadline time.Time, ok bool) {
-	return ctx.dl, false
-}
-func (ctx myCtx) Done() <-chan struct{} {
-	return ctx.done
-}
-func (ctx myCtx) Err() error {
-	return fmt.Errorf("slödkjlsdfk")
-}
-func (ctx myCtx) Value(key interface{}) interface{} {
-	return nil
 }
