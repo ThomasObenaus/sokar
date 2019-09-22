@@ -44,7 +44,7 @@ func Test_CreateSession(t *testing.T) {
 	assert.NotNil(t, sess)
 }
 
-func TestSetScalingObjectCount(t *testing.T) {
+func TestAdjustScalingObjectCount(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -63,7 +63,7 @@ func TestSetScalingObjectCount(t *testing.T) {
 	// error, no numbers
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	err = connector.SetScalingObjectCount("invalid", 5)
+	err = connector.AdjustScalingObjectCount("invalid", 4, 5)
 	assert.Error(t, err)
 
 	// no error
@@ -88,7 +88,7 @@ func TestSetScalingObjectCount(t *testing.T) {
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
 	asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
-	err = connector.SetScalingObjectCount(tagVal, 5)
+	err = connector.AdjustScalingObjectCount(tagVal, 4, 5)
 	assert.NoError(t, err)
 }
 

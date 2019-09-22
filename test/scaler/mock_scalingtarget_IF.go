@@ -32,16 +32,16 @@ func (m *MockScalingTarget) EXPECT() *MockScalingTargetMockRecorder {
 	return m.recorder
 }
 
-// SetScalingObjectCount mocks base method
-func (m *MockScalingTarget) SetScalingObjectCount(scalingObject string, count uint) error {
-	ret := m.ctrl.Call(m, "SetScalingObjectCount", scalingObject, count)
+// AdjustScalingObjectCount mocks base method
+func (m *MockScalingTarget) AdjustScalingObjectCount(scalingObject string, from, to uint) error {
+	ret := m.ctrl.Call(m, "AdjustScalingObjectCount", scalingObject, from, to)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SetScalingObjectCount indicates an expected call of SetScalingObjectCount
-func (mr *MockScalingTargetMockRecorder) SetScalingObjectCount(scalingObject, count interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).SetScalingObjectCount), scalingObject, count)
+// AdjustScalingObjectCount indicates an expected call of AdjustScalingObjectCount
+func (mr *MockScalingTargetMockRecorder) AdjustScalingObjectCount(scalingObject, from, to interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdjustScalingObjectCount", reflect.TypeOf((*MockScalingTarget)(nil).AdjustScalingObjectCount), scalingObject, from, to)
 }
 
 // GetScalingObjectCount mocks base method

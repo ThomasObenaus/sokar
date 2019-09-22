@@ -8,9 +8,8 @@ import (
 	"github.com/thomasobenaus/sokar/aws"
 )
 
-// SetScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
-func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
-
+// AdjustScalingObjectCount will scale the AutoScalingGroup to the desired count (amount of instances)
+func (c *Connector) AdjustScalingObjectCount(autoScalingGroup string, from uint, to uint) error {
 	sess, err := c.createSession()
 	if err != nil {
 		return err
@@ -20,7 +19,7 @@ func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
 	asgQuery := aws.AutoScalingGroupQuery{
 		AsgIF:    autoScalingIF,
 		TagKey:   c.tagKey,
-		TagValue: datacenter,
+		TagValue: autoScalingGroup,
 	}
 
 	asgName, err := asgQuery.GetAutoScalingGroupName()
@@ -28,7 +27,7 @@ func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
 		return err
 	}
 
-	size := int64(count)
+	size := int64(to)
 
 	input := &autoscaling.UpdateAutoScalingGroupInput{
 		AutoScalingGroupName: &asgName,
@@ -42,7 +41,7 @@ func (c *Connector) SetScalingObjectCount(datacenter string, count uint) error {
 		return err
 	}
 
-	c.log.Info().Msgf("Adjusted min=max=desiredCapacity of %s to %d.", asgName, size)
+	c.log.Info().Msgf("Adjusted min=max=desiredCapacity of %s from %d to %d.", asgName, from, size)
 	return nil
 }
 

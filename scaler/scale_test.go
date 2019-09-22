@@ -55,7 +55,7 @@ func TestScale_Up(t *testing.T) {
 
 	// scale up
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(2)).Return(nil)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2)).Return(nil)
 	result := scaler.scale(2, 0, false)
 	assert.Equal(t, uint(2), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -65,7 +65,7 @@ func TestScale_Up(t *testing.T) {
 	polViolatedCounter.EXPECT().Inc()
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("max").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(5)).Return(nil)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(5)).Return(nil)
 	result = scaler.scale(6, 0, false)
 	assert.Equal(t, uint(5), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -90,7 +90,7 @@ func TestScale_Down(t *testing.T) {
 
 	// scale down
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(4), uint(1)).Return(nil)
 	result := scaler.scale(1, 4, false)
 	assert.Equal(t, uint(1), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
@@ -100,7 +100,7 @@ func TestScale_Down(t *testing.T) {
 	polViolatedCounter.EXPECT().Inc()
 	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("min").Return(polViolatedCounter)
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	scaTgt.EXPECT().SetScalingObjectCount(sObjName, uint(1)).Return(nil)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(2), uint(1)).Return(nil)
 	result = scaler.scale(0, 2, false)
 	assert.Equal(t, uint(1), scaler.desiredScale.value)
 	assert.NotEqual(t, scaleFailed, result.state)
