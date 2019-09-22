@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/aws"
-	mock_nomadWorker "github.com/thomasobenaus/sokar/test/aws"
+	mock_aws "github.com/thomasobenaus/sokar/test/aws"
 )
 
 func Test_CreateSession(t *testing.T) {
@@ -49,8 +49,8 @@ func TestSetScalingObjectCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
-	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
 	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
@@ -96,8 +96,8 @@ func TestGetScalingObjectCount(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
-	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
 	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
@@ -145,8 +145,8 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	asgFactory := mock_nomadWorker.NewMockAutoScalingFactory(mockCtrl)
-	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
 	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
