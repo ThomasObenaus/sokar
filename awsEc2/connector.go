@@ -59,6 +59,8 @@ type Config struct {
 // New creates a new nomad connector
 func (cfg *Config) New() (*Connector, error) {
 
+	cfg.Logger.Info().Msg("Setting up aws Ec2 connector")
+
 	if len(cfg.AWSProfile) == 0 && len(cfg.AWSRegion) == 0 {
 		return nil, fmt.Errorf("The parameters AWSRegion and AWSProfile are empty")
 	}
@@ -77,6 +79,10 @@ func (cfg *Config) New() (*Connector, error) {
 		awsRegion:                  cfg.AWSRegion,
 	}
 
-	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
+	cfg.Logger.Info().Msg("Setting up aws Ec2 connector ... done")
 	return nc, nil
+}
+
+func (c *Connector) String() string {
+	return "AWS-EC2 (AWS AutoScalingGroup, EC2 instances)"
 }

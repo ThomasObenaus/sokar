@@ -81,3 +81,7 @@ func (cfg *Config) New() (*Connector, error) {
 	//	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
 	//	return nc, nil
 }
+
+func (c *Connector) String() string {
+	return "Nomad-DC (Nomad DataCenter, on AWS)"
+}

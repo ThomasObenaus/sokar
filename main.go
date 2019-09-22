@@ -58,12 +58,14 @@ func main() {
 	logger.Info().Msg("3. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
-	logger.Info().Msg("4. Setup: Scaler")
+	logger.Info().Msg("4. Setup: Scaling Target")
 	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
+	logger.Info().Msgf("Scaling Target: %s", scalingTarget.String())
 
+	logger.Info().Msg("5. Setup: Scaler")
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory)).(*scaler.Scaler)
 
-	logger.Info().Msg("5. Setup: CapacityPlanner")
+	logger.Info().Msg("6. Setup: CapacityPlanner")
 
 	var constantMode *capacityPlanner.ConstantMode
 	var linearMode *capacityPlanner.LinearMode
@@ -82,7 +84,7 @@ func main() {
 	}
 	capaPlanner := helper.Must(capaCfg.New()).(*capacityPlanner.CapacityPlanner)
 
-	logger.Info().Msg("6. Setup: Sokar")
+	logger.Info().Msg("7. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
 	// Register metrics handler

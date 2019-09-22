@@ -6,4 +6,5 @@ type ScalingTarget interface {
 	SetScalingObjectCount(scalingObject string, count uint) error
 	GetScalingObjectCount(scalingObject string) (uint, error)
 	IsScalingObjectDead(scalingObject string) (bool, error)
+	String() string
 }

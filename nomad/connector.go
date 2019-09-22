@@ -76,3 +76,7 @@ func (cfg *Config) New() (*Connector, error) {
 	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ... done")
 	return nc, nil
 }
+
+func (c *Connector) String() string {
+	return "Nomad-Job"
+}
