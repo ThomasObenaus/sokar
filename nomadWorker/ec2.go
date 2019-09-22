@@ -4,44 +4,19 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/thomasobenaus/sokar/aws"
 )
 
 // AdjustScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
 func (c *Connector) AdjustScalingObjectCount(datacenter string, from uint, to uint) error {
-	sess, err := c.createSession()
-	if err != nil {
-		return err
-	}
-	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
 
-	asgQuery := aws.AutoScalingGroupQuery{
-		AsgIF:    autoScalingIF,
-		TagKey:   c.tagKey,
-		TagValue: datacenter,
+	if from < to { // upscale
+		return c.upscale(datacenter, to)
+	} else if from > to { // downscale
+		return fmt.Errorf("Downscaling is not yet implemented")
 	}
 
-	asgName, err := asgQuery.GetAutoScalingGroupName()
-	if err != nil {
-		return err
-	}
-
-	size := int64(to)
-
-	input := &autoscaling.UpdateAutoScalingGroupInput{
-		AutoScalingGroupName: &asgName,
-		MaxSize:              &size,
-		MinSize:              &size,
-		DesiredCapacity:      &size,
-	}
-
-	_, err = autoScalingIF.UpdateAutoScalingGroup(input)
-	if err != nil {
-		return err
-	}
-
-	c.log.Info().Msgf("Adjusted min=max=desiredCapacity of %s from %d to %d.", asgName, from, size)
+	c.log.Info().Msgf("No scale for datacenter %s needed. Current scale=%d equals desired scale=%d.", datacenter, from, to)
 	return nil
 }
 

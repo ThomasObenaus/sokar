@@ -44,7 +44,28 @@ func Test_CreateSession(t *testing.T) {
 	assert.NotNil(t, sess)
 }
 
-func TestAdjustScalingObjectCount(t *testing.T) {
+func TestAdjustScalingObjectCount_Error(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
+
+	cfg := Config{AWSProfile: "xyz"}
+	connector, err := cfg.New()
+	require.NotNil(t, connector)
+	require.NoError(t, err)
+
+	connector.autoScalingFactory = asgFactory
+
+	// error, no numbers
+	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
+	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
+	err = connector.AdjustScalingObjectCount("invalid", 4, 5)
+	assert.Error(t, err)
+}
+func TestAdjustScalingObjectCount_Upscale(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -60,13 +81,7 @@ func TestAdjustScalingObjectCount(t *testing.T) {
 
 	connector.autoScalingFactory = asgFactory
 
-	// error, no numbers
-	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
-	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	err = connector.AdjustScalingObjectCount("invalid", 4, 5)
-	assert.Error(t, err)
-
-	// no error
+	// no error - UpScale
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	minCount := int64(1)
 	desiredCount := int64(123)
@@ -89,6 +104,85 @@ func TestAdjustScalingObjectCount(t *testing.T) {
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
 	asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
 	err = connector.AdjustScalingObjectCount(tagVal, 4, 5)
+	assert.NoError(t, err)
+}
+
+func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	//asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
+
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz"}
+	connector, err := cfg.New()
+	require.NotNil(t, connector)
+	require.NoError(t, err)
+
+	connector.autoScalingFactory = asgFactory
+
+	// no error - DownScale
+	//asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
+	minCount := int64(1)
+	desiredCount := int64(123)
+	maxCount := int64(3)
+	autoScalingGroups := make([]*autoscaling.Group, 0)
+	tagVal := "private-services"
+	asgName := "my-asg"
+	var tags []*autoscaling.TagDescription
+	td := autoscaling.TagDescription{Key: &key, Value: &tagVal}
+	tags = append(tags, &td)
+	asgIn := autoscaling.Group{
+		Tags:                 tags,
+		AutoScalingGroupName: &asgName,
+		MinSize:              &minCount,
+		MaxSize:              &maxCount,
+		DesiredCapacity:      &desiredCount,
+	}
+	autoScalingGroups = append(autoScalingGroups, &asgIn)
+	//output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
+	//asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
+	//asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
+	err = connector.AdjustScalingObjectCount(tagVal, 5, 4)
+	assert.Error(t, err)
+}
+
+func TestAdjustScalingObjectCount_NoScale(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+
+	key := "datacenter"
+	cfg := Config{AWSProfile: "xyz"}
+	connector, err := cfg.New()
+	require.NotNil(t, connector)
+	require.NoError(t, err)
+
+	connector.autoScalingFactory = asgFactory
+
+	// no error - DownScale
+	minCount := int64(1)
+	desiredCount := int64(123)
+	maxCount := int64(3)
+	autoScalingGroups := make([]*autoscaling.Group, 0)
+	tagVal := "private-services"
+	asgName := "my-asg"
+	var tags []*autoscaling.TagDescription
+	td := autoscaling.TagDescription{Key: &key, Value: &tagVal}
+	tags = append(tags, &td)
+	asgIn := autoscaling.Group{
+		Tags:                 tags,
+		AutoScalingGroupName: &asgName,
+		MinSize:              &minCount,
+		MaxSize:              &maxCount,
+		DesiredCapacity:      &desiredCount,
+	}
+	autoScalingGroups = append(autoScalingGroups, &asgIn)
+	err = connector.AdjustScalingObjectCount(tagVal, 4, 4)
 	assert.NoError(t, err)
 }
 
