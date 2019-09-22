@@ -15,7 +15,14 @@ func TestNewConnector(t *testing.T) {
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
+	// NomadSrvAddr missing
 	cfg = Config{AWSProfile: "test"}
+	connector, err = cfg.New()
+	assert.Nil(t, connector)
+	assert.Error(t, err)
+
+	// Success
+	cfg = Config{AWSProfile: "test", NomadServerAddress: "http://nomad.io"}
 	connector, err = cfg.New()
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
