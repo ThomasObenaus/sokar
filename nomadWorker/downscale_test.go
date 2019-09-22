@@ -2,6 +2,7 @@ package nomadWorker
 
 import (
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -45,6 +46,17 @@ func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 	candidate, err = selectCandidate(nodesIF, datacenter)
 	assert.Nil(t, candidate)
 	assert.Error(t, err)
+
+	// valid nodes available but down
+	nodes = make([]*nomadApi.NodeListStub, 0)
+	node = nomadApi.NodeListStub{Datacenter: datacenter, Drain: false, Name: "node1", ID: "1234", Address: "192.1680.0.1", Status: "down"}
+	nodes = append(nodes, &node)
+	qmeta = nomadApi.QueryMeta{LastIndex: 1000}
+	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
+
+	candidate, err = selectCandidate(nodesIF, datacenter)
+	assert.Nil(t, candidate)
+	assert.Error(t, err)
 }
 
 func TestSelectCandidateForDownscaling_Success(t *testing.T) {
@@ -54,9 +66,9 @@ func TestSelectCandidateForDownscaling_Success(t *testing.T) {
 	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
 	datacenter := "dcXYZ"
 
-	// no nodes in datacenter that are not draining
+	// valid nodes available
 	nodes := make([]*nomadApi.NodeListStub, 0)
-	node := nomadApi.NodeListStub{Datacenter: datacenter, Drain: false, Name: "node1", ID: "1234", Address: "192.1680.0.1"}
+	node := nomadApi.NodeListStub{Datacenter: datacenter, Drain: false, Name: "node1", ID: "1234", Address: "192.1680.0.1", Status: "ready"}
 	nodes = append(nodes, &node)
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
@@ -76,5 +88,17 @@ func TestSetEligibility(t *testing.T) {
 	nodeID := "1234"
 	nodesIF.EXPECT().ToggleEligibility(nodeID, true, nil).Return(nil, nil)
 	err := setEligibility(nodesIF, nodeID, true)
+	assert.NoError(t, err)
+}
+
+func TestDrainNode(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
+
+	nodeID := "1234"
+	nodesIF.EXPECT().UpdateDrain(nodeID, gomock.Any(), false, nil).Return(nil, nil)
+	err := drainNode(nodesIF, nodeID, time.Second*20)
 	assert.NoError(t, err)
 }

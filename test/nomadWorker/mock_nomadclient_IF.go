@@ -59,3 +59,16 @@ func (m *MockNodes) ToggleEligibility(nodeID string, eligible bool, q *api.Write
 func (mr *MockNodesMockRecorder) ToggleEligibility(nodeID, eligible, q interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleEligibility", reflect.TypeOf((*MockNodes)(nil).ToggleEligibility), nodeID, eligible, q)
 }
+
+// UpdateDrain mocks base method
+func (m *MockNodes) UpdateDrain(nodeID string, spec *api.DrainSpec, markEligible bool, q *api.WriteOptions) (*api.NodeDrainUpdateResponse, error) {
+	ret := m.ctrl.Call(m, "UpdateDrain", nodeID, spec, markEligible, q)
+	ret0, _ := ret[0].(*api.NodeDrainUpdateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateDrain indicates an expected call of UpdateDrain
+func (mr *MockNodesMockRecorder) UpdateDrain(nodeID, spec, markEligible, q interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDrain", reflect.TypeOf((*MockNodes)(nil).UpdateDrain), nodeID, spec, markEligible, q)
+}

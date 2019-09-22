@@ -2,6 +2,7 @@ package nomadWorker
 
 import (
 	"fmt"
+	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 )
@@ -23,18 +24,24 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 		return err
 	}
 
-	c.log.Info().Msgf("Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 2. Make the node ineligible [needs node id]
-	if err := setEligibility(c.nodesIF, candidate.nodeID, false); err != nil {
-		return err
-	}
-	c.log.Info().Msgf("Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	//if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
+	//	return err
+	//}
+	c.log.Info().Msgf("2. [Ineligible] Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 3. Drain the node [needs node id]
+	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	if err := drainNode(c.nodesIF, "346ff231-957d-a222-c781-0b247b8350f5", c.nodeDrainDeadline); err != nil {
+		return err
+	}
+	c.log.Info().Msgf("3. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+
 	// 4. Terminate the node using the AWS ASG [needs instance id]
 
-	return fmt.Errorf("Downscaling is not yet implemented")
+	return nil
 }
 
 func setEligibility(nodesIF Nodes, nodeID string, eligible bool) error {
@@ -73,4 +80,16 @@ func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
 		nodeID:     node.ID,
 		datacenter: node.Datacenter,
 	}, nil
+}
+
+func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) error {
+
+	drainSpec := nomadApi.DrainSpec{
+		Deadline:         deadline,
+		IgnoreSystemJobs: false,
+	}
+
+	_, err := nodesIF.UpdateDrain(nodeID, &drainSpec, false, nil)
+
+	return err
 }
