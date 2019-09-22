@@ -69,3 +69,15 @@ func (m *MockScalingTarget) IsScalingObjectDead(scalingObject string) (bool, err
 func (mr *MockScalingTargetMockRecorder) IsScalingObjectDead(scalingObject interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsScalingObjectDead", reflect.TypeOf((*MockScalingTarget)(nil).IsScalingObjectDead), scalingObject)
 }
+
+// String mocks base method
+func (m *MockScalingTarget) String() string {
+	ret := m.ctrl.Call(m, "String")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// String indicates an expected call of String
+func (mr *MockScalingTargetMockRecorder) String() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "String", reflect.TypeOf((*MockScalingTarget)(nil).String))
+}

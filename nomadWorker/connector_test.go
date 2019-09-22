@@ -15,18 +15,8 @@ func TestNewConnector(t *testing.T) {
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
-	cfg = Config{AWSProfile: "test", ASGTagKey: "data-center"}
+	cfg = Config{AWSProfile: "test"}
 	connector, err = cfg.New()
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
-
-	cfg = Config{AWSRegion: "test-region", ASGTagKey: "data-center"}
-	connector, err = cfg.New()
-	assert.NotNil(t, connector)
-	assert.NoError(t, err)
-
-	cfg = Config{AWSRegion: "test-region"}
-	connector, err = cfg.New()
-	assert.Nil(t, connector)
-	assert.Error(t, err)
 }
