@@ -25,22 +25,16 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
-	// 2. Make the node ineligible [needs node id]
-	//if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
-	//	return err
-	//}
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Ineligible] Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
-
-	// 3. Drain the node [needs node id]
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	// 2. Drain the node [needs node id]
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	nodeModifyIndex, err := drainNode(c.nodesIF, candidate.nodeID, c.nodeDrainDeadline)
 	if err != nil {
 		return err
 	}
 	monitorDrainNode(c.nodesIF, candidate.nodeID, nodeModifyIndex, c.log)
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
-	// 4. Terminate the node using the AWS ASG [needs instance id]
+	// 3. Terminate the node using the AWS ASG [needs instance id]
 
 	if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
 		return err

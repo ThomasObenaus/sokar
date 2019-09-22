@@ -18,7 +18,7 @@ func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) (nodeModify
 	return resp.NodeModifyIndex, err
 }
 
-func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, logger zerolog.Logger) {
+func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, logger zerolog.Logger) uint {
 
 	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s) ... ", nodeID)
 
@@ -28,11 +28,16 @@ func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, logg
 		doneChan: make(chan struct{}),
 	}
 
+	var numEvents uint
 	events := nodesIF.MonitorDrain(ctx, nodeID, nodeModifyIndex, false)
 	for ev := range events {
-		logger.Info().Str("NodeID", nodeID).Msg(ev.String())
+		if ev != nil {
+			logger.Info().Str("NodeID", nodeID).Msg(ev.String())
+			numEvents++
+		}
 	}
 	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s) ... done", nodeID)
+	return numEvents
 }
 
 type monitoringCtx struct {
