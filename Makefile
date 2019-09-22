@@ -52,6 +52,7 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
 	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go
+	@mockgen -source=nomadWorker/nomadclient_IF.go -destination test/nomadWorker/mock_nomadclient_IF.go
 	@mockgen -source=aws/iface/autoscaling_IF.go -destination test/aws/mock_autoscaling_IF.go 
 	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
