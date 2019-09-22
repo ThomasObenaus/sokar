@@ -49,10 +49,10 @@ func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
 		return nil, err
 	}
 
-	// filter out the nodes for this datacenter that are not draining already
+	// filter out the nodes for this datacenter that are not draining already and are ready
 	nodes := make([]*nomadApi.NodeListStub, 0)
 	for _, node := range nodeListStub {
-		if !node.Drain && node.Datacenter == datacenter {
+		if !node.Drain && node.Datacenter == datacenter && node.Status == nomadApi.NodeStatusReady {
 			nodes = append(nodes, node)
 		}
 	}
