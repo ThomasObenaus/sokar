@@ -47,25 +47,25 @@ The order they are applied is:
 
 ### ScalingObjectWatcherInterval
 
-|         |                                            |
-| ------- | ------------------------------------------ |
-| name    | watcher-interval                             |
+|         |                                                                                                |
+| ------- | ---------------------------------------------------------------------------------------------- |
+| name    | watcher-interval                                                                               |
 | usage   | The interval the Scaler will check if the scalingObject count still matches the desired state. |
-| type    | duration                                     |
-| default | 5s                                         |
-| flag    | --sca.watcher-interval                 |
-| env     | SK_SCA_WATCHER_INTERVAL                |
+| type    | duration                                                                                       |
+| default | 5s                                                                                             |
+| flag    | --sca.watcher-interval                                                                         |
+| env     | SK_SCA_WATCHER_INTERVAL                                                                        |
 
 ### Mode
 
-|         |                                                                                                                                                                                                                          |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| name    | mode                                                                                                                                                                                                                     |
+|         |                                                                                                                                                                                                                                   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name    | mode                                                                                                                                                                                                                              |
 | usage   | Scaling target mode is either job based, aws Ec2 or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
-| type    | string (enum: nomad-job \| nomad-dc \| aws-ec2 ) - **the values job and dc are deprecated**                                                                                                                                                                                                |
-| default | job                                                                                                                                                                                                                      |
-| flag    | --sca.mode                                                                                                                                                                                                         |
-| env     | SK_SCA_MODE                                                                                                                                                                                                        |
+| type    | string (enum: nomad-job \| nomad-dc \| aws-ec2 ) - **the values job and dc are deprecated**                                                                                                                                       |
+| default | job                                                                                                                                                                                                                               |
+| flag    | --sca.mode                                                                                                                                                                                                                        |
+| env     | SK_SCA_MODE                                                                                                                                                                                                                       |
 
 ### AWS EC2
 
@@ -79,8 +79,8 @@ The order they are applied is:
 | usage   | This parameter represents the name of the aws profile that shall be used to access the resources to scale the data-center. This parameter is optional. If it is empty the instance where sokar runs on has to have enough permissions to access the resources (ASG) for scaling. In this case the AWSRegion parameter has to be specified as well. |
 | type    | string                                                                                                                                                                                                                                                                                                                                             |
 | default | ""                                                                                                                                                                                                                                                                                                                                                 |
-| flag    | --sca.aws-ec2.profile                                                                                                                                                                                                                                                                                                                         |
-| env     | SK_SCA_AWS_EC2_PROFILE                                                                                                                                                                                                                                                                                                                        |
+| flag    | --sca.aws-ec2.profile                                                                                                                                                                                                                                                                                                                              |
+| env     | SK_SCA_AWS_EC2_PROFILE                                                                                                                                                                                                                                                                                                                             |
 
 #### Region
 
@@ -90,25 +90,26 @@ The order they are applied is:
 | usage   | This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in. |
 | type    | string                                                                                                                                                                             |
 | default | ""                                                                                                                                                                                 |
-| flag    | --sca.aws-ec2.region                                                                                                                                                          |
-| env     | SK_SCA_AWS_EC2_REGION                                                                                                                                                         |
+| flag    | --sca.aws-ec2.region                                                                                                                                                               |
+| env     | SK_SCA_AWS_EC2_REGION                                                                                                                                                              |
 
 #### ASGTagKey
 
-|         |                                                                                                                                                                                                                                                                                                                                                    |
-| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name    | asg_tag_key                                                                                                                                                                                                                                                                                                                                            |
+|         |                                                                                                                                  |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| name    | asg_tag_key                                                                                                                      |
 | usage   | This parameter specifies which tag on an AWS AutoScalingGroup shall be used to find the ASG that should be automatically scaled. |
-| type    | string                                                                                                                                                                                                                                                                                                                                             |
-| default | "scale-object"                                                                                                                                                                                                                                                                                                                                                 |
-| flag    | --sca.aws-ec2.asg-tag-key                                                                                                                                                                                                                                                                                                                         |
-| env     | SK_SCA_AWS_EC2_ASG_TAG_KEY                                                                                                                                                                                                                                                                                                                        |
+| type    | string                                                                                                                           |
+| default | "scale-object"                                                                                                                   |
+| flag    | --sca.aws-ec2.asg-tag-key                                                                                                        |
+| env     | SK_SCA_AWS_EC2_ASG_TAG_KEY                                                                                                       |
 
 ### Nomad
 
 - This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
 
 #### [DEPRECATED] Mode
+
 - The parameter `sca.nomad.mode` will be replaced by `sca.mode`
 
 |         |                                                                                                                                                                                                                          |
@@ -156,8 +157,6 @@ The order they are applied is:
 | default | ""                                                                                                                                                                                 |
 | flag    | --sca.nomad.dc-aws.region                                                                                                                                                          |
 | env     | SK_SCA_NOMAD_DC_AWS_REGION                                                                                                                                                         |
-
-
 
 ## ScaleObject
 
