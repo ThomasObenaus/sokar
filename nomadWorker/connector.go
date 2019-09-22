@@ -2,6 +2,7 @@ package nomadWorker
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -41,6 +42,9 @@ type Connector struct {
 
 	// Interface that is used to interact with nomad nodes
 	nodesIF Nodes
+
+	// nodeDrainDeadline the maximum amount of time nomad will wait before the containers will be forced to be moved
+	nodeDrainDeadline time.Duration
 }
 
 // Config contains the main configuration for the nomad worker connector
@@ -93,6 +97,7 @@ func (cfg *Config) New() (*Connector, error) {
 		awsProfile:                 cfg.AWSProfile,
 		awsRegion:                  cfg.AWSRegion,
 		nodesIF:                    client.Nodes(),
+		nodeDrainDeadline:          time.Second * 30,
 	}
 
 	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
