@@ -7,4 +7,5 @@ import (
 // Nodes represents the minimal interface used to gather information about nomad nodes
 type Nodes interface {
 	List(q *nomadApi.QueryOptions) ([]*nomadApi.NodeListStub, *nomadApi.QueryMeta, error)
+	ToggleEligibility(nodeID string, eligible bool, q *nomadApi.WriteOptions) (*nomadApi.NodeEligibilityUpdateResponse, error)
 }

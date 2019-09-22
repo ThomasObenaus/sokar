@@ -63,6 +63,18 @@ func TestSelectCandidateForDownscaling_Success(t *testing.T) {
 
 	candidate, err := selectCandidate(nodesIF, datacenter)
 	assert.NotNil(t, candidate)
-	assert.Equal(t, "1234", candidate.iD)
+	assert.Equal(t, "1234", candidate.nodeID)
+	assert.NoError(t, err)
+}
+
+func TestSetEligibility(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
+
+	nodeID := "1234"
+	nodesIF.EXPECT().ToggleEligibility(nodeID, true, nil).Return(nil, nil)
+	err := setEligibility(nodesIF, nodeID, true)
 	assert.NoError(t, err)
 }

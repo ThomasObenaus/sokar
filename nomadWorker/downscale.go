@@ -23,13 +23,23 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 		return err
 	}
 
-	c.log.Info().Msgf("Selected nomad node '%s' (%s,%s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Msgf("Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 2. Make the node ineligible [needs node id]
+	if err := setEligibility(c.nodesIF, candidate.nodeID, false); err != nil {
+		return err
+	}
+	c.log.Info().Msgf("Node '%s' (%s, %s) set ineligible.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+
 	// 3. Drain the node [needs node id]
 	// 4. Terminate the node using the AWS ASG [needs instance id]
 
 	return fmt.Errorf("Downscaling is not yet implemented")
+}
+
+func setEligibility(nodesIF Nodes, nodeID string, eligible bool) error {
+	_, err := nodesIF.ToggleEligibility(nodeID, eligible, nil)
+	return err
 }
 
 func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {

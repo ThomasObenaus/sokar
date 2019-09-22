@@ -46,3 +46,16 @@ func (m *MockNodes) List(q *api.QueryOptions) ([]*api.NodeListStub, *api.QueryMe
 func (mr *MockNodesMockRecorder) List(q interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockNodes)(nil).List), q)
 }
+
+// ToggleEligibility mocks base method
+func (m *MockNodes) ToggleEligibility(nodeID string, eligible bool, q *api.WriteOptions) (*api.NodeEligibilityUpdateResponse, error) {
+	ret := m.ctrl.Call(m, "ToggleEligibility", nodeID, eligible, q)
+	ret0, _ := ret[0].(*api.NodeEligibilityUpdateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToggleEligibility indicates an expected call of ToggleEligibility
+func (mr *MockNodesMockRecorder) ToggleEligibility(nodeID, eligible, q interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleEligibility", reflect.TypeOf((*MockNodes)(nil).ToggleEligibility), nodeID, eligible, q)
+}
