@@ -75,6 +75,19 @@ func (mr *MockAutoScalingMockRecorder) TerminateInstanceInAutoScalingGroupReques
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminateInstanceInAutoScalingGroupRequest", reflect.TypeOf((*MockAutoScaling)(nil).TerminateInstanceInAutoScalingGroupRequest), input)
 }
 
+// DescribeScalingActivitiesRequest mocks base method
+func (m *MockAutoScaling) DescribeScalingActivitiesRequest(input *autoscaling.DescribeScalingActivitiesInput) (*request.Request, *autoscaling.DescribeScalingActivitiesOutput) {
+	ret := m.ctrl.Call(m, "DescribeScalingActivitiesRequest", input)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*autoscaling.DescribeScalingActivitiesOutput)
+	return ret0, ret1
+}
+
+// DescribeScalingActivitiesRequest indicates an expected call of DescribeScalingActivitiesRequest
+func (mr *MockAutoScalingMockRecorder) DescribeScalingActivitiesRequest(input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeScalingActivitiesRequest", reflect.TypeOf((*MockAutoScaling)(nil).DescribeScalingActivitiesRequest), input)
+}
+
 // MockAutoScalingFactory is a mock of AutoScalingFactory interface
 type MockAutoScalingFactory struct {
 	ctrl     *gomock.Controller

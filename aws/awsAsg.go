@@ -142,26 +142,35 @@ func GetAutoScalingGroups(autoScaling iface.AutoScaling) ([]*aws.Group, error) {
 }
 
 // TerminateInstanceInAsg removes the specified instance and decrements the desired capacity of the instance accordingly.
-func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) error {
+func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) (asgName string, activityID string, err error) {
 	shouldDecDesiredCapa := true
 
 	input := aws.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
 	if err := input.Validate(); err != nil {
-		return err
+		return "", "", err
 	}
 
 	// First create the request
-	req, _ := autoScaling.TerminateInstanceInAutoScalingGroupRequest(&input)
+	req, output := autoScaling.TerminateInstanceInAutoScalingGroupRequest(&input)
 
 	if req == nil {
-		return fmt.Errorf("Request from TerminateInstanceInAutoScalingGroupRequest is nil")
+		return "", "", fmt.Errorf("Request from TerminateInstanceInAutoScalingGroupRequest is nil")
+	}
+
+	if output == nil || output.Activity == nil || output.Activity.AutoScalingGroupName == nil || output.Activity.ActivityId == nil {
+		return "", "", fmt.Errorf("Output from TerminateInstanceInAutoScalingGroupRequest is not valid")
 	}
 
 	// Now send the request
 	if err := req.Send(); err != nil {
-		return err
+		return "", "", err
 	}
 
+	return *output.Activity.AutoScalingGroupName, *output.Activity.ActivityId, nil
+}
+
+// MonitorInstanceScaling will block until the instance is scaled up/ down
+func MonitorInstanceScaling(autoScalingGroupName string, activityID string) error {
 	return nil
 }
 

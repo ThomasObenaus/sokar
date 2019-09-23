@@ -138,7 +138,11 @@ func Test_Downscale(t *testing.T) {
 	shouldDecDesiredCapa := true
 	input := autoscaling.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
 	req := request.Request{}
-	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, nil)
+	activityID := "ActivityId"
+	asgName := "AsgName"
+	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName}
+	output := autoscaling.TerminateInstanceInAutoScalingGroupOutput{Activity: &activity}
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, &output)
 
 	err = connector.downscale(datacenter, desiredCount)
 	assert.NoError(t, err)

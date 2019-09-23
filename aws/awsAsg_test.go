@@ -259,12 +259,23 @@ func Test_TerminateInstanceInAsg(t *testing.T) {
 
 	// invalid request returned
 	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(nil, nil)
-	err := TerminateInstanceInAsg(asgIF, instanceID)
+	_, _, err := TerminateInstanceInAsg(asgIF, instanceID)
+	assert.Error(t, err)
+
+	// invalid output returned
+	req := request.Request{}
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, nil)
+	_, _, err = TerminateInstanceInAsg(asgIF, instanceID)
 	assert.Error(t, err)
 
 	// success
-	req := request.Request{}
-	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, nil)
-	err = TerminateInstanceInAsg(asgIF, instanceID)
+	activityID := "ActivityId"
+	asgName := "AsgName"
+	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName}
+	output := autoscaling.TerminateInstanceInAutoScalingGroupOutput{Activity: &activity}
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, &output)
+	asgNameResult, activityIDResult, err := TerminateInstanceInAsg(asgIF, instanceID)
 	assert.NoError(t, err)
+	assert.Equal(t, activityID, activityIDResult)
+	assert.Equal(t, asgName, asgNameResult)
 }
