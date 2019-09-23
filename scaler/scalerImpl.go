@@ -94,7 +94,7 @@ func (s *Scaler) openScalingTicket(desiredCount uint, dryRun bool) error {
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, dryRun bool) scaleResult {
-	scalingObjectName := s.scalingObjectCfg.name
+	scalingObjectName := s.scalingObject.name
 	currentCount, err := s.scalingTarget.GetScalingObjectCount(scalingObjectName)
 	if err != nil {
 		return scaleResult{

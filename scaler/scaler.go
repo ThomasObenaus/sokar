@@ -16,8 +16,8 @@ type Scaler struct {
 	// the system that shall be used for scaling (i.e nomad)
 	scalingTarget ScalingTarget
 
-	// scalingObjectCfg is the configuration for the scalingObject
-	scalingObjectCfg scalingObjectConfig
+	// scalingObject represents the ScalingObject and relevant meta data
+	scalingObject ScalingObject
 
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
@@ -55,8 +55,8 @@ type Config struct {
 	WatcherInterval       time.Duration
 }
 
-// scalingObjectConfig config of the scalingObject to be scaled
-type scalingObjectConfig struct {
+// ScalingObject config of the scalingObject to be scaled
+type ScalingObject struct {
 	name     string
 	minCount uint
 	maxCount uint
@@ -77,7 +77,7 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 		logger:          cfg.Logger,
 		scalingTarget:   scalingTarget,
 		watcherInterval: cfg.WatcherInterval,
-		scalingObjectCfg: scalingObjectConfig{
+		scalingObject: ScalingObject{
 			name:     cfg.Name,
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
@@ -93,7 +93,7 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 
 // GetCount returns the number of currently deployed instances
 func (s *Scaler) GetCount() (uint, error) {
-	return s.scalingTarget.GetScalingObjectCount(s.scalingObjectCfg.name)
+	return s.scalingTarget.GetScalingObjectCount(s.scalingObject.name)
 }
 
 // ScaleTo will scale the scalingObject to the desired count.
