@@ -44,7 +44,7 @@ func (nc *Connector) GetScalingObjectCount(jobname string) (uint, error) {
 
 // AdjustScalingObjectCount sets the given count for the given nomad job.
 // HACK: The count is set to the same value for all groups inside the job.
-func (nc *Connector) AdjustScalingObjectCount(jobname string, from uint, to uint) error {
+func (nc *Connector) AdjustScalingObjectCount(jobname string, min uint, max uint, from uint, to uint) error {
 	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) from %d to %d.", jobname, from, to)
 
 	// obtain current status about the job

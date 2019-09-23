@@ -8,10 +8,10 @@ import (
 )
 
 // AdjustScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
-func (c *Connector) AdjustScalingObjectCount(datacenter string, from uint, to uint) error {
+func (c *Connector) AdjustScalingObjectCount(datacenter string, min uint, max uint, from uint, to uint) error {
 
 	if from < to { // upscale
-		return c.upscale(datacenter, to)
+		return c.upscale(datacenter, min, max, to)
 	} else if from > to { // downscale
 		return c.downscale(datacenter, to)
 	}

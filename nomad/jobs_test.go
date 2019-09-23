@@ -9,7 +9,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 	"github.com/stretchr/testify/assert"
-	"github.com/thomasobenaus/sokar/test/nomad"
+	mock_nomad "github.com/thomasobenaus/sokar/test/nomad"
 )
 
 func minimalConnectorImpl() Connector {
@@ -90,7 +90,7 @@ func TestAdjustScalingObjectCount_Success(t *testing.T) {
 	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusSuccessful}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
-	err := conn.AdjustScalingObjectCount("test", 4, 5)
+	err := conn.AdjustScalingObjectCount("test", 2, 10, 4, 5)
 	assert.NoError(t, err)
 }
 
@@ -121,7 +121,7 @@ func TestAdjustScalingObjectCount_InternalError(t *testing.T) {
 	// Register Deployment
 	jobsIF.EXPECT().Register(gomock.Any(), gomock.Any()).Return(nil, nil, fmt.Errorf("Internal error"))
 
-	err := conn.AdjustScalingObjectCount("test", 4, 5)
+	err := conn.AdjustScalingObjectCount("test", 2, 10, 4, 5)
 	assert.Error(t, err)
 }
 
@@ -164,7 +164,7 @@ func TestAdjustScalingObjectCount_DeploymentError(t *testing.T) {
 	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusCancelled}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
-	err := conn.AdjustScalingObjectCount("test", 4, 5)
+	err := conn.AdjustScalingObjectCount("test", 2, 10, 4, 5)
 	assert.Error(t, err)
 }
 

@@ -28,7 +28,7 @@ func TestUpscale(t *testing.T) {
 	// error, no numbers
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	err = connector.upscale("invalid", 5)
+	err = connector.upscale("invalid", 0, 10, 5)
 	assert.Error(t, err)
 
 	// no error
@@ -52,7 +52,17 @@ func TestUpscale(t *testing.T) {
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
-	err = connector.upscale(tagVal, 5)
+
+	minCount = int64(1)
+	desiredCount = int64(5)
+	maxCount = int64(10)
+	input := &autoscaling.UpdateAutoScalingGroupInput{
+		AutoScalingGroupName: &asgName,
+		MinSize:              &minCount,
+		MaxSize:              &maxCount,
+		DesiredCapacity:      &desiredCount,
+	}
+	asgIF.EXPECT().UpdateAutoScalingGroup(input)
+	err = connector.upscale(tagVal, uint(minCount), uint(maxCount), uint(desiredCount))
 	assert.NoError(t, err)
 }

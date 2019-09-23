@@ -62,7 +62,7 @@ func TestAdjustScalingObjectCount_Error(t *testing.T) {
 	// error, no numbers
 	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(nil, nil)
-	err = connector.AdjustScalingObjectCount("invalid", 4, 5)
+	err = connector.AdjustScalingObjectCount("invalid", 2, 10, 4, 5)
 	assert.Error(t, err)
 }
 func TestAdjustScalingObjectCount_Upscale(t *testing.T) {
@@ -102,8 +102,9 @@ func TestAdjustScalingObjectCount_Upscale(t *testing.T) {
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
 	asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
+
 	asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
-	err = connector.AdjustScalingObjectCount(tagVal, 4, 5)
+	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 4, 5)
 	assert.NoError(t, err)
 }
 
@@ -140,7 +141,7 @@ func TestAdjustScalingObjectCount_NoScale(t *testing.T) {
 		DesiredCapacity:      &desiredCount,
 	}
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	err = connector.AdjustScalingObjectCount(tagVal, 4, 4)
+	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 4, 4)
 	assert.NoError(t, err)
 }
 
@@ -276,6 +277,6 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 		DesiredCapacity:      &desiredCount,
 	}
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	err = connector.AdjustScalingObjectCount(tagVal, 5, 4)
+	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 5, 4)
 	assert.Error(t, err)
 }

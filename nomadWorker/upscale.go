@@ -5,7 +5,7 @@ import (
 	"github.com/thomasobenaus/sokar/aws"
 )
 
-func (c *Connector) upscale(datacenter string, desiredCount uint) error {
+func (c *Connector) upscale(datacenter string, min uint, max uint, desiredCount uint) error {
 	sess, err := c.createSession()
 	if err != nil {
 		return err
@@ -24,11 +24,13 @@ func (c *Connector) upscale(datacenter string, desiredCount uint) error {
 	}
 
 	size := int64(desiredCount)
+	minSize := int64(min)
+	maxSize := int64(max)
 
 	input := &autoscaling.UpdateAutoScalingGroupInput{
 		AutoScalingGroupName: &asgName,
-		MaxSize:              &size,
-		MinSize:              &size,
+		MinSize:              &minSize,
+		MaxSize:              &maxSize,
 		DesiredCapacity:      &size,
 	}
 

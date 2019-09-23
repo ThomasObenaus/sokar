@@ -9,7 +9,7 @@ import (
 )
 
 // AdjustScalingObjectCount will scale the AutoScalingGroup to the desired count (amount of instances)
-func (c *Connector) AdjustScalingObjectCount(autoScalingGroup string, from uint, to uint) error {
+func (c *Connector) AdjustScalingObjectCount(autoScalingGroup string, min uint, max uint, from uint, to uint) error {
 	sess, err := c.createSession()
 	if err != nil {
 		return err
@@ -28,11 +28,13 @@ func (c *Connector) AdjustScalingObjectCount(autoScalingGroup string, from uint,
 	}
 
 	size := int64(to)
+	minSize := int64(min)
+	maxSize := int64(max)
 
 	input := &autoscaling.UpdateAutoScalingGroupInput{
 		AutoScalingGroupName: &asgName,
-		MaxSize:              &size,
-		MinSize:              &size,
+		MinSize:              &minSize,
+		MaxSize:              &maxSize,
 		DesiredCapacity:      &size,
 	}
 

@@ -154,7 +154,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 
 	// Set the new scalingObject count
 	s.desiredScale.setValue(newCount)
-	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.name, currentCount, newCount)
+	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.name, s.scalingObject.minCount, s.scalingObject.maxCount, currentCount, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,

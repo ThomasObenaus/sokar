@@ -17,7 +17,7 @@ type Scaler struct {
 	scalingTarget ScalingTarget
 
 	// scalingObject represents the ScalingObject and relevant meta data
-	scalingObject ScalingObject
+	scalingObject scalingObject
 
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
@@ -55,8 +55,8 @@ type Config struct {
 	WatcherInterval       time.Duration
 }
 
-// ScalingObject config of the scalingObject to be scaled
-type ScalingObject struct {
+// scalingObject config of the scalingObject to be scaled
+type scalingObject struct {
 	name     string
 	minCount uint
 	maxCount uint
@@ -77,7 +77,7 @@ func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, er
 		logger:          cfg.Logger,
 		scalingTarget:   scalingTarget,
 		watcherInterval: cfg.WatcherInterval,
-		scalingObject: ScalingObject{
+		scalingObject: scalingObject{
 			name:     cfg.Name,
 			minCount: cfg.MinCount,
 			maxCount: cfg.MaxCount,
