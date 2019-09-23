@@ -11,7 +11,7 @@ tag := $(shell git describe --tags)
 branch := $(shell git branch | grep \* | cut -d ' ' -f2)
 revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
-nomad_server := "http://${LOCAL_IP}:4646"
+nomad_server := "https://nomad.integration.eu.pcc-nav.cloud"#"http://${LOCAL_IP}:4646"
 
 all: tools test build finish
 
@@ -72,7 +72,7 @@ run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 
 run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc" --scale-object.name="private-services" --sca.nomad.dc-aws.profile="integration" --scale-object.max=22 --dry-run=true --sca.watcher-interval=20m
 
 run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"
