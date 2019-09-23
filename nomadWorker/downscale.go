@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	nomadApi "github.com/hashicorp/nomad/api"
+	"github.com/thomasobenaus/sokar/aws"
 )
 
 type candidate struct {
@@ -35,10 +36,16 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 3. Terminate the node using the AWS ASG [needs instance id]
-
-	if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	sess, err := c.createSession()
+	if err != nil {
 		return err
 	}
+	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
+	if err := aws.TerminateInstanceInAsg(autoScalingIF, candidate.instanceID); err != nil {
+		return err
+	}
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	return nil
 }
 

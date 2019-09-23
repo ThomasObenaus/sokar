@@ -247,7 +247,7 @@ func Test_GetAutoScalingGroupName(t *testing.T) {
 	assert.Equal(t, "myASG", name)
 }
 
-func Test_TerminateInsatnceInAsg(t *testing.T) {
+func Test_TerminateInstanceInAsg(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
