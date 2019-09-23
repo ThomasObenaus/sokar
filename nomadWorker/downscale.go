@@ -43,6 +43,10 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	}
 	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
 	if err := aws.TerminateInstanceInAsg(autoScalingIF, candidate.instanceID); err != nil {
+		// as a fallback set the node to eligible again instead of leaving an unused (by nomad) instance running
+		if err := setEligibility(c.nodesIF, candidate.nodeID, true); err != nil {
+			c.log.Error().Err(err).Str("NodeID", candidate.nodeID).Msgf("Unable to make the node eligible again after the instance termination failed.")
+		}
 		return err
 	}
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
