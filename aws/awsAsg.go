@@ -153,6 +153,10 @@ func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) er
 	// First create the request
 	req, _ := autoScaling.TerminateInstanceInAutoScalingGroupRequest(&input)
 
+	if req == nil {
+		return fmt.Errorf("Request from TerminateInstanceInAutoScalingGroupRequest is nil")
+	}
+
 	// Now send the request
 	if err := req.Send(); err != nil {
 		return err
