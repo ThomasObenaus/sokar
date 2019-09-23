@@ -249,7 +249,6 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
-	//asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
 	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
@@ -260,7 +259,6 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 	connector.autoScalingFactory = asgFactory
 
 	// no error - DownScale
-	//asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
 	minCount := int64(1)
 	desiredCount := int64(123)
 	maxCount := int64(3)
@@ -278,9 +276,6 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 		DesiredCapacity:      &desiredCount,
 	}
 	autoScalingGroups = append(autoScalingGroups, &asgIn)
-	//output := &autoscaling.DescribeAutoScalingGroupsOutput{AutoScalingGroups: autoScalingGroups}
-	//asgIF.EXPECT().DescribeAutoScalingGroups(gomock.Any()).Return(output, nil)
-	//asgIF.EXPECT().UpdateAutoScalingGroup(gomock.Any())
 	err = connector.AdjustScalingObjectCount(tagVal, 5, 4)
 	assert.Error(t, err)
 }
