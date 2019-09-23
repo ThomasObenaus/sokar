@@ -5,6 +5,7 @@
 package mock_aws
 
 import (
+	request "github.com/aws/aws-sdk-go/aws/request"
 	session "github.com/aws/aws-sdk-go/aws/session"
 	autoscaling "github.com/aws/aws-sdk-go/service/autoscaling"
 	gomock "github.com/golang/mock/gomock"
@@ -59,6 +60,19 @@ func (m *MockAutoScaling) UpdateAutoScalingGroup(input *autoscaling.UpdateAutoSc
 // UpdateAutoScalingGroup indicates an expected call of UpdateAutoScalingGroup
 func (mr *MockAutoScalingMockRecorder) UpdateAutoScalingGroup(input interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAutoScalingGroup", reflect.TypeOf((*MockAutoScaling)(nil).UpdateAutoScalingGroup), input)
+}
+
+// TerminateInstanceInAutoScalingGroupRequest mocks base method
+func (m *MockAutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*request.Request, *autoscaling.TerminateInstanceInAutoScalingGroupOutput) {
+	ret := m.ctrl.Call(m, "TerminateInstanceInAutoScalingGroupRequest", input)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*autoscaling.TerminateInstanceInAutoScalingGroupOutput)
+	return ret0, ret1
+}
+
+// TerminateInstanceInAutoScalingGroupRequest indicates an expected call of TerminateInstanceInAutoScalingGroupRequest
+func (mr *MockAutoScalingMockRecorder) TerminateInstanceInAutoScalingGroupRequest(input interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminateInstanceInAutoScalingGroupRequest", reflect.TypeOf((*MockAutoScaling)(nil).TerminateInstanceInAutoScalingGroupRequest), input)
 }
 
 // MockAutoScalingFactory is a mock of AutoScalingFactory interface

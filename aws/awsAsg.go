@@ -140,3 +140,27 @@ func GetAutoScalingGroups(autoScaling iface.AutoScaling) ([]*aws.Group, error) {
 
 	return result.AutoScalingGroups, nil
 }
+
+// TerminateInstanceInAsg removes the specified instance and decrements the desired capacity of the instance accordingly.
+func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) error {
+	shouldDecDesiredCapa := true
+
+	input := aws.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
+	if err := input.Validate(); err != nil {
+		return err
+	}
+
+	// First create the request
+	req, _ := autoScaling.TerminateInstanceInAutoScalingGroupRequest(&input)
+
+	// Now send the request
+	if err := req.Send(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: Monitor/ wait until ASG is scaled down
+// Hint: Use DescribeScalingActivities to request the progress https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingActivities
+// As input the TerminateInstanceInAutoScalingGroupOutput.Activity.ActivityId and -.AutoScalingGroupName can be used
