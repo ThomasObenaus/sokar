@@ -43,6 +43,9 @@ type Scaler struct {
 	metrics Metrics
 
 	wg sync.WaitGroup
+
+	// scalingObjectWatcherPaused if true the scaling object won't be tracked to check if there is an adjustment needed
+	scalingObjectWatcherPaused bool
 }
 
 // Config is the configuration for the Scaler
