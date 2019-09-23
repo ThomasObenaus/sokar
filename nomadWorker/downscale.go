@@ -49,7 +49,7 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 		}
 		return err
 	}
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	return nil
 }
 
