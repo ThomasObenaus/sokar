@@ -157,23 +157,14 @@ func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) (a
 		return "", "", fmt.Errorf("Request from TerminateInstanceInAutoScalingGroupRequest is nil")
 	}
 
-	if output == nil || output.Activity == nil || output.Activity.AutoScalingGroupName == nil || output.Activity.ActivityId == nil {
-		return "", "", fmt.Errorf("Output from TerminateInstanceInAutoScalingGroupRequest is not valid")
-	}
-
 	// Now send the request
 	if err := req.Send(); err != nil {
 		return "", "", err
 	}
 
+	if output == nil || output.Activity == nil || output.Activity.AutoScalingGroupName == nil || output.Activity.ActivityId == nil {
+		return "", "", fmt.Errorf("Output from TerminateInstanceInAutoScalingGroupRequest is not valid")
+	}
+
 	return *output.Activity.AutoScalingGroupName, *output.Activity.ActivityId, nil
 }
-
-// MonitorInstanceScaling will block until the instance is scaled up/ down
-func MonitorInstanceScaling(autoScalingGroupName string, activityID string) error {
-	return nil
-}
-
-// TODO: Monitor/ wait until ASG is scaled down
-// Hint: Use DescribeScalingActivities to request the progress https://docs.aws.amazon.com/goto/WebAPI/autoscaling-2011-01-01/DescribeScalingActivities
-// As input the TerminateInstanceInAutoScalingGroupOutput.Activity.ActivityId and -.AutoScalingGroupName can be used
