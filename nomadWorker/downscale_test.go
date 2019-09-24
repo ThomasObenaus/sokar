@@ -1,12 +1,14 @@
 package nomadWorker
 
 import (
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	mock_aws "github.com/thomasobenaus/sokar/test/aws"
@@ -15,6 +17,7 @@ import (
 
 func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
@@ -24,7 +27,7 @@ func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
 
-	candidate, err := selectCandidate(nodesIF, datacenter)
+	candidate, err := selectCandidate(nodesIF, datacenter, logger)
 	assert.Nil(t, candidate)
 	assert.Error(t, err)
 
@@ -35,7 +38,7 @@ func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 	qmeta = nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
 
-	candidate, err = selectCandidate(nodesIF, datacenter)
+	candidate, err = selectCandidate(nodesIF, datacenter, logger)
 	assert.Nil(t, candidate)
 	assert.Error(t, err)
 
@@ -46,7 +49,7 @@ func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 	qmeta = nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
 
-	candidate, err = selectCandidate(nodesIF, datacenter)
+	candidate, err = selectCandidate(nodesIF, datacenter, logger)
 	assert.Nil(t, candidate)
 	assert.Error(t, err)
 
@@ -57,28 +60,36 @@ func TestSelectCandidateForDownscaling_Errors(t *testing.T) {
 	qmeta = nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
 
-	candidate, err = selectCandidate(nodesIF, datacenter)
+	candidate, err = selectCandidate(nodesIF, datacenter, logger)
 	assert.Nil(t, candidate)
 	assert.Error(t, err)
 }
 
 func TestSelectCandidateForDownscaling_Success(t *testing.T) {
 
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
 	datacenter := "dcXYZ"
 
 	// valid nodes available
+	nodeID := "nodeID"
 	nodes := make([]*nomadApi.NodeListStub, 0)
-	node := nomadApi.NodeListStub{Datacenter: datacenter, Drain: false, Name: "node1", ID: "1234", Address: "192.1680.0.1", Status: "ready"}
+	node := nomadApi.NodeListStub{Datacenter: datacenter, Drain: false, Name: "node1", ID: nodeID, Address: "192.1680.0.1", Status: "ready"}
 	nodes = append(nodes, &node)
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
 	nodesIF.EXPECT().List(gomock.Any()).Return(nodes, &qmeta, nil)
 
-	candidate, err := selectCandidate(nodesIF, datacenter)
+	allocations := make([]*nomadApi.Allocation, 0)
+	statusRunning := "running"
+	jobRunning := nomadApi.Job{Status: &statusRunning}
+	allocation := &nomadApi.Allocation{Job: &jobRunning}
+	allocations = append(allocations, allocation)
+	nodesIF.EXPECT().Allocations(nodeID, nil).Return(allocations, nil, nil)
+	candidate, err := selectCandidate(nodesIF, datacenter, logger)
 	assert.NotNil(t, candidate)
-	assert.Equal(t, "1234", candidate.nodeID)
+	assert.Equal(t, nodeID, candidate.nodeID)
 	assert.NoError(t, err)
 }
 
@@ -152,6 +163,12 @@ func Test_Downscale(t *testing.T) {
 	outputDescribeActivities := autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
 	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &outputDescribeActivities)
 
+	allocations := make([]*nomadApi.Allocation, 0)
+	statusRunning := "running"
+	jobRunning := nomadApi.Job{Status: &statusRunning}
+	allocation := &nomadApi.Allocation{Job: &jobRunning}
+	allocations = append(allocations, allocation)
+	nodesIF.EXPECT().Allocations(nodeID, nil).Return(allocations, nil, nil)
 	err = connector.downscale(datacenter, desiredCount)
 	assert.NoError(t, err)
 
