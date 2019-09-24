@@ -9,9 +9,7 @@ import (
 )
 
 // MonitorInstanceScaling will block until the instance is scaled up/ down
-func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string) error {
-	const timeout = time.Second * 180
-
+func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) error {
 	start := time.Now()
 
 	for {
@@ -29,7 +27,6 @@ func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName 
 			return fmt.Errorf("MonitorInstanceScaling timed out after %v", timeout)
 		}
 	}
-	return nil
 }
 
 type scalingState struct {

@@ -45,6 +45,9 @@ type Connector struct {
 
 	// nodeDrainDeadline the maximum amount of time nomad will wait before the containers will be forced to be moved
 	nodeDrainDeadline time.Duration
+
+	// monitorInstanceTimeout is the timeout used to monitor the scale of an aws instance at maximum
+	monitorInstanceTimeout time.Duration
 }
 
 // Config contains the main configuration for the nomad worker connector
@@ -98,6 +101,7 @@ func (cfg *Config) New() (*Connector, error) {
 		awsRegion:                  cfg.AWSRegion,
 		nodesIF:                    client.Nodes(),
 		nodeDrainDeadline:          time.Second * 30,
+		monitorInstanceTimeout:     time.Second * 180,
 	}
 
 	cfg.Logger.Info().Msg("Setting up nomad worker connector ... done")
