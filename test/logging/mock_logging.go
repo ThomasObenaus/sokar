@@ -35,7 +35,6 @@ func (m *MockLoggerFactory) EXPECT() *MockLoggerFactoryMockRecorder {
 
 // NewNamedLogger mocks base method
 func (m *MockLoggerFactory) NewNamedLogger(name string) zerolog.Logger {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewNamedLogger", name)
 	ret0, _ := ret[0].(zerolog.Logger)
 	return ret0
@@ -43,6 +42,5 @@ func (m *MockLoggerFactory) NewNamedLogger(name string) zerolog.Logger {
 
 // NewNamedLogger indicates an expected call of NewNamedLogger
 func (mr *MockLoggerFactoryMockRecorder) NewNamedLogger(name interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewNamedLogger", reflect.TypeOf((*MockLoggerFactory)(nil).NewNamedLogger), name)
 }

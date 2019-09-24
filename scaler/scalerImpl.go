@@ -19,8 +19,12 @@ func (s *Scaler) scalingObjectWatcher(cycle time.Duration) {
 			s.logger.Info().Msg("ScaleObjectWatcher Closed.")
 			return
 		case <-scalingObjectWatcherTicker.C:
-			if err := s.ensureScalingObjectCount(); err != nil {
-				s.logger.Error().Msgf("Check scalingObject state failed: %s", err.Error())
+			// Skip/ ignore the events for checking the current scale in case the
+			// watcher is paused. This is usually the case if already a scaling is ongoing
+			if !s.scalingObjectWatcherPaused {
+				if err := s.ensureScalingObjectCount(); err != nil {
+					s.logger.Error().Msgf("Check scalingObject state failed: %s", err.Error())
+				}
 			}
 		}
 	}
@@ -34,9 +38,9 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 	s.logger.Info().Msg("ScaleTicketProcessor started.")
 
 	for ticket := range ticketChan {
-		// TODO: Stop scalingObjectwatcher here
+		s.scalingObjectWatcherPaused = true
 		s.applyScaleTicket(ticket)
-		// TODO: Start scalingObjectwatcher here
+		s.scalingObjectWatcherPaused = false
 	}
 
 	s.logger.Info().Msg("ScaleTicketProcessor closed.")
@@ -94,7 +98,7 @@ func (s *Scaler) openScalingTicket(desiredCount uint, dryRun bool) error {
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, dryRun bool) scaleResult {
-	scalingObjectName := s.scalingObjectCfg.name
+	scalingObjectName := s.scalingObject.name
 	currentCount, err := s.scalingTarget.GetScalingObjectCount(scalingObjectName)
 	if err != nil {
 		return scaleResult{

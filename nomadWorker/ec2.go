@@ -1,49 +1,22 @@
-package awsEc2
+package nomadWorker
 
 import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/thomasobenaus/sokar/aws"
 )
 
-// AdjustScalingObjectCount will scale the AutoScalingGroup to the desired count (amount of instances)
-func (c *Connector) AdjustScalingObjectCount(autoScalingGroup string, min uint, max uint, from uint, to uint) error {
-	sess, err := c.createSession()
-	if err != nil {
-		return err
-	}
-	autoScalingIF := c.autoScalingFactory.CreateAutoScaling(sess)
+// AdjustScalingObjectCount will scale the nomad workers to the desired count (amount of instances)
+func (c *Connector) AdjustScalingObjectCount(datacenter string, min uint, max uint, from uint, to uint) error {
 
-	asgQuery := aws.AutoScalingGroupQuery{
-		AsgIF:    autoScalingIF,
-		TagKey:   c.tagKey,
-		TagValue: autoScalingGroup,
+	if from < to { // upscale
+		return c.upscale(datacenter, min, max, to)
+	} else if from > to { // downscale
+		return c.downscale(datacenter, to)
 	}
 
-	asgName, err := asgQuery.GetAutoScalingGroupName()
-	if err != nil {
-		return err
-	}
-
-	size := int64(to)
-	minSize := int64(min)
-	maxSize := int64(max)
-
-	input := &autoscaling.UpdateAutoScalingGroupInput{
-		AutoScalingGroupName: &asgName,
-		MinSize:              &minSize,
-		MaxSize:              &maxSize,
-		DesiredCapacity:      &size,
-	}
-
-	_, err = autoScalingIF.UpdateAutoScalingGroup(input)
-	if err != nil {
-		return err
-	}
-
-	c.log.Info().Msgf("Adjusted min=max=desiredCapacity of %s from %d to %d.", asgName, from, size)
+	c.log.Info().Msgf("No scale for datacenter %s needed. Current scale=%d equals desired scale=%d.", datacenter, from, to)
 	return nil
 }
 

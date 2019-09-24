@@ -42,10 +42,10 @@ func (nc *Connector) GetScalingObjectCount(jobname string) (uint, error) {
 	return uint(count), nil
 }
 
-// SetScalingObjectCount sets the given count for the given nomad job.
+// AdjustScalingObjectCount sets the given count for the given nomad job.
 // HACK: The count is set to the same value for all groups inside the job.
-func (nc *Connector) SetScalingObjectCount(jobname string, count uint) error {
-	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) to %d.", jobname, count)
+func (nc *Connector) AdjustScalingObjectCount(jobname string, min uint, max uint, from uint, to uint) error {
+	nc.log.Info().Str("job", jobname).Msgf("Adjust job count of %s (including all groups) from %d to %d.", jobname, from, to)
 
 	// obtain current status about the job
 	jobInfo, err := nc.getJobInfo(jobname)
@@ -57,8 +57,8 @@ func (nc *Connector) SetScalingObjectCount(jobname string, count uint) error {
 	// Use the current task count in order to determine whether or not a scaling
 	// event will violate the min/max job policy.
 	for _, taskGroup := range jobInfo.TaskGroups {
-		nc.log.Info().Str("job", jobname).Str("grp", *taskGroup.Name).Msgf("Adjust count of group from %d to %d.", *taskGroup.Count, count)
-		*taskGroup.Count = int(count)
+		nc.log.Info().Str("job", jobname).Str("grp", *taskGroup.Name).Msgf("Adjust count of group from %d to %d.", *taskGroup.Count, to)
+		*taskGroup.Count = int(to)
 	}
 
 	// Submit the job to the Register API endpoint with the altered count number

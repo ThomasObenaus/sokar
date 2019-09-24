@@ -140,3 +140,31 @@ func GetAutoScalingGroups(autoScaling iface.AutoScaling) ([]*aws.Group, error) {
 
 	return result.AutoScalingGroups, nil
 }
+
+// TerminateInstanceInAsg removes the specified instance and decrements the desired capacity of the instance accordingly.
+func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) (asgName string, activityID string, err error) {
+	shouldDecDesiredCapa := true
+
+	input := aws.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
+	if err := input.Validate(); err != nil {
+		return "", "", err
+	}
+
+	// First create the request
+	req, output := autoScaling.TerminateInstanceInAutoScalingGroupRequest(&input)
+
+	if req == nil {
+		return "", "", fmt.Errorf("Request from TerminateInstanceInAutoScalingGroupRequest is nil")
+	}
+
+	// Now send the request
+	if err := req.Send(); err != nil {
+		return "", "", err
+	}
+
+	if output == nil || output.Activity == nil || output.Activity.AutoScalingGroupName == nil || output.Activity.ActivityId == nil {
+		return "", "", fmt.Errorf("Output from TerminateInstanceInAutoScalingGroupRequest is not valid")
+	}
+
+	return *output.Activity.AutoScalingGroupName, *output.Activity.ActivityId, nil
+}

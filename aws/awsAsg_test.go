@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -244,4 +245,37 @@ func Test_GetAutoScalingGroupName(t *testing.T) {
 	name, err = asgQ.GetAutoScalingGroupName()
 	assert.NoError(t, err)
 	assert.Equal(t, "myASG", name)
+}
+
+func Test_TerminateInstanceInAsg(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+
+	instanceID := "1234"
+	shouldDecDesiredCapa := true
+	input := autoscaling.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
+
+	// invalid request returned
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(nil, nil)
+	_, _, err := TerminateInstanceInAsg(asgIF, instanceID)
+	assert.Error(t, err)
+
+	// invalid output returned
+	req := request.Request{}
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, nil)
+	_, _, err = TerminateInstanceInAsg(asgIF, instanceID)
+	assert.Error(t, err)
+
+	// success
+	activityID := "ActivityId"
+	asgName := "AsgName"
+	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName}
+	output := autoscaling.TerminateInstanceInAutoScalingGroupOutput{Activity: &activity}
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, &output)
+	asgNameResult, activityIDResult, err := TerminateInstanceInAsg(asgIF, instanceID)
+	assert.NoError(t, err)
+	assert.Equal(t, activityID, activityIDResult)
+	assert.Equal(t, asgName, asgNameResult)
 }

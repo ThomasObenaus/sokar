@@ -34,7 +34,6 @@ func (m *MockScaler) EXPECT() *MockScalerMockRecorder {
 
 // ScaleTo mocks base method
 func (m *MockScaler) ScaleTo(count uint, dryRun bool) error {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ScaleTo", count, dryRun)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -42,13 +41,11 @@ func (m *MockScaler) ScaleTo(count uint, dryRun bool) error {
 
 // ScaleTo indicates an expected call of ScaleTo
 func (mr *MockScalerMockRecorder) ScaleTo(count, dryRun interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleTo", reflect.TypeOf((*MockScaler)(nil).ScaleTo), count, dryRun)
 }
 
 // GetCount mocks base method
 func (m *MockScaler) GetCount() (uint, error) {
-	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCount")
 	ret0, _ := ret[0].(uint)
 	ret1, _ := ret[1].(error)
@@ -57,6 +54,5 @@ func (m *MockScaler) GetCount() (uint, error) {
 
 // GetCount indicates an expected call of GetCount
 func (mr *MockScalerMockRecorder) GetCount() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCount", reflect.TypeOf((*MockScaler)(nil).GetCount))
 }

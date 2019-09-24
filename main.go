@@ -16,6 +16,7 @@ import (
 	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
+	"github.com/thomasobenaus/sokar/nomadWorker"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
 	"github.com/thomasobenaus/sokar/sokar"
@@ -57,12 +58,14 @@ func main() {
 	logger.Info().Msg("3. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
-	logger.Info().Msg("4. Setup: Scaler")
+	logger.Info().Msg("4. Setup: Scaling Target")
 	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
+	logger.Info().Msgf("Scaling Target: %s", scalingTarget.String())
 
+	logger.Info().Msg("5. Setup: Scaler")
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory)).(*scaler.Scaler)
 
-	logger.Info().Msg("5. Setup: CapacityPlanner")
+	logger.Info().Msg("6. Setup: CapacityPlanner")
 
 	var constantMode *capacityPlanner.ConstantMode
 	var linearMode *capacityPlanner.LinearMode
@@ -81,7 +84,7 @@ func main() {
 	}
 	capaPlanner := helper.Must(capaCfg.New()).(*capacityPlanner.CapacityPlanner)
 
-	logger.Info().Msg("6. Setup: Sokar")
+	logger.Info().Msg("7. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
 	// Register metrics handler
@@ -230,7 +233,7 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 	var scalingTarget scaler.ScalingTarget
 
 	if cfg.Mode == config.ScalerModeNomadDataCenter {
-		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile, ASGTagKey: "datacenter"}
+		cfg := nomadWorker.Config{NomadServerAddress: cfg.Nomad.ServerAddr, Logger: logF.NewNamedLogger("sokar.nomadWorker"), AWSRegion: cfg.Nomad.DataCenterAWS.Region, AWSProfile: cfg.Nomad.DataCenterAWS.Profile}
 		nomadWorker, err := cfg.New()
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)
