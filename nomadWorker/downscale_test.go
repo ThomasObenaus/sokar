@@ -140,9 +140,17 @@ func Test_Downscale(t *testing.T) {
 	req := request.Request{}
 	activityID := "ActivityId"
 	asgName := "AsgName"
-	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName}
+
+	progress := int64(100)
+	statusCode := "InProgress"
+	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName, Progress: &progress, StatusCode: &statusCode}
 	output := autoscaling.TerminateInstanceInAutoScalingGroupOutput{Activity: &activity}
 	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(&input).Return(&req, &output)
+
+	activities := make([]*autoscaling.Activity, 0)
+	activities = append(activities, &activity)
+	outputDescribeActivities := autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
+	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &outputDescribeActivities)
 
 	err = connector.downscale(datacenter, desiredCount)
 	assert.NoError(t, err)

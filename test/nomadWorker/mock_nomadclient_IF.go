@@ -85,3 +85,17 @@ func (m *MockNodes) MonitorDrain(ctx context.Context, nodeID string, index uint6
 func (mr *MockNodesMockRecorder) MonitorDrain(ctx, nodeID, index, ignoreSys interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MonitorDrain", reflect.TypeOf((*MockNodes)(nil).MonitorDrain), ctx, nodeID, index, ignoreSys)
 }
+
+// Allocations mocks base method
+func (m *MockNodes) Allocations(nodeID string, q *api.QueryOptions) ([]*api.Allocation, *api.QueryMeta, error) {
+	ret := m.ctrl.Call(m, "Allocations", nodeID, q)
+	ret0, _ := ret[0].([]*api.Allocation)
+	ret1, _ := ret[1].(*api.QueryMeta)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Allocations indicates an expected call of Allocations
+func (mr *MockNodesMockRecorder) Allocations(nodeID, q interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Allocations", reflect.TypeOf((*MockNodes)(nil).Allocations), nodeID, q)
+}

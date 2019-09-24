@@ -12,4 +12,5 @@ type Nodes interface {
 	ToggleEligibility(nodeID string, eligible bool, q *nomadApi.WriteOptions) (*nomadApi.NodeEligibilityUpdateResponse, error)
 	UpdateDrain(nodeID string, spec *nomadApi.DrainSpec, markEligible bool, q *nomadApi.WriteOptions) (*nomadApi.NodeDrainUpdateResponse, error)
 	MonitorDrain(ctx context.Context, nodeID string, index uint64, ignoreSys bool) <-chan *nomadApi.MonitorMessage
+	Allocations(nodeID string, q *nomadApi.QueryOptions) ([]*nomadApi.Allocation, *nomadApi.QueryMeta, error)
 }

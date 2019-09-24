@@ -4,22 +4,30 @@ import (
 	"fmt"
 
 	nomadApi "github.com/hashicorp/nomad/api"
+	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/aws"
 )
+
+const MaxUint = ^uint(0)
+const MaxInt = int(MaxUint >> 1)
 
 type candidate struct {
 	// nodeID is the nomad node ID
 	nodeID     string
 	datacenter string
 	// instanceID is the aws instance id
-	instanceID string
-	ipAddress  string
+	instanceID            string
+	ipAddress             string
+	numRunningAllocations uint
+	cpu                   int
+	diskMB                int
+	memoryMB              int
 }
 
 func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 
 	// 1. Select a candidate for downscaling -> returns [needs node id]
-	candidate, err := selectCandidate(c.nodesIF, datacenter)
+	candidate, err := selectCandidate(c.nodesIF, datacenter, c.log)
 	if err != nil {
 		return err
 	}
@@ -60,7 +68,7 @@ func setEligibility(nodesIF Nodes, nodeID string, eligible bool) error {
 	return err
 }
 
-func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
+func selectCandidate(nodesIF Nodes, datacenter string, log zerolog.Logger) (*candidate, error) {
 
 	nodeListStub, _, err := nodesIF.List(nil)
 	if err != nil {
@@ -79,16 +87,39 @@ func selectCandidate(nodesIF Nodes, datacenter string) (*candidate, error) {
 		return nil, fmt.Errorf("No node found in datacenter '%s' that is not already draining", datacenter)
 	}
 
-	// now select the best node
-	// TODO: select the node with least running allocations
-	// Hint: https://www.nomadproject.io/api/nodes.html#list-node-allocations
-	// HACK: Just take the first node for now
-	node := nodes[0]
+	// now select the best node based on the least running allocations
+	bestCandidate := candidate{
+		numRunningAllocations: MaxUint,
+		cpu:      MaxInt,
+		memoryMB: MaxInt,
+		diskMB:   MaxInt,
+	}
 
-	return &candidate{
-		ipAddress:  node.Address,
-		instanceID: node.Name,
-		nodeID:     node.ID,
-		datacenter: node.Datacenter,
-	}, nil
+	for _, node := range nodes {
+		allocInfo, err := getNumAllocationsInStatus(nodesIF, node.ID, nomadApi.AllocClientStatusRunning)
+		if err != nil {
+			log.Error().Err(err).Msg("Unable to obtain the nodes allocations. Ignore node.")
+			continue
+		}
+
+		lessAllocs := allocInfo.numAllocations < bestCandidate.numRunningAllocations
+		sameAllocs := allocInfo.numAllocations == bestCandidate.numRunningAllocations
+		sameMem := allocInfo.memoryMB == bestCandidate.memoryMB
+		sameAllocsButLessMem := sameAllocs && (allocInfo.memoryMB < bestCandidate.memoryMB)
+		sameAllocsAndMemButCPU := sameAllocs && sameMem && (allocInfo.cpu < bestCandidate.cpu)
+
+		if lessAllocs || sameAllocsButLessMem || sameAllocsAndMemButCPU {
+			bestCandidate.nodeID = node.ID
+			bestCandidate.numRunningAllocations = allocInfo.numAllocations
+			bestCandidate.cpu = allocInfo.cpu
+			bestCandidate.memoryMB = allocInfo.memoryMB
+			bestCandidate.diskMB = allocInfo.diskMB
+			bestCandidate.datacenter = node.Datacenter
+			bestCandidate.instanceID = node.Name
+			bestCandidate.ipAddress = node.Address
+			log.Info().Msgf("New best candidate (nodeID=%s) with %d running allocations found (cpu=%d,diskMB=%d,memMB=%d).", bestCandidate.nodeID, bestCandidate.numRunningAllocations, bestCandidate.cpu, bestCandidate.diskMB, bestCandidate.memoryMB)
+		}
+	}
+
+	return &bestCandidate, nil
 }
