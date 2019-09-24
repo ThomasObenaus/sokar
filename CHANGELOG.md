@@ -1,6 +1,12 @@
 # Changelog
 
-## v0.0.9 (2019-??-??)
+## v0.0.9 (2019-09-24)
+
+- With [#90](https://github.com/ThomasObenaus/sokar/issues/90) sokar gets a real downscaling for nomad workers running on AWS.
+- This means:
+  1.  The nomad worker with least running allocations, CPU and memory will be selected as candidate.
+  2.  This nomad worker will be drained.
+  3.  Then the according instance is terminated and the AWS ASG's desired capacity is reduced accordingly.
 - ScalingTarget: With [#92](https://github.com/ThomasObenaus/sokar/issues/92) sokar can scale up/ down AWS EC2 instances that are managed by an AWS AutoScalingGroup. Therefore the ASG just have to be tagged with `scale-object=<some_name>` and sokar has to run in scaler mode `aws-ec2` (`--sca.mode=aws-ec2`). Then if sokar is introduced to scale the scale-object `some_name` (`--scale-object.name=some_name`) he would adjust the number of instances created by this ASG based on the scaling alerts he gets.
 - Config: With [#92](https://github.com/ThomasObenaus/sokar/issues/92) the config parameter `--sca.nomad.mode` is deprecated and replaced by `--sca.mode`. Furthermore the possible values for this parameter are now: `nomad-job` instead of `job`, `nomad-dc` instead of `dc` and `aws-ec2`. The old values `job` and `dc` are deprecated.
 - Config: With [#88](https://github.com/ThomasObenaus/sokar/issues/88) the interval sokar checks if someone externally (e.g. a deplyoment) has changed the scale of the scale-object is now configurable (`--sca.watcher-interval`).
