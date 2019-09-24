@@ -39,8 +39,7 @@ func Test_GetCurrentScalingState(t *testing.T) {
 	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName, Progress: &progress, StatusCode: &statusCode}
 	activities := make([]*autoscaling.Activity, 0)
 	activities = append(activities, &activity)
-	nextToken := "next"
-	output := autoscaling.DescribeScalingActivitiesOutput{Activities: activities, NextToken: &nextToken}
+	output := autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
 	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &output)
 	state, err = getCurrentScalingState(asgIF, asgName, activityID)
 	assert.NoError(t, err)
