@@ -30,7 +30,7 @@ func Test_CliAndConfig(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 
-	args = []string{"./sokar-bin"}
+	args = []string{"./sokar-bin", "--sca.nomad.server-address=" + nomadSrvAddr}
 	cfg, err = cliAndConfig(args)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)

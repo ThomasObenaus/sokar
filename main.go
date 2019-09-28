@@ -67,22 +67,19 @@ func main() {
 
 	logger.Info().Msg("6. Setup: CapacityPlanner")
 
-	var capaPlanner *capacityPlanner.CapacityPlanner
+	var mode capacityPlanner.Option
 	if cfg.CapacityPlanner.ConstantMode.Enable {
-		capaPlanner = helper.Must(capacityPlanner.New(
-			capacityPlanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
-			capacityPlanner.UseConstantMode(cfg.CapacityPlanner.ConstantMode.Offset),
-			capacityPlanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
-			capacityPlanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
-		)).(*capacityPlanner.CapacityPlanner)
+		mode = capacityPlanner.UseConstantMode(cfg.CapacityPlanner.ConstantMode.Offset)
 	} else if cfg.CapacityPlanner.LinearMode.Enable {
-		capaPlanner = helper.Must(capacityPlanner.New(
-			capacityPlanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
-			capacityPlanner.UseLinearMode(float32(cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)),
-			capacityPlanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
-			capacityPlanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
-		)).(*capacityPlanner.CapacityPlanner)
+		mode = capacityPlanner.UseLinearMode(float32(cfg.CapacityPlanner.LinearMode.ScaleFactorWeight))
 	}
+
+	capaPlanner := helper.Must(capacityPlanner.New(
+		capacityPlanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
+		capacityPlanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
+		capacityPlanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
+		mode,
+	)).(*capacityPlanner.CapacityPlanner)
 
 	logger.Info().Msg("7. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)

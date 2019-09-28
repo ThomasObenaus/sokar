@@ -317,6 +317,7 @@ func Test_FillCfg_SupportDeprecatedFlags(t *testing.T) {
 	cfg = NewDefaultConfig()
 	args = []string{
 		"--sca.mode=job",
+		"--sca.nomad.server-address=http://1.2.3.4",
 	}
 
 	err = cfg.ReadConfig(args)
@@ -327,9 +328,36 @@ func Test_FillCfg_SupportDeprecatedFlags(t *testing.T) {
 	cfg = NewDefaultConfig()
 	args = []string{
 		"--sca.mode=dc",
+		"--sca.nomad.server-address=http://1.2.3.4",
 	}
 
 	err = cfg.ReadConfig(args)
 	assert.NoError(t, err)
 	assert.Equal(t, ScalerModeNomadDataCenter, cfg.Scaler.Mode)
+}
+
+func Test_ValidateCapacityPlanner(t *testing.T) {
+	capacityPlanner := CapacityPlanner{}
+	err := validateCapacityPlanner(capacityPlanner)
+	assert.Error(t, err)
+
+	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true}, LinearMode: CAPLinearMode{Enable: true}}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.Error(t, err)
+
+	capacityPlanner = CapacityPlanner{LinearMode: CAPLinearMode{Enable: true, ScaleFactorWeight: 0}}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.Error(t, err)
+
+	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 0}}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.Error(t, err)
+
+	capacityPlanner = CapacityPlanner{LinearMode: CAPLinearMode{Enable: true, ScaleFactorWeight: 0.5}}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.NoError(t, err)
+
+	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 1}}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.NoError(t, err)
 }
