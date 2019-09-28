@@ -18,7 +18,7 @@ func TestUpscale(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
+	connector, err := New("http://nomad.io", "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 

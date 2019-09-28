@@ -60,16 +60,6 @@ func WithLogger(logger zerolog.Logger) Option {
 	}
 }
 
-// WithAwsProfile sets the aws profile to be used.
-// The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
-// This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
-// resources (ASG) for scaling (e.g. granted by a AWS Instance Profile). In this case the region parameter has to be specified instead (via WithAwsRegion()).
-func WithAwsProfile(profile string) Option {
-	return func(c *Connector) {
-		c.awsProfile = profile
-	}
-}
-
 // WithAwsRegion sets the aws region in which the resource to be scaled can be found
 func WithAwsRegion(region string) Option {
 	return func(c *Connector) {
@@ -77,8 +67,11 @@ func WithAwsRegion(region string) Option {
 	}
 }
 
-// New creates a new nomad connector
-func New(nomadServerAddress string, options ...Option) (*Connector, error) {
+// New creates a new nomad worker connector.
+// The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
+// This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
+// resources (ASG) for scaling (e.g. granted by a AWS Instance Profile). In this case the region parameter has to be specified instead (via WithAwsRegion()).
+func New(nomadServerAddress, awsProfile string, options ...Option) (*Connector, error) {
 	if len(nomadServerAddress) == 0 {
 		return nil, fmt.Errorf("required configuration 'nomadServerAddress' is missing/ empty")
 	}
@@ -90,6 +83,7 @@ func New(nomadServerAddress string, options ...Option) (*Connector, error) {
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 		nodeDrainDeadline:          time.Second * 30,
 		monitorInstanceTimeout:     time.Second * 180,
+		awsProfile:                 awsProfile,
 	}
 
 	// config needed to set up a nomad api client

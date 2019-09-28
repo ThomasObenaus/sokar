@@ -114,7 +114,7 @@ func Test_Downscale(t *testing.T) {
 	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
-	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
+	connector, err := New("http://nomad.io", "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 

@@ -49,16 +49,6 @@ func WithLogger(logger zerolog.Logger) Option {
 	}
 }
 
-// WithAwsProfile sets the aws profile to be used.
-// The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
-// This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
-// resources (ASG) for scaling (e.g. granted by a AWS Instance Profile). In this case the region parameter has to be specified instead (via WithAwsRegion()).
-func WithAwsProfile(profile string) Option {
-	return func(c *Connector) {
-		c.awsProfile = profile
-	}
-}
-
 // WithAwsRegion sets the aws region in which the resource to be scaled can be found
 func WithAwsRegion(region string) Option {
 	return func(c *Connector) {
@@ -67,12 +57,16 @@ func WithAwsRegion(region string) Option {
 }
 
 // New creates a new nomad connector
-func New(asgTagKey string, options ...Option) (*Connector, error) {
+// The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
+// This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
+// resources (ASG) for scaling (e.g. granted by a AWS Instance Profile). In this case the region parameter has to be specified instead (via WithAwsRegion()).
+func New(asgTagKey, awsProfile string, options ...Option) (*Connector, error) {
 	awsEc2Conn := Connector{
 		tagKey:                     asgTagKey,
 		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
 		fnCreateSession:            aws.NewAWSSession,
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
+		awsProfile:                 awsProfile,
 	}
 
 	// apply the options

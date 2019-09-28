@@ -224,8 +224,8 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 	if cfg.Mode == config.ScalerModeNomadDataCenter {
 		nomadWorker, err := nomadWorker.New(
 			cfg.Nomad.ServerAddr,
+			cfg.Nomad.DataCenterAWS.Profile,
 			nomadWorker.WithLogger(logF.NewNamedLogger("sokar.nomadWorker")),
-			nomadWorker.WithAwsProfile(cfg.Nomad.DataCenterAWS.Profile),
 			nomadWorker.WithAwsRegion(cfg.Nomad.DataCenterAWS.Region),
 		)
 		if err != nil {
@@ -235,8 +235,8 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 	} else if cfg.Mode == config.ScalerModeAwsEc2 {
 		awsEc2, err := awsEc2.New(
 			cfg.AwsEc2.ASGTagKey,
+			cfg.AwsEc2.Profile,
 			awsEc2.WithLogger(logF.NewNamedLogger("sokar.aws-ec2")),
-			awsEc2.WithAwsProfile(cfg.AwsEc2.Profile),
 			awsEc2.WithAwsRegion(cfg.AwsEc2.Region),
 		)
 		if err != nil {

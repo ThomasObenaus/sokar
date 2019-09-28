@@ -9,23 +9,23 @@ import (
 func TestNewConnector(t *testing.T) {
 
 	// ASGTagKey not specified
-	connector, err := New("")
+	connector, err := New("", "profile")
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
 	// AWSProfile and AWSRegion not specified
-	connector, err = New("data-center")
+	connector, err = New("data-center", "")
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
 	// success (profile)
-	connector, err = New("data-center", WithAwsProfile("profile"))
+	connector, err = New("data-center", "profile")
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
 	assert.Equal(t, "profile", connector.awsProfile)
 
 	// success (region)
-	connector, err = New("data-center", WithAwsRegion("region"))
+	connector, err = New("data-center", "", WithAwsRegion("region"))
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
 	assert.Equal(t, "region", connector.awsRegion)
