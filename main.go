@@ -243,9 +243,10 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 		}
 		scalingTarget = awsEc2
 	} else {
-		nomadConfig := nomad.NewDefaultConfig(cfg.Nomad.ServerAddr)
-		nomadConfig.Logger = logF.NewNamedLogger("sokar.nomad")
-		nomad, err := nomadConfig.New()
+		nomad, err := nomad.New(
+			cfg.Nomad.ServerAddr,
+			nomad.WithLogger(logF.NewNamedLogger("sokar.nomad")),
+		)
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad connector: %s", err)
 		}
