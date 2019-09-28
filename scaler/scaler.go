@@ -119,11 +119,13 @@ func (s *Scaler) Run() {
 }
 
 // Stop tears down scaler
-func (s *Scaler) Stop() {
+func (s *Scaler) Stop() error {
 	s.logger.Info().Msg("Teardown requested")
 
 	close(s.scaleTicketChan)
 	close(s.stopChan)
+
+	return nil
 }
 
 // Join blocks/ waits until scaler has been stopped

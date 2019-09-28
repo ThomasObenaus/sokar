@@ -10,7 +10,7 @@ import (
 type Runnable interface {
 	Run()
 	Join()
-	Stop()
+	Stop() error
 	GetName() string
 }
 
@@ -40,7 +40,11 @@ func Stop(orderedRunnables []Runnable, logger zerolog.Logger) {
 		runnable := orderedRunnables[i]
 		name := runnable.GetName()
 		logger.Debug().Msgf("Stopping %s ...", name)
-		runnable.Stop()
+		err := runnable.Stop()
+		if err != nil {
+			logger.Error().Err(err).Msg("Failed stopping '%s'")
+			continue
+		}
 		logger.Info().Msgf("%s stopped.", name)
 	}
 }

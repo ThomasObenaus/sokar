@@ -36,7 +36,7 @@ func (api *API) GetName() string {
 }
 
 // Stop stops/ tears down the api server
-func (api *API) Stop() {
+func (api *API) Stop() error {
 
 	// context: wait for 3 seconds
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -44,8 +44,9 @@ func (api *API) Stop() {
 
 	err := api.srv.Shutdown(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // Run starts the api server for sokar
