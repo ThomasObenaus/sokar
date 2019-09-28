@@ -181,10 +181,7 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 
 	// Alertmanger Connector
 	logger := logF.NewNamedLogger("sokar.alertmanager")
-	amCfg := alertmanager.Config{
-		Logger: logger,
-	}
-	amConnector := amCfg.New()
+	amConnector := alertmanager.New(alertmanager.WithLogger(logger))
 	api.Router.POST(sokar.PathAlertmanager, amConnector.HandleScaleAlerts)
 	logger.Info().Msgf("Connector for alerts from prometheus/alertmanager setup successfully. Will listen for alerts on %s", sokar.PathAlertmanager)
 

@@ -19,16 +19,23 @@ type Connector struct {
 	handleFuncs []saa.ScaleAlertHandleFunc
 }
 
-// Config cfg for the connector
-type Config struct {
-	Logger zerolog.Logger
+// Option represents an option for the alertmanager
+type Option func(c *Connector)
+
+// WithLogger adds a configured Logger to the alertmanager
+func WithLogger(logger zerolog.Logger) Option {
+	return func(c *Connector) {
+		c.logger = logger
+	}
 }
 
 // New creates a new instance of the prometheus/alertmanager Connector
-func (cfg Config) New() *Connector {
-	return &Connector{
-		logger: cfg.Logger,
+func New(options ...Option) *Connector {
+	connector := Connector{logger: zerolog.Logger{}}
+	for _, opt := range options {
+		opt(&connector)
 	}
+	return &connector
 }
 
 // Register is used to register the given handler func.

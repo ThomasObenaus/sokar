@@ -5,21 +5,28 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	saa "github.com/thomasobenaus/sokar/scaleAlertAggregator"
 )
 
 func TestNewConnector(t *testing.T) {
-
-	cfg := Config{}
-	connector := cfg.New()
-
+	connector := New()
 	assert.NotNil(t, connector)
+}
+
+func Test_WithLogger(t *testing.T) {
+
+	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
+	am := New(WithLogger(logger))
+	require.NotNil(t, am)
+	assert.Equal(t, zerolog.DebugLevel, logger.GetLevel())
 }
 
 func Test_GenReceiver(t *testing.T) {
@@ -32,8 +39,7 @@ func Test_GenReceiver(t *testing.T) {
 
 func Test_FireScaleAlert(t *testing.T) {
 
-	cfg := Config{}
-	connector := cfg.New()
+	connector := New()
 	require.NotNil(t, connector)
 
 	emitter := "ALERTMANAGER"
@@ -62,8 +68,7 @@ func Test_FireScaleAlert(t *testing.T) {
 }
 func Test_HandleScaleAlert_Invalid(t *testing.T) {
 
-	cfg := Config{}
-	connector := cfg.New()
+	connector := New()
 	require.NotNil(t, connector)
 
 	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
@@ -84,8 +89,7 @@ func Test_HandleScaleAlert_Invalid(t *testing.T) {
 
 func Test_HandleScaleAlert_Success(t *testing.T) {
 
-	cfg := Config{}
-	connector := cfg.New()
+	connector := New()
 	require.NotNil(t, connector)
 	alertName := "ABC"
 	startsAt := time.Now()
