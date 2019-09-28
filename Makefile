@@ -11,7 +11,7 @@ tag := $(shell git describe --tags)
 branch := $(shell git branch | grep \* | cut -d ' ' -f2)
 revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
-nomad_server := "https://nomad.integration.eu.pcc-nav.cloud"#"http://${LOCAL_IP}:4646"
+nomad_server := "http://${LOCAL_IP}:4646"
 
 all: tools test build finish
 

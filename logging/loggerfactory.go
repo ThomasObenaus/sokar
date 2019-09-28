@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 // LoggerFactory is a factory that can be used to create named loggers using the same aligned configuration and namespace.
@@ -13,40 +12,36 @@ type LoggerFactory interface {
 	NewNamedLogger(name string) zerolog.Logger
 }
 
-// Config is a struct keeping the main configuration parameters for the LoggerFactory
-type Config struct {
-	UseStructuredLogging       bool
-	UseUnixTimestampForLogging bool
-	NoColoredLogOutput         bool
-}
+// New creates a new LoggerFactory which then can be used to create configured named loggers (log channels)
+func New(structuredLogging, unixTimeStamp, disableColoredLogs bool) LoggerFactory {
 
-// New creates a new LoggerFactory
-func (cfg Config) New() LoggerFactory {
-	if cfg.UseUnixTimestampForLogging {
+	// default format for the timestamp
+	zerolog.TimeFieldFormat = time.StampMilli //time.RFC3339
+
+	if unixTimeStamp {
 		// UNIX Time is faster and smaller than most timestamps
 		// If you set zerolog.TimeFieldFormat to an empty string,
 		// logs will write with UNIX time
-		zerolog.TimeFieldFormat = ""
-	} else {
-		zerolog.TimeFieldFormat = time.StampMilli //time.RFC3339
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	}
 
-	return &loggerFactoryImpl{UseStructuredLogging: cfg.UseStructuredLogging, NoColoredLogOutput: cfg.NoColoredLogOutput}
+	return &loggerFactoryImpl{structuredLogging: structuredLogging, disableColoredLogs: disableColoredLogs}
 }
 
 type loggerFactoryImpl struct {
-	UseStructuredLogging bool
-	NoColoredLogOutput   bool
+	structuredLogging  bool
+	disableColoredLogs bool
 }
 
+// NewNamedLogger creates a new named and configured log-channel (logger)
 func (lf *loggerFactoryImpl) NewNamedLogger(name string) zerolog.Logger {
 
-	var logger zerolog.Logger
-	if lf.UseStructuredLogging {
-		logger = zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
-	} else {
-		logger = log.Output(zerolog.ConsoleWriter{NoColor: lf.NoColoredLogOutput, Out: os.Stderr}).With().Timestamp().Str("logger", name).Logger()
+	if lf.structuredLogging {
+		return zerolog.New(os.Stdout).With().Timestamp().Str("logger", name).Logger()
 	}
 
-	return logger
+	return zerolog.New(os.Stdout).Output(zerolog.ConsoleWriter{
+		NoColor: lf.disableColoredLogs, Out: os.Stderr,
+		TimeFormat: zerolog.TimeFieldFormat,
+	}).With().Timestamp().Str("logger", name).Logger()
 }

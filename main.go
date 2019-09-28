@@ -144,13 +144,8 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("Error creating LoggerFactory: Config is nil")
 	}
-	lCfg := logging.Config{
-		UseStructuredLogging:       cfg.Logging.Structured,
-		UseUnixTimestampForLogging: cfg.Logging.UxTimestamp,
-		NoColoredLogOutput:         cfg.Logging.NoColoredLogOutput,
-	}
 
-	loggingFactory := lCfg.New()
+	loggingFactory := logging.New(cfg.Logging.Structured, cfg.Logging.UxTimestamp, cfg.Logging.NoColoredLogOutput)
 	return loggingFactory, nil
 }
 

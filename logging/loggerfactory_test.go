@@ -10,24 +10,18 @@ import (
 
 func TestNew(t *testing.T) {
 
-	cfg := Config{}
-	lf := cfg.New()
+	lf := New(false, false, false)
 	assert.NotNil(t, lf)
 	assert.NotEmpty(t, zerolog.TimeFieldFormat)
 
-	cfg = Config{
-		UseUnixTimestampForLogging: true,
-	}
-	lf = cfg.New()
+	lf = New(false, true, false)
 	assert.NotNil(t, lf)
 	assert.Empty(t, zerolog.TimeFieldFormat)
 }
 
 func TestNewNamedLogger(t *testing.T) {
 
-	loggerFactory := loggerFactoryImpl{
-		UseStructuredLogging: true,
-	}
+	loggerFactory := New(true, false, false)
 
 	logger := loggerFactory.NewNamedLogger("MyTestLogger")
 	strout := strings.Builder{}
@@ -36,9 +30,7 @@ func TestNewNamedLogger(t *testing.T) {
 	assert.Contains(t, strout.String(), "MyTestLogger")
 	strout.Reset()
 
-	loggerFactory = loggerFactoryImpl{
-		UseStructuredLogging: false,
-	}
+	loggerFactory = New(false, false, false)
 
 	logger = loggerFactory.NewNamedLogger("MyTestLogger2")
 	loggerDup = logger.Output(&strout)
@@ -46,11 +38,9 @@ func TestNewNamedLogger(t *testing.T) {
 	assert.Contains(t, strout.String(), "MyTestLogger2")
 }
 
-func ExampleConfig_New() {
-	cfg := Config{UseStructuredLogging: true}
-
+func ExampleNew() {
 	// create the factory
-	loggingFactory := cfg.New()
+	loggingFactory := New(true, false, false)
 
 	// create new named logger
 	logger := loggingFactory.NewNamedLogger("MyLogger")
