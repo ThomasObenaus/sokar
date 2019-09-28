@@ -18,11 +18,13 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 	sk.logger.Info().Msgf("ScaleBy Percentage Endpoint with '%s %%' called.", percentageStr)
 	percentage, err := strconv.ParseInt(percentageStr, 10, 64)
 	if err != nil {
+		sk.logger.Error().Err(err).Msg("Percentage parameter is invalid.")
 		http.Error(w, fmt.Sprintf("Percentage parameter is invalid: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	if !sk.dryRunMode {
+		sk.logger.Error().Msg("The scale by endpoint is only supported if sokar is running in dry-run mode.")
 		http.Error(w, "The scale by endpoint is only supported if sokar is running in dry-run mode.", http.StatusBadRequest)
 		return
 	}
@@ -30,6 +32,7 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 	percentageFract := float32(percentage) / 100.00
 	err = sk.triggerScale(false, percentageFract, planScaleByPercentage)
 	if err != nil {
+		sk.logger.Error().Err(err).Msg("Unable to trigger scale")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -46,17 +49,20 @@ func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprou
 	sk.logger.Info().Msgf("ScaleBy Value Endpoint with '%s %%' called.", valueStr)
 	value, err := strconv.ParseInt(valueStr, 10, 64)
 	if err != nil {
+		sk.logger.Error().Err(err).Msg("Percentage parameter is invalid.")
 		http.Error(w, fmt.Sprintf("Value parameter is invalid: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	if !sk.dryRunMode {
+		sk.logger.Error().Msg("The scale by endpoint is only supported if sokar is running in dry-run mode.")
 		http.Error(w, "The scale by endpoint is only supported if sokar is running in dry-run mode.", http.StatusBadRequest)
 		return
 	}
 
 	err = sk.triggerScale(false, float32(value), planScaleByValue)
 	if err != nil {
+		sk.logger.Error().Err(err).Msg("Unable to trigger scale")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

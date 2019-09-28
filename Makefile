@@ -72,7 +72,7 @@ run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 
 run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc" --scale-object.name="private-services" --sca.nomad.dc-aws.profile="integration" --scale-object.max=22 --dry-run=true --sca.watcher-interval=20m
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
 
 run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"

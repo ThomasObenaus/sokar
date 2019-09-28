@@ -232,8 +232,12 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 		}
 		scalingTarget = nomadWorker
 	} else if cfg.Mode == config.ScalerModeAwsEc2 {
-		cfg := awsEc2.Config{Logger: logF.NewNamedLogger("sokar.aws-ec2"), AWSRegion: cfg.AwsEc2.Region, AWSProfile: cfg.AwsEc2.Profile, ASGTagKey: cfg.AwsEc2.ASGTagKey}
-		awsEc2, err := cfg.New()
+		awsEc2, err := awsEc2.New(
+			cfg.AwsEc2.ASGTagKey,
+			awsEc2.WithLogger(logF.NewNamedLogger("sokar.aws-ec2")),
+			awsEc2.WithAwsProfile(cfg.AwsEc2.Profile),
+			awsEc2.WithAwsRegion(cfg.AwsEc2.Region),
+		)
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up aws-ec2 connector: %s", err)
 		}
