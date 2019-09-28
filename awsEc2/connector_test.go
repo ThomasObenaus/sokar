@@ -8,25 +8,40 @@ import (
 
 func TestNewConnector(t *testing.T) {
 
+	// ASGTagKey not specified
+	connector, err := New("", "profile")
+	assert.Nil(t, connector)
+	assert.Error(t, err)
+
 	// AWSProfile and AWSRegion not specified
-	cfg := Config{}
-	connector, err := cfg.New()
-
+	connector, err = New("data-center", "")
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
-	cfg = Config{AWSProfile: "test", ASGTagKey: "data-center"}
-	connector, err = cfg.New()
+	// success (profile)
+	connector, err = New("data-center", "profile")
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
+	assert.Equal(t, "profile", connector.awsProfile)
 
-	cfg = Config{AWSRegion: "test-region", ASGTagKey: "data-center"}
-	connector, err = cfg.New()
+	// success (region)
+	connector, err = New("data-center", "", WithAwsRegion("region"))
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
+	assert.Equal(t, "region", connector.awsRegion)
+}
 
-	cfg = Config{AWSRegion: "test-region"}
-	connector, err = cfg.New()
-	assert.Nil(t, connector)
+func TestValidate(t *testing.T) {
+
+	// all missing
+	err := validate(Connector{})
 	assert.Error(t, err)
+
+	// region and profile missing
+	err = validate(Connector{tagKey: "tagkey"})
+	assert.Error(t, err)
+
+	// success
+	err = validate(Connector{tagKey: "tagkey", awsProfile: "profile"})
+	assert.NoError(t, err)
 }

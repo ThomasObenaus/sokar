@@ -9,10 +9,7 @@ import (
 
 func Test_PlanLinear(t *testing.T) {
 
-	cfg := NewDefaultConfig()
-	cfg.LinearMode = &LinearMode{ScaleFactorWeight: 0.5}
-	cfg.ConstantMode = nil
-	cap, err := cfg.New()
+	cap, err := New(UseLinearMode(0.5))
 	require.NotNil(t, cap)
 	require.NoError(t, err)
 

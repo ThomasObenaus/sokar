@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/api"
@@ -31,7 +30,7 @@ func Test_CliAndConfig(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 
-	args = []string{"./sokar-bin"}
+	args = []string{"./sokar-bin", "--sca.nomad.server-address=" + nomadSrvAddr}
 	cfg, err = cliAndConfig(args)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
@@ -86,13 +85,12 @@ func Test_SetupScaleEmitters(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
-	logger := zerolog.Logger{}
 
 	emitters, err := setupScaleAlertEmitters(nil, nil)
 	assert.Error(t, err)
 	assert.Nil(t, emitters)
 
-	apiInst := api.New(12000, logger)
+	apiInst := api.New(12000)
 	emitters, err = setupScaleAlertEmitters(apiInst, nil)
 	assert.Error(t, err)
 	assert.Nil(t, emitters)

@@ -53,8 +53,10 @@ func (mr *MockRunnableMockRecorder) Join() *gomock.Call {
 }
 
 // Stop mocks base method
-func (m *MockRunnable) Stop() {
-	m.ctrl.Call(m, "Stop")
+func (m *MockRunnable) Stop() error {
+	ret := m.ctrl.Call(m, "Stop")
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Stop indicates an expected call of Stop

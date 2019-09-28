@@ -2,12 +2,10 @@ package nomad
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 // Connector is a object that allows to interact with nomad
@@ -34,28 +32,51 @@ type Config struct {
 	EvaluationTimeOut time.Duration
 }
 
-// NewDefaultConfig returns a good default configuration for the nomad connector
-func NewDefaultConfig(nomadServerAddress string) Config {
-	return Config{
-		NomadServerAddress: nomadServerAddress,
-		Logger:             log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Str("logger", "sokar").Logger(),
-		DeploymentTimeOut:  1 * time.Minute,
-		EvaluationTimeOut:  30 * time.Second,
+// Option represents an option for the Connector
+type Option func(conn *Connector)
+
+// WithLogger adds a configured Logger to the Connector
+func WithLogger(logger zerolog.Logger) Option {
+	return func(conn *Connector) {
+		conn.log = logger
+	}
+}
+
+// WithDeploymentTimeOut sets the timeout that should be regarded during deployments
+func WithDeploymentTimeOut(timeout time.Duration) Option {
+	return func(conn *Connector) {
+		conn.deploymentTimeOut = timeout
+	}
+}
+
+// WithEvaluationTimeOut sets the timeout that should be regarded during evaluations
+func WithEvaluationTimeOut(timeout time.Duration) Option {
+	return func(conn *Connector) {
+		conn.evaluationTimeOut = timeout
 	}
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New() (*Connector, error) {
+func New(nomadServerAddress string, options ...Option) (*Connector, error) {
 
-	if len(cfg.NomadServerAddress) == 0 {
-		return nil, fmt.Errorf("Required configuration 'NomadServerAddress' is missing")
+	if len(nomadServerAddress) == 0 {
+		return nil, fmt.Errorf("required configuration 'nomadServerAddress' is missing/ empty")
 	}
 
-	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ...")
+	nomadConnector := Connector{
+		deploymentTimeOut: 1 * time.Minute,
+		evaluationTimeOut: 30 * time.Second,
+	}
+	// apply the options
+	for _, opt := range options {
+		opt(&nomadConnector)
+	}
+
+	nomadConnector.log.Info().Str("srvAddr", nomadServerAddress).Msg("Setting up nomad connector ...")
 
 	// config needed to set up a nomad api client
 	config := nomadApi.DefaultConfig()
-	config.Address = cfg.NomadServerAddress
+	config.Address = nomadServerAddress
 	//config.SecretID = token
 	//config.TLSConfig.TLSServerName = tls_server_name
 
@@ -64,17 +85,12 @@ func (cfg *Config) New() (*Connector, error) {
 		return nil, err
 	}
 
-	nc := &Connector{
-		log:               cfg.Logger,
-		jobsIF:            client.Jobs(),
-		deploymentIF:      client.Deployments(),
-		evalIF:            client.Evaluations(),
-		deploymentTimeOut: cfg.DeploymentTimeOut,
-		evaluationTimeOut: cfg.EvaluationTimeOut,
-	}
+	nomadConnector.jobsIF = client.Jobs()
+	nomadConnector.deploymentIF = client.Deployments()
+	nomadConnector.evalIF = client.Evaluations()
 
-	cfg.Logger.Info().Str("srvAddr", cfg.NomadServerAddress).Msg("Setting up nomad connector ... done")
-	return nc, nil
+	nomadConnector.log.Info().Str("srvAddr", nomadServerAddress).Msg("Setting up nomad connector ... done")
+	return &nomadConnector, nil
 }
 
 func (c *Connector) String() string {

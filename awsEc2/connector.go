@@ -39,50 +39,59 @@ type Connector struct {
 	awsRegion string
 }
 
-// Config contains the main configuration for the nomad worker connector
-type Config struct {
-	Logger zerolog.Logger
+// Option represents an option for the awsEc2 Connector
+type Option func(c *Connector)
 
-	// AWSProfile represents the name of the aws profile that shall be used to access the resources to scale the data-center.
-	// This parameter is optional. If it is empty the instance where sokar runs on has to have enough permissions to access the
-	// resources (ASG) for scaling. In this case the AWSRegion parameter has to be specified as well.
-	AWSProfile string
+// WithLogger adds a configured Logger to the awsEc2 Connector
+func WithLogger(logger zerolog.Logger) Option {
+	return func(c *Connector) {
+		c.log = logger
+	}
+}
 
-	// AWSRegion is an optional parameter and is regarded only if the parameter AWSProfile is empty.
-	// The AWSRegion has to specify the region in which the data-center to be scaled resides in.
-	AWSRegion string
-
-	// ASGTagKey is a optional parameter that can be used to define which tag is used to find the AWS ASG that should be scaled/ modified.
-	ASGTagKey string
+// WithAwsRegion sets the aws region in which the resource to be scaled can be found
+func WithAwsRegion(region string) Option {
+	return func(c *Connector) {
+		c.awsRegion = region
+	}
 }
 
 // New creates a new nomad connector
-func (cfg *Config) New() (*Connector, error) {
-
-	cfg.Logger.Info().Msg("Setting up aws Ec2 connector")
-
-	if len(cfg.AWSProfile) == 0 && len(cfg.AWSRegion) == 0 {
-		return nil, fmt.Errorf("The parameters AWSRegion and AWSProfile are empty")
-	}
-
-	if len(cfg.ASGTagKey) == 0 {
-		return nil, fmt.Errorf("The parameter ASGTagKey is empty")
-	}
-
-	nc := &Connector{
-		log:                        cfg.Logger,
-		tagKey:                     cfg.ASGTagKey,
+// The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
+// This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
+// resources (ASG) for scaling (e.g. granted by a AWS Instance Profile). In this case the region parameter has to be specified instead (via WithAwsRegion()).
+func New(asgTagKey, awsProfile string, options ...Option) (*Connector, error) {
+	awsEc2Conn := Connector{
+		tagKey:                     asgTagKey,
 		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
 		fnCreateSession:            aws.NewAWSSession,
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
-		awsProfile:                 cfg.AWSProfile,
-		awsRegion:                  cfg.AWSRegion,
+		awsProfile:                 awsProfile,
 	}
 
-	cfg.Logger.Info().Msg("Setting up aws Ec2 connector ... done")
-	return nc, nil
+	// apply the options
+	for _, opt := range options {
+		opt(&awsEc2Conn)
+	}
+
+	if err := validate(awsEc2Conn); err != nil {
+		return nil, err
+	}
+
+	return &awsEc2Conn, nil
 }
 
 func (c *Connector) String() string {
 	return "AWS-EC2 (AWS AutoScalingGroup, EC2 instances)"
+}
+
+func validate(c Connector) error {
+
+	if len(c.tagKey) == 0 {
+		return fmt.Errorf("the tagkey to identify the AutoScalingGroup that should be scaled is not specified")
+	}
+	if len(c.awsProfile) == 0 && len(c.awsRegion) == 0 {
+		return fmt.Errorf("aws profile and region are not specified")
+	}
+	return nil
 }

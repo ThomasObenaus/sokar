@@ -9,11 +9,11 @@ import (
 
 func Test_PlanConstant(t *testing.T) {
 
-	cfg := NewDefaultConfig()
-	cap, err := cfg.New()
+	cap, err := New()
 	require.NotNil(t, cap)
 	require.NoError(t, err)
 
+	// verify default behavior ... constant planning
 	assert.Equal(t, uint(0), cap.planConstant(-1, 0, 1))
 	assert.Equal(t, uint(0), cap.planConstant(-1, 1, 1))
 	assert.Equal(t, uint(0), cap.planConstant(-1, 1, 2))

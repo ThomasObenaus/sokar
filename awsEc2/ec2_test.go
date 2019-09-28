@@ -53,8 +53,7 @@ func TestAdjustScalingObjectCount(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
-	connector, err := cfg.New()
+	connector, err := New(key, "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -110,8 +109,7 @@ func TestGetScalingObjectCount(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
-	connector, err := cfg.New()
+	connector, err := New(key, "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -159,8 +157,7 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", ASGTagKey: key}
-	connector, err := cfg.New()
+	connector, err := New(key, "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 

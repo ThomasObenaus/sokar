@@ -34,17 +34,6 @@ type CapacityPlanner struct {
 	linearMode *LinearMode
 }
 
-// Config is the configuration for the Capacity Planner
-type Config struct {
-	Logger zerolog.Logger
-
-	DownScaleCooldownPeriod time.Duration
-	UpScaleCooldownPeriod   time.Duration
-
-	ConstantMode *ConstantMode
-	LinearMode   *LinearMode
-}
-
 // ConstantMode in this mode the CapacityPlanner uses a constant offset to calculate the new planned scale.
 type ConstantMode struct {
 	// Offset is the offset is just added/ substracted from the current scale to calculate the new planned scale.
@@ -57,37 +46,85 @@ type LinearMode struct {
 	ScaleFactorWeight float32
 }
 
-// NewDefaultConfig provides a config with good default values for the CapacityPlanner
-func NewDefaultConfig() Config {
-	return Config{
-		DownScaleCooldownPeriod: time.Second * 80,
-		UpScaleCooldownPeriod:   time.Second * 60,
-		ConstantMode:            &ConstantMode{Offset: 1},
-		LinearMode:              nil,
+// Option represents an option for the CapacityPlanner
+type Option func(cp *CapacityPlanner)
+
+// WithLogger adds a configured Logger to the CapacityPlanner
+func WithLogger(logger zerolog.Logger) Option {
+	return func(cp *CapacityPlanner) {
+		cp.logger = logger
+	}
+}
+
+// UseConstantMode switches the CapacityPlanner to constant mode
+func UseConstantMode(offset uint) Option {
+	return func(cp *CapacityPlanner) {
+		cp.constantMode = &ConstantMode{Offset: offset}
+		cp.linearMode = nil
+	}
+}
+
+// UseLinearMode switches the CapacityPlanner to linear mode
+func UseLinearMode(scaleFactorWeight float32) Option {
+	return func(cp *CapacityPlanner) {
+		cp.linearMode = &LinearMode{ScaleFactorWeight: scaleFactorWeight}
+		cp.constantMode = nil
+	}
+}
+
+// WithDownScaleCooldown specifies the cooldown of the CapacityPlanner after downscale action
+func WithDownScaleCooldown(cooldown time.Duration) Option {
+	return func(cp *CapacityPlanner) {
+		cp.downScaleCooldownPeriod = cooldown
+	}
+}
+
+// WithUpScaleCooldown specifies the cooldown of the CapacityPlanner after upscale action
+func WithUpScaleCooldown(cooldown time.Duration) Option {
+	return func(cp *CapacityPlanner) {
+		cp.upScaleCooldownPeriod = cooldown
 	}
 }
 
 // New creates a new instance of a CapacityPlanner using the given
 // Scaler to send scaling events to.
-func (cfg Config) New() (*CapacityPlanner, error) {
+func New(options ...Option) (*CapacityPlanner, error) {
 
-	if cfg.ConstantMode == nil && cfg.LinearMode == nil {
-		return nil, fmt.Errorf("No planning mode specified")
+	capacityPlanner := CapacityPlanner{
+		downScaleCooldownPeriod: time.Second * 80,
+		upScaleCooldownPeriod:   time.Second * 60,
+		constantMode:            &ConstantMode{Offset: 1},
+		linearMode:              nil,
 	}
 
-	if cfg.ConstantMode != nil && cfg.LinearMode != nil {
-		return nil, fmt.Errorf("Multiple planning modes specified at the same time")
+	// apply the options
+	for _, opt := range options {
+		opt(&capacityPlanner)
 	}
 
-	if cfg.LinearMode != nil && cfg.LinearMode.ScaleFactorWeight <= 0 {
-		return nil, fmt.Errorf("The given value for the ScaleFactorWeight '%f' is not allowed. Only values > 0 are valid", cfg.LinearMode.ScaleFactorWeight)
+	if err := validate(capacityPlanner); err != nil {
+		return nil, err
 	}
 
-	return &CapacityPlanner{
-		logger:                  cfg.Logger,
-		downScaleCooldownPeriod: cfg.DownScaleCooldownPeriod,
-		upScaleCooldownPeriod:   cfg.UpScaleCooldownPeriod,
-		constantMode:            cfg.ConstantMode,
-		linearMode:              cfg.LinearMode,
-	}, nil
+	return &capacityPlanner, nil
+}
+
+func validate(cp CapacityPlanner) error {
+	if cp.constantMode == nil && cp.linearMode == nil {
+		return fmt.Errorf("No planning mode specified")
+	}
+
+	if cp.constantMode != nil && cp.linearMode != nil {
+		return fmt.Errorf("Multiple planning modes specified at the same time")
+	}
+
+	if cp.linearMode != nil && cp.linearMode.ScaleFactorWeight <= 0 {
+		return fmt.Errorf("The given value for the ScaleFactorWeight '%f' is not allowed. Only values > 0 are valid", cp.linearMode.ScaleFactorWeight)
+	}
+
+	if cp.constantMode != nil && cp.constantMode.Offset == 0 {
+		return fmt.Errorf("The given value for the offset '%d' is not allowed. Only values > 0 are valid", cp.constantMode.Offset)
+	}
+
+	return nil
 }

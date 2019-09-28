@@ -77,9 +77,10 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 }
 
 // Stop tears down sokar
-func (sk *Sokar) Stop() {
+func (sk *Sokar) Stop() error {
 	sk.logger.Info().Msg("Teardown requested")
 	close(sk.stopChan)
+	return nil
 }
 
 // Join blocks/ waits until sokar has been stopped

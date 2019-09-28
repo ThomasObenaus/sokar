@@ -79,13 +79,59 @@ func validateScaler(scaler Scaler) error {
 	return nil
 }
 
+func (cfg *Config) fillCapacityPlanner() error {
+
+	// Context: CapacityPlanner
+	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)
+	cfg.CapacityPlanner.UpScaleCooldownPeriod = cfg.viper.GetDuration(capUpScaleCoolDown.name)
+
+	cfg.CapacityPlanner.ConstantMode.Enable = cfg.viper.GetBool(capConstantModeEnable.name)
+	constModeOffset := cfg.viper.GetInt(capConstantModeOffset.name)
+	if constModeOffset <= 0 {
+		constModeOffset = 1
+	}
+	cfg.CapacityPlanner.ConstantMode.Offset = uint(constModeOffset)
+	cfg.CapacityPlanner.LinearMode.Enable = cfg.viper.GetBool(capLinearModeEnable.name)
+	cfg.CapacityPlanner.LinearMode.ScaleFactorWeight = cfg.viper.GetFloat64(capLinearModeScaleFactorWeight.name)
+
+	if cfg.CapacityPlanner.LinearMode.Enable {
+		cfg.CapacityPlanner.ConstantMode.Enable = false
+	}
+
+	return validateCapacityPlanner(cfg.CapacityPlanner)
+}
+
+func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
+
+	if capacityPlanner.ConstantMode.Enable && capacityPlanner.LinearMode.Enable {
+		return fmt.Errorf("constant and linear mode are set at the same time, this is not allowed")
+	}
+
+	if !capacityPlanner.ConstantMode.Enable && !capacityPlanner.LinearMode.Enable {
+		return fmt.Errorf("neither constant nor linear mode are set, this is not allowed")
+	}
+
+	if capacityPlanner.LinearMode.Enable && capacityPlanner.LinearMode.ScaleFactorWeight <= 0 {
+		return fmt.Errorf("invalid scale factor (%f) for linear mode, it has to be greater than 0", capacityPlanner.LinearMode.ScaleFactorWeight)
+	}
+
+	if capacityPlanner.ConstantMode.Enable && capacityPlanner.ConstantMode.Offset == 0 {
+		return fmt.Errorf("invalid offset (%d) for constant mode, it has to be greater than 0", capacityPlanner.ConstantMode.Offset)
+	}
+
+	return nil
+}
+
 func (cfg *Config) fillCfgValues() error {
 	// Context: main
 	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
 	cfg.Port = cfg.viper.GetInt(port.name)
 
 	// Context: Scaler
-	cfg.fillScaler()
+	err := cfg.fillScaler()
+	if err != nil {
+		return err
+	}
 
 	// Context: scale object
 	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
@@ -102,18 +148,10 @@ func (cfg *Config) fillCfgValues() error {
 	cfg.ScaleObject.MaxCount = uint(max)
 
 	// Context: CapacityPlanner
-	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)
-	cfg.CapacityPlanner.UpScaleCooldownPeriod = cfg.viper.GetDuration(capUpScaleCoolDown.name)
-
-	cfg.CapacityPlanner.ConstantMode.Enable = cfg.viper.GetBool(capConstantModeEnable.name)
-	constModeOffset := cfg.viper.GetInt(capConstantModeOffset.name)
-	if constModeOffset <= 0 {
-		constModeOffset = 1
+	err = cfg.fillCapacityPlanner()
+	if err != nil {
+		return err
 	}
-	cfg.CapacityPlanner.ConstantMode.Offset = uint(constModeOffset)
-	cfg.CapacityPlanner.LinearMode.Enable = cfg.viper.GetBool(capLinearModeEnable.name)
-	cfg.CapacityPlanner.LinearMode.ScaleFactorWeight = cfg.viper.GetFloat64(capLinearModeScaleFactorWeight.name)
-
 	// Context: Logging
 	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)
 	cfg.Logging.UxTimestamp = cfg.viper.GetBool(loggingUXTS.name)

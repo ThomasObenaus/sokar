@@ -8,41 +8,59 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestValidate(t *testing.T) {
+
+	// err - empty
+	err := validate(CapacityPlanner{})
+	assert.Error(t, err)
+
+	// err - two modes
+	constMode := ConstantMode{}
+	linearMode := LinearMode{}
+	err = validate(CapacityPlanner{constantMode: &constMode, linearMode: &linearMode})
+	assert.Error(t, err)
+
+	// err - invalid linear mode
+	linearMode.ScaleFactorWeight = 0
+	err = validate(CapacityPlanner{linearMode: &linearMode})
+	assert.Error(t, err)
+
+	// success
+	linearMode.ScaleFactorWeight = 1
+	err = validate(CapacityPlanner{linearMode: &linearMode})
+	assert.NoError(t, err)
+}
+
+func TestCooldowns(t *testing.T) {
+	capa, err := New(WithDownScaleCooldown(time.Second * 123))
+	assert.NoError(t, err)
+	assert.NotNil(t, capa)
+	assert.Equal(t, time.Second*123, capa.downScaleCooldownPeriod)
+
+	capa, err = New(WithUpScaleCooldown(time.Second * 234))
+	assert.NoError(t, err)
+	assert.NotNil(t, capa)
+	assert.Equal(t, time.Second*234, capa.upScaleCooldownPeriod)
+}
+
 func Test_New(t *testing.T) {
-	cfg := NewDefaultConfig()
-	capa, err := cfg.New()
+	capa, err := New()
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 
-	cfg = NewDefaultConfig()
-	cfg.ConstantMode = nil
-	cfg.LinearMode = nil
-	capa, err = cfg.New()
+	capa, err = New(UseLinearMode(0))
 	assert.Error(t, err)
 	assert.Nil(t, capa)
 
-	cfg = NewDefaultConfig()
-	cfg.ConstantMode = &ConstantMode{}
-	cfg.LinearMode = &LinearMode{}
-	capa, err = cfg.New()
-	assert.Error(t, err)
-	assert.Nil(t, capa)
-
-	cfg = NewDefaultConfig()
-	cfg.ConstantMode = nil
-	cfg.LinearMode = &LinearMode{}
-	capa, err = cfg.New()
+	capa, err = New(UseConstantMode(0))
 	assert.Error(t, err)
 	assert.Nil(t, capa)
 }
 
 func Test_Plan_ModeLinear(t *testing.T) {
-	cfg := NewDefaultConfig()
-	cfg.LinearMode = &LinearMode{ScaleFactorWeight: 0.5}
-	cfg.ConstantMode = nil
-	capa, err := cfg.New()
-	require.NotNil(t, capa)
+	capa, err := New(UseLinearMode(0.5))
 	require.NoError(t, err)
+	require.NotNil(t, capa)
 
 	assert.Equal(t, uint(10), capa.Plan(0, 10))
 
@@ -58,9 +76,7 @@ func Test_Plan_ModeLinear(t *testing.T) {
 }
 
 func Test_Plan_ModeConstant(t *testing.T) {
-	cfg := NewDefaultConfig()
-	cfg.ConstantMode = &ConstantMode{Offset: 1}
-	capa, err := cfg.New()
+	capa, err := New()
 	require.NotNil(t, capa)
 	require.NoError(t, err)
 	assert.Equal(t, uint(0), capa.Plan(-1, 0))
@@ -70,31 +86,17 @@ func Test_Plan_ModeConstant(t *testing.T) {
 	assert.Equal(t, uint(1), capa.Plan(1, 0))
 	assert.Equal(t, uint(2), capa.Plan(1, 1))
 
-	cfg.ConstantMode = &ConstantMode{Offset: 2}
-	capa, err = cfg.New()
+	capa, err = New(UseConstantMode(2))
 	require.NotNil(t, capa)
 	require.NoError(t, err)
 	assert.Equal(t, uint(0), capa.Plan(-1, 1))
 	assert.Equal(t, uint(3), capa.Plan(-1, 5))
 	assert.Equal(t, uint(3), capa.Plan(1, 1))
 	assert.Equal(t, uint(7), capa.Plan(1, 5))
-
-	cfg.ConstantMode = &ConstantMode{Offset: 0}
-	capa, err = cfg.New()
-	require.NotNil(t, capa)
-	require.NoError(t, err)
-	assert.Equal(t, uint(0), capa.Plan(1, 0))
-
 }
+
 func Test_IsCoolingDown(t *testing.T) {
-	downScalePeriod := time.Second * 20
-	upScalePeriod := time.Second * 10
-	cfg := Config{
-		DownScaleCooldownPeriod: downScalePeriod,
-		UpScaleCooldownPeriod:   upScalePeriod,
-		ConstantMode:            &ConstantMode{Offset: 1},
-	}
-	capa, err := cfg.New()
+	capa, err := New(WithDownScaleCooldown(time.Second*20), WithUpScaleCooldown(time.Second*10))
 	require.NoError(t, err)
 	require.NotNil(t, capa)
 

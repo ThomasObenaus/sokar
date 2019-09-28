@@ -11,7 +11,7 @@ tag := $(shell git describe --tags)
 branch := $(shell git branch | grep \* | cut -d ' ' -f2)
 revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
-nomad_server := "https://nomad.integration.eu.pcc-nav.cloud"#"http://${LOCAL_IP}:4646"
+nomad_server := "http://${LOCAL_IP}:4646"
 
 all: tools test build finish
 
@@ -23,7 +23,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./ -covermode=count -coverprofile=coverage.out
+	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./api ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
@@ -72,7 +72,7 @@ run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 
 run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc" --scale-object.name="private-services" --sca.nomad.dc-aws.profile="integration" --scale-object.max=22 --dry-run=true --sca.watcher-interval=20m
+	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
 
 run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"
