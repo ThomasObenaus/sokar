@@ -23,7 +23,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./ -covermode=count -coverprofile=coverage.out
+	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./api ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
 	# for this to get working you have to export the repo_token for your repo at coveralls.io

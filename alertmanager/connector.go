@@ -31,7 +31,8 @@ func WithLogger(logger zerolog.Logger) Option {
 
 // New creates a new instance of the prometheus/alertmanager Connector
 func New(options ...Option) *Connector {
-	connector := Connector{logger: zerolog.Logger{}}
+	connector := Connector{}
+	// apply the options
 	for _, opt := range options {
 		opt(&connector)
 	}

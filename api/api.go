@@ -20,14 +20,29 @@ type API struct {
 	stopChan chan struct{}
 }
 
+// Option represents an option for the api
+type Option func(api *API)
+
+// WithLogger adds a configured Logger to the api
+func WithLogger(logger zerolog.Logger) Option {
+	return func(api *API) {
+		api.logger = logger
+	}
+}
+
 // New creates a new runnable api server
-func New(port int, logger zerolog.Logger) *API {
-	return &API{
+func New(port int, options ...Option) *API {
+	api := API{
 		Router:   httprouter.New(),
 		port:     port,
-		logger:   logger,
 		stopChan: make(chan struct{}, 1),
 	}
+
+	// apply the options
+	for _, opt := range options {
+		opt(&api)
+	}
+	return &api
 }
 
 // GetName returns the name of this component

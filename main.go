@@ -50,7 +50,7 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar")
 
 	logger.Info().Msg("1. Setup: API")
-	api := api.New(cfg.Port, loggingFactory.NewNamedLogger("sokar.api"))
+	api := api.New(cfg.Port, api.WithLogger(loggingFactory.NewNamedLogger("sokar.api")))
 
 	logger.Info().Msg("2. Setup: ScaleAlertEmitters")
 	scaleAlertEmitters := helper.Must(setupScaleAlertEmitters(api, loggingFactory)).([]scaleAlertAggregator.ScaleAlertEmitter)
