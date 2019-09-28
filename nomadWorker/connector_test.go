@@ -9,21 +9,17 @@ import (
 func TestNewConnector(t *testing.T) {
 
 	// AWSProfile and AWSRegion not specified
-	cfg := Config{}
-	connector, err := cfg.New()
-
+	connector, err := New("")
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
 	// NomadSrvAddr missing
-	cfg = Config{AWSProfile: "test"}
-	connector, err = cfg.New()
+	connector, err = New("")
 	assert.Nil(t, connector)
 	assert.Error(t, err)
 
 	// Success
-	cfg = Config{AWSProfile: "test", NomadServerAddress: "http://nomad.io"}
-	connector, err = cfg.New()
+	connector, err = New("http://nomad.io", WithAwsProfile("profile"))
 	assert.NotNil(t, connector)
 	assert.NoError(t, err)
 }

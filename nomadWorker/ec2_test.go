@@ -52,8 +52,7 @@ func TestAdjustScalingObjectCount_Error(t *testing.T) {
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -74,8 +73,7 @@ func TestAdjustScalingObjectCount_Upscale(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -116,8 +114,7 @@ func TestAdjustScalingObjectCount_NoScale(t *testing.T) {
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -153,8 +150,7 @@ func TestGetScalingObjectCount(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -202,8 +198,7 @@ func Test_IsScalingObjectDead(t *testing.T) {
 	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
@@ -252,8 +247,7 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
 
 	key := "datacenter"
-	cfg := Config{AWSProfile: "xyz", NomadServerAddress: "http://nomad.io"}
-	connector, err := cfg.New()
+	connector, err := New("http://nomad.io", WithAwsProfile("profile"))
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
