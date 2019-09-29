@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.0.10 (2019-??-??)
+
+- With [#95](https://github.com/ThomasObenaus/sokar/issues/95) the code was refactored to use the functional option approach instead of config structs.
+
 ## v0.0.9 (2019-09-24)
 
 - With [#90](https://github.com/ThomasObenaus/sokar/issues/90) sokar gets a real downscaling for nomad workers running on AWS.
