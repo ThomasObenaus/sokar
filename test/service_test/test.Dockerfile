@@ -1,5 +1,5 @@
 ## The Build Image
-FROM golang:1.11.5-alpine AS golang
+FROM golang:1.13.1-alpine AS golang
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar/test/service_test
 

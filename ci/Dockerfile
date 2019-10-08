@@ -1,6 +1,6 @@
 
 ## The Build Image
-FROM golang:1.11.5-alpine AS golang
+FROM golang:1.13.1-alpine AS golang
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar
 ARG BINARY_NAME=sokar
@@ -29,7 +29,7 @@ RUN make tools test
 RUN make build build_destination=/work name=${BINARY_NAME}
 
 ## The Run Image
-FROM alpine:3.9
+FROM alpine:3.10
 LABEL maintainer="Thomas Obenaus"
 
 ARG PROJECT_PATH=github.com/thomasobenaus/sokar
