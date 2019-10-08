@@ -10,3 +10,5 @@ all\.log
 test/service_test/app
 test/service_test/test_app
 test/service_test/vendor
+
+vendor/

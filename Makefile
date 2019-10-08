@@ -38,9 +38,9 @@ deps-update: sep ## Update the installed dependencies.
 	@echo "--> updating dependencies. Trying to find newer versions as they are listed in Gopkg.lock"
 	@dep ensure -update -v
 
-deps-install: sep ## Install the dependencies.
+deps-install: sep ## Install the dependencies, without looking for new versions of dependencies.
 	@echo "--> install dependencies as listed in Gopkg.toml and Gopkg.lock"
-	@dep ensure -v
+	@dep ensure -vendor-only -v
 
 tools: sep ## Installs needed tools (i.e. mock generators).
 	@echo "--> Install needed tools."
