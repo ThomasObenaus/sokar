@@ -9,6 +9,7 @@ import (
 // scaleState represents the state of a scaling
 type scaleState string
 
+// TODO: Check which states are still needed and which can be removed
 const (
 	// scaleUnknown means the scale process was completed successfully
 	scaleUnknown scaleState = "unknown"
@@ -152,9 +153,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	s.logger.Info().Str("scalingObject", sObjName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
-	// Set the new scalingObject count
-	s.desiredScale.setValue(newCount)
-	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.Name, s.scalingObject.MinCount, s.scalingObject.MaxCount, currentCount, newCount)
+	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.name, s.scalingObject.minCount, s.scalingObject.maxCount, currentCount, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,

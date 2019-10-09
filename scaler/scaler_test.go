@@ -134,7 +134,7 @@ func Test_OpenScalingTicket(t *testing.T) {
 	assert.Equal(t, uint(0), ticket.desiredCount)
 }
 
-func Test_ApplyScalingTicket(t *testing.T) {
+func Test_ApplyScalingTicket_NoScale_DeadJob(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
@@ -158,8 +158,47 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter)
 	mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any())
 
-	ticket := NewScalingTicket(0, false)
+	ticket := NewScalingTicket(10, false)
 	scaler.applyScaleTicket(ticket)
+	assert.False(t, scaler.desiredScale.isKnown)
+	assert.Equal(t, uint(0), scaler.desiredScale.value)
+}
+
+// TODO: Add this test
+// func Test_ApplyScalingTicket_NoScale_DryRun(t *testing.T) {
+
+func Test_ApplyScalingTicket_Scale(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
+	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
+	scalingTicketCounter.EXPECT().Inc()
+	doneCounter := mock_metrics.NewMockCounter(mockCtrl)
+	doneCounter.EXPECT().Inc()
+
+	gomock.InOrder(
+		scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil),
+		scaTgt.EXPECT().IsScalingObjectDead("any").Return(false, nil),
+		mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge),
+		scaTgt.EXPECT().AdjustScalingObjectCount("any", uint(1), uint(10), uint(0), uint(5)).Return(nil),
+		mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter),
+		mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any()),
+		mocks.scaleResultCounter.EXPECT().WithLabelValues("done").Return(doneCounter),
+	)
+
+	cfg := Config{Name: "any", WatcherInterval: time.Second * 5, MinCount: 1, MaxCount: 10}
+	scaler, err := cfg.New(scaTgt, metrics)
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	ticket := NewScalingTicket(5, false)
+	scaler.applyScaleTicket(ticket)
+	assert.True(t, scaler.desiredScale.isKnown)
+	assert.Equal(t, uint(5), scaler.desiredScale.value)
 }
 
 func Test_OpenAndApplyScalingTicket(t *testing.T) {
@@ -210,4 +249,28 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter).Times(1)
 	err = scaler.openScalingTicket(0, false)
 	assert.NoError(t, err)
+}
+
+func Test_UpdateDesiredScale(t *testing.T) {
+	err := updateDesiredScale(scaleResult{}, nil)
+	assert.Error(t, err)
+
+	desiredScale := optionalValue{}
+	err = updateDesiredScale(scaleResult{}, &desiredScale)
+	assert.NoError(t, err)
+	assert.False(t, desiredScale.isKnown)
+	assert.Equal(t, uint(0), desiredScale.value)
+
+	desiredScale = optionalValue{}
+	desiredScale.setValue(10)
+	err = updateDesiredScale(scaleResult{}, &desiredScale)
+	assert.NoError(t, err)
+	assert.True(t, desiredScale.isKnown)
+	assert.Equal(t, uint(10), desiredScale.value)
+
+	desiredScale = optionalValue{}
+	err = updateDesiredScale(scaleResult{state: scaleDone, newCount: 10}, &desiredScale)
+	assert.NoError(t, err)
+	assert.True(t, desiredScale.isKnown)
+	assert.Equal(t, uint(10), desiredScale.value)
 }

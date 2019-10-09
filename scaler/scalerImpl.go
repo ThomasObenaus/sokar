@@ -50,6 +50,10 @@ func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
 func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	ticket.start()
 	result := s.scaleTo(ticket.desiredCount, ticket.dryRun)
+	if err := updateDesiredScale(result, &s.desiredScale); err != nil {
+		s.logger.Error().Err(err).Msg("Failed updating desired scale.")
+	}
+
 	ticket.complete(result.state)
 	s.numOpenScalingTickets--
 
@@ -60,6 +64,19 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
 	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
+}
+
+func updateDesiredScale(sResult scaleResult, desiredScale *optionalValue) error {
+	if desiredScale == nil {
+		return fmt.Errorf("desiredScale parameter is nil")
+	}
+
+	if sResult.state != scaleDone {
+		return nil
+	}
+
+	desiredScale.setValue(sResult.newCount)
+	return nil
 }
 
 func updateScaleResultMetric(result scaleResult, scaleResultCounter m.CounterVec) {
