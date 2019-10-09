@@ -2,6 +2,7 @@ package scaler
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/thomasobenaus/sokar/helper"
 )
@@ -138,7 +139,7 @@ func (s *Scaler) executeScale(currentCount, newCount uint, force bool) scaleResu
 	scaleTypeStr := amountToScaleType(diff)
 
 	// the force flag can overrule the dry run mode
-	if s.dryRunMode && !force {
+	if !isScalePermitted(s.dryRunMode, force) {
 		s.logger.Info().Str("scalingObject", sObjName).Msgf("Skip scale %s by %d to %d (DryRun, force=%v).", scaleTypeStr, diff, newCount, force)
 		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(1)
 
@@ -166,4 +167,8 @@ func (s *Scaler) executeScale(currentCount, newCount uint, force bool) scaleResu
 		stateDescription: "Scaling successfully done.",
 		newCount:         newCount,
 	}
+}
+
+func isScalePermitted(dryRun, force bool) bool {
+	return !dryRun || force
 }

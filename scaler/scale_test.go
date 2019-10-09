@@ -286,3 +286,10 @@ func TestScale_DownDryRun(t *testing.T) {
 	assert.Equal(t, scaleIgnored, result.state)
 	assert.Equal(t, uint(4), result.newCount)
 }
+
+func Test_IsScalePermitted(t *testing.T) {
+	assert.True(t, isScalePermitted(true, true))
+	assert.True(t, isScalePermitted(false, true))
+	assert.True(t, isScalePermitted(false, false))
+	assert.False(t, isScalePermitted(true, false))
+}
