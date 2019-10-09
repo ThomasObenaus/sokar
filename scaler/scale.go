@@ -92,9 +92,9 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		return r
 	}
 
-	sObjName := s.scalingObject.name
-	min := s.scalingObject.minCount
-	max := s.scalingObject.maxCount
+	sObjName := s.scalingObject.Name
+	min := s.scalingObject.MinCount
+	max := s.scalingObject.MaxCount
 
 	s.logger.Info().Str("scalingObject", sObjName).Msgf("Request to scale scalingObject from %d to %d.", currentCount, desiredCount)
 
@@ -154,7 +154,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 
 	// Set the new scalingObject count
 	s.desiredScale.setValue(newCount)
-	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.name, s.scalingObject.minCount, s.scalingObject.maxCount, currentCount, newCount)
+	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.Name, s.scalingObject.MinCount, s.scalingObject.MaxCount, currentCount, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,

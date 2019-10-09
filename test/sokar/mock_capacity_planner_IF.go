@@ -35,6 +35,7 @@ func (m *MockCapacityPlanner) EXPECT() *MockCapacityPlannerMockRecorder {
 
 // Plan mocks base method
 func (m *MockCapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Plan", scaleFactor, currentScale)
 	ret0, _ := ret[0].(uint)
 	return ret0
@@ -42,11 +43,13 @@ func (m *MockCapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint 
 
 // Plan indicates an expected call of Plan
 func (mr *MockCapacityPlannerMockRecorder) Plan(scaleFactor, currentScale interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Plan", reflect.TypeOf((*MockCapacityPlanner)(nil).Plan), scaleFactor, currentScale)
 }
 
 // IsCoolingDown mocks base method
 func (m *MockCapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) bool {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCoolingDown", timeOfLastScale, scaleDown)
 	ret0, _ := ret[0].(bool)
 	return ret0
@@ -54,5 +57,6 @@ func (m *MockCapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown
 
 // IsCoolingDown indicates an expected call of IsCoolingDown
 func (mr *MockCapacityPlannerMockRecorder) IsCoolingDown(timeOfLastScale, scaleDown interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCoolingDown", reflect.TypeOf((*MockCapacityPlanner)(nil).IsCoolingDown), timeOfLastScale, scaleDown)
 }

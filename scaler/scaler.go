@@ -16,8 +16,8 @@ type Scaler struct {
 	// the system that shall be used for scaling (i.e nomad)
 	scalingTarget ScalingTarget
 
-	// scalingObject represents the ScalingObject and relevant meta data
-	scalingObject scalingObject
+	// ScalingObject represents the ScalingObject and relevant meta data
+	scalingObject ScalingObject
 
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
@@ -58,45 +58,71 @@ type Config struct {
 	WatcherInterval       time.Duration
 }
 
-// scalingObject config of the scalingObject to be scaled
-type scalingObject struct {
-	name     string
-	minCount uint
-	maxCount uint
+// Option represents an option for the Scaler
+type Option func(c *Scaler)
+
+// WithLogger adds a configured Logger to the Scaler
+func WithLogger(logger zerolog.Logger) Option {
+	return func(s *Scaler) {
+		s.logger = logger
+	}
+}
+
+// MaxOpenScalingTickets specifies how many scaling tickets can be open at the same time
+func MaxOpenScalingTickets(num uint) Option {
+	return func(s *Scaler) {
+		s.maxOpenScalingTickets = num
+	}
+}
+
+// WatcherInterval specifies the interval the scaleObjectWatcher will use to check if the scale still
+// matches the current expectation
+func WatcherInterval(interval time.Duration) Option {
+	return func(s *Scaler) {
+		s.watcherInterval = interval
+	}
 }
 
 // New creates a new instance of a scaler using the given
 // ScalingTarget to send scaling events to.
-func (cfg Config) New(scalingTarget ScalingTarget, metrics Metrics) (*Scaler, error) {
-	if scalingTarget == nil {
-		return nil, fmt.Errorf("Given ScalingTarget is nil")
-	}
+func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metrics, options ...Option) (*Scaler, error) {
 
-	if cfg.WatcherInterval <= time.Second*0 {
-		return nil, fmt.Errorf("WatcherInterval is %s which is a too small value and thus not supported", cfg.WatcherInterval.String())
-	}
-
-	return &Scaler{
-		logger:          cfg.Logger,
-		scalingTarget:   scalingTarget,
-		watcherInterval: cfg.WatcherInterval,
-		scalingObject: scalingObject{
-			name:     cfg.Name,
-			minCount: cfg.MinCount,
-			maxCount: cfg.MaxCount,
-		},
+	maxOpenScalingTickets := uint(0)
+	scaler := Scaler{
+		scalingTarget:         scalingTarget,
+		watcherInterval:       time.Second * 5,
+		scalingObject:         scalingObject,
 		stopChan:              make(chan struct{}, 1),
 		numOpenScalingTickets: 0,
-		maxOpenScalingTickets: cfg.MaxOpenScalingTickets,
-		scaleTicketChan:       make(chan ScalingTicket, cfg.MaxOpenScalingTickets+1),
+		maxOpenScalingTickets: maxOpenScalingTickets,
 		metrics:               metrics,
 		desiredScale:          optionalValue{isKnown: false},
-	}, nil
+	}
+
+	// apply the options
+	for _, opt := range options {
+		opt(&scaler)
+	}
+
+	scaler.scaleTicketChan = make(chan ScalingTicket, scaler.maxOpenScalingTickets+1)
+
+	if scaler.scalingTarget == nil {
+		return nil, fmt.Errorf("Given ScalingTarget is nil")
+	}
+	if scaler.scaleTicketChan == nil {
+		return nil, fmt.Errorf("Scaling Ticket Channel is nil")
+	}
+
+	if scaler.watcherInterval <= time.Second*0 {
+		return nil, fmt.Errorf("WatcherInterval is %s which is a too small value and thus not supported", scaler.watcherInterval.String())
+	}
+
+	return &scaler, nil
 }
 
 // GetCount returns the number of currently deployed instances
 func (s *Scaler) GetCount() (uint, error) {
-	return s.scalingTarget.GetScalingObjectCount(s.scalingObject.name)
+	return s.scalingTarget.GetScalingObjectCount(s.scalingObject.Name)
 }
 
 // ScaleTo will scale the scalingObject to the desired count.
