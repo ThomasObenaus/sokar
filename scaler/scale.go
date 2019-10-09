@@ -9,7 +9,6 @@ import (
 // scaleState represents the state of a scaling
 type scaleState string
 
-// TODO: Check which states are still needed and which can be removed
 const (
 	// scaleUnknown means the scale process was completed successfully
 	scaleUnknown scaleState = "unknown"
@@ -70,28 +69,9 @@ func checkScalingPolicy(desiredCount uint, min uint, max uint) policyCheckResult
 	return result
 }
 
-// trueIfNil returns a scaleResult filled in with an appropriate error message in case the given scaler is nil
-func trueIfNil(s *Scaler) (result scaleResult, ok bool) {
-	ok = false
-	result = scaleResult{state: scaleUnknown}
-
-	if s == nil {
-		ok = true
-		result = scaleResult{
-			state:            scaleFailed,
-			stateDescription: "Scaler is nil",
-			newCount:         0,
-		}
-	}
-	return result, ok
-}
-
 // scale scales the scalingObject from currentCount to desiredCount.
 // Internally it is checked if a scaling is needed and if the scaling policy is valid.
 func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleResult {
-	if r, ok := trueIfNil(s); ok {
-		return r
-	}
 
 	sObjName := s.scalingObject.Name
 	min := s.scalingObject.MinCount

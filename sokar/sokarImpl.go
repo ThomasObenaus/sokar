@@ -67,6 +67,7 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
 
+	// TODO: Move this into the scaler. The scaler should provide the information about the last scale.
 	if !dryRunOnly {
 		sk.lastScaleAction = time.Now()
 	}
