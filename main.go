@@ -273,6 +273,7 @@ func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time
 	scaler, err := scaler.New(
 		scalingTarget,
 		scalingObject,
+		scaler.NewMetrics(),
 		scaler.WithLogger(logF.NewNamedLogger("sokar.scaler")),
 		scaler.WatcherInterval(watcherInterval),
 	)
