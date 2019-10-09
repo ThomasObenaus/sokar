@@ -48,16 +48,6 @@ type Scaler struct {
 	scalingObjectWatcherPaused bool
 }
 
-// Config is the configuration for the Scaler
-type Config struct {
-	Name                  string
-	MinCount              uint
-	MaxCount              uint
-	Logger                zerolog.Logger
-	MaxOpenScalingTickets uint
-	WatcherInterval       time.Duration
-}
-
 // Option represents an option for the Scaler
 type Option func(c *Scaler)
 

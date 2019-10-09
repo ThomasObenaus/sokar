@@ -179,19 +179,19 @@ func Test_ApplyScalingTicket_Scale(t *testing.T) {
 	scalingTicketCounter.EXPECT().Inc()
 	doneCounter := mock_metrics.NewMockCounter(mockCtrl)
 	doneCounter.EXPECT().Inc()
+	sObjName := "any"
 
 	gomock.InOrder(
-		scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil),
-		scaTgt.EXPECT().IsScalingObjectDead("any").Return(false, nil),
+		scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(0), nil),
+		scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil),
 		mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge),
-		scaTgt.EXPECT().AdjustScalingObjectCount("any", uint(1), uint(10), uint(0), uint(5)).Return(nil),
+		scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(10), uint(0), uint(5)).Return(nil),
 		mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter),
 		mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any()),
 		mocks.scaleResultCounter.EXPECT().WithLabelValues("done").Return(doneCounter),
 	)
-
-	cfg := Config{Name: "any", WatcherInterval: time.Second * 5, MinCount: 1, MaxCount: 10}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 10}
+	scaler, err := New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 

@@ -121,9 +121,9 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 }
 
 func (s *Scaler) executeScale(currentCount, newCount uint, dryRun bool) scaleResult {
-	sObjName := s.scalingObject.name
-	min := s.scalingObject.minCount
-	max := s.scalingObject.maxCount
+	sObjName := s.scalingObject.Name
+	min := s.scalingObject.MinCount
+	max := s.scalingObject.MaxCount
 
 	diff := helper.SubUint(newCount, currentCount)
 	scaleTypeStr := amountToScaleType(diff)
