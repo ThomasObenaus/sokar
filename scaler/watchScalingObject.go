@@ -40,7 +40,7 @@ func (s *Scaler) ensureScalingObjectCount() error {
 		return err
 	}
 
-	asExpected, expected := countMeetsExpectations(count, s.scalingObject.minCount, s.scalingObject.maxCount, s.desiredScale)
+	asExpected, expected := countMeetsExpectations(count, s.scalingObject.MinCount, s.scalingObject.MaxCount, s.desiredScale)
 	if !asExpected {
 		s.logger.Warn().Msgf("The scalingObject count (%d) was not as expected. Thus the scalingObject had to be rescaled to %d.", count, expected)
 		if err := s.openScalingTicket(expected, false); err != nil {
