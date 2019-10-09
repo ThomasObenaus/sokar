@@ -269,16 +269,13 @@ func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time
 		return nil, fmt.Errorf("ScalingTarget is nil")
 	}
 
-	scaCfg := scaler.Config{
-		Name:            scalingObjName,
-		MinCount:        min,
-		MaxCount:        max,
-		Logger:          logF.NewNamedLogger("sokar.scaler"),
-		WatcherInterval: watcherInterval,
-	}
-
 	scalingObject := scaler.ScalingObject{Name: scalingObjName, MinCount: min, MaxCount: max}
-	scaler, err := scaCfg.New(scalingTarget, scalingObject, scaler.NewMetrics())
+	scaler, err := scaler.New(
+		scalingTarget,
+		scalingObject,
+		scaler.WithLogger(logF.NewNamedLogger("sokar.scaler")),
+		scaler.WatcherInterval(watcherInterval),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s", err)
 	}
