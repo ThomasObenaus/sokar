@@ -18,14 +18,15 @@ func Test_New(t *testing.T) {
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	scaler, err := cfg.New(nil, metrics)
+	sObj := ScalingObject{}
+	scaler, err := cfg.New(nil, sObj, metrics)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg = Config{WatcherInterval: time.Second * 5}
-	scaler, err = cfg.New(scaTgt, metrics)
+	scaler, err = cfg.New(scaTgt, sObj, metrics)
 	assert.NoError(t, err)
 	require.NotNil(t, scaler)
 	assert.NotNil(t, scaler.stopChan)
@@ -42,8 +43,10 @@ func Test_GetCount(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(10), nil)
 
-	cfg := Config{Name: "any", WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObjName := "any"
+	cfg := Config{Name: sObjName, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -51,7 +54,7 @@ func Test_GetCount(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint(10), count)
 
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), fmt.Errorf("ERROR"))
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(0), fmt.Errorf("ERROR"))
 	count, err = scaler.GetCount()
 	assert.Error(t, err)
 	assert.Equal(t, uint(0), count)
@@ -65,7 +68,8 @@ func Test_RunJoinStop(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg := Config{WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -114,7 +118,8 @@ func Test_OpenScalingTicket(t *testing.T) {
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
 	cfg := Config{WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -139,12 +144,15 @@ func Test_ApplyScalingTicket(t *testing.T) {
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 
-	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil)
-	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil)
+	sObjName := "any"
 
-	cfg := Config{Name: "any", WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(0), nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(true, nil)
+
+	cfg := Config{Name: sObjName, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -165,12 +173,14 @@ func Test_OpenAndApplyScalingTicket(t *testing.T) {
 	defer mockCtrl.Finish()
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 
+	sObjName := "any"
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), nil).MaxTimes(11)
-	scaTgt.EXPECT().IsScalingObjectDead("any").Return(true, nil).MaxTimes(11)
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(0), nil).MaxTimes(11)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(true, nil).MaxTimes(11)
 
-	cfg := Config{Name: "any", MaxOpenScalingTickets: 10, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	cfg := Config{Name: sObjName, MaxOpenScalingTickets: 10, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 

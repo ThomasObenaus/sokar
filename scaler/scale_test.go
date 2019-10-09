@@ -22,7 +22,7 @@ func TestScale_ScalingObjectDead(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	scaler, err := cfg.New(scaTgt, ScalingObject{Name: sObjName}, metrics)
 	require.NoError(t, err)
 
 	// dead scalingObject - error
@@ -46,7 +46,8 @@ func TestScale_Up(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
@@ -81,7 +82,8 @@ func TestScale_Down(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
@@ -116,7 +118,8 @@ func TestScale_NoScale(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
 	// scale down
@@ -184,7 +187,8 @@ func TestScale_UpDryRun(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
@@ -207,7 +211,8 @@ func TestScale_DownDryRun(t *testing.T) {
 
 	sObjName := "any"
 	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)

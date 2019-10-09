@@ -53,19 +53,21 @@ func TestEnsureScalingObjectCount_NoScale(t *testing.T) {
 	metrics, _ := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
 	// Error in scaling target
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(0), fmt.Errorf("Unable to determine scalingObject count"))
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(0), fmt.Errorf("Unable to determine scalingObject count"))
 	err = scaler.ensureScalingObjectCount()
 	assert.Error(t, err)
 
 	// No scale
 	scaler.desiredScale.setValue(1)
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(1), nil)
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(1), nil)
 	err = scaler.ensureScalingObjectCount()
 	assert.NoError(t, err)
 
@@ -77,8 +79,10 @@ func TestEnsureScalingObjectCount_MinViolated(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -98,8 +102,10 @@ func TestEnsureScalingObjectCount_MaxViolated(t *testing.T) {
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
 
-	cfg := Config{Name: "any", MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
-	scaler, err := cfg.New(scaTgt, metrics)
+	sObjName := "any"
+	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Second * 5}
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := cfg.New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
@@ -108,7 +114,7 @@ func TestEnsureScalingObjectCount_MaxViolated(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc()
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
-	scaTgt.EXPECT().GetScalingObjectCount("any").Return(uint(10), nil)
+	scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(10), nil)
 	err = scaler.ensureScalingObjectCount()
 	assert.NoError(t, err)
 }

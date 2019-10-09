@@ -277,7 +277,8 @@ func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time
 		WatcherInterval: watcherInterval,
 	}
 
-	scaler, err := scaCfg.New(scalingTarget, scaler.NewMetrics())
+	scalingObject := scaler.ScalingObject{Name: scalingObjName, MinCount: min, MaxCount: max}
+	scaler, err := scaCfg.New(scalingTarget, scalingObject, scaler.NewMetrics())
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s", err)
 	}
