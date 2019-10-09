@@ -2,7 +2,8 @@
 
 ## v0.0.10 (2019-??-??)
 
-- With [#95](https://github.com/ThomasObenaus/sokar/issues/95) the code was refactored to use the functional option approach instead of config structs.
+- Build: With [#99](https://github.com/ThomasObenaus/sokar/issues/99) sokar is build based on golang 1.13.1 and the docker image is based on alpine 3.10.
+- Refactor: With [#95](https://github.com/ThomasObenaus/sokar/issues/95) the code was refactored to use the functional option approach instead of config structs.
 
 ## v0.0.9 (2019-09-24)
 
