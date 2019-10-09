@@ -117,6 +117,15 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		}
 	}
 
+	return s.executeScale(currentCount, newCount, dryRun)
+}
+
+func (s *Scaler) executeScale(currentCount, newCount uint, dryRun bool) scaleResult {
+	sObjName := s.scalingObject.name
+	min := s.scalingObject.minCount
+	max := s.scalingObject.maxCount
+
+	diff := helper.SubUint(newCount, currentCount)
 	scaleTypeStr := amountToScaleType(diff)
 
 	if dryRun {
@@ -133,7 +142,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 	s.logger.Info().Str("scalingObject", sObjName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
-	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.name, s.scalingObject.minCount, s.scalingObject.maxCount, currentCount, newCount)
+	err := s.scalingTarget.AdjustScalingObjectCount(sObjName, min, max, currentCount, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,
