@@ -2,7 +2,6 @@ package sokar
 
 import (
 	"fmt"
-	"time"
 
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 )
@@ -45,7 +44,7 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	}
 }
 
-func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) error {
+func (sk *Sokar) triggerScale(force bool, scaleValue float32, planFun func(scaleValue float32, currentScale uint) uint) error {
 
 	scaleDown := scaleValueToScaleDir(scaleValue)
 
@@ -57,7 +56,7 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	sk.metrics.preScaleJobCount.Set(float64(preScaleJobCount))
 
 	// Don't scale if sokar is in cool down mode
-	if sk.capacityPlanner.IsCoolingDown(sk.lastScaleAction, scaleDown) {
+	if sk.capacityPlanner.IsCoolingDown(sk.scaler.GetTimeOfLastScaleAction(), scaleDown) {
 		sk.metrics.skippedScalingDuringCooldownTotal.Inc()
 		sk.logger.Info().Msg("Skip scale event. Sokar is cooling down.")
 		return nil
@@ -67,11 +66,7 @@ func (sk *Sokar) triggerScale(dryRunOnly bool, scaleValue float32, planFun func(
 	plannedJobCount := planFun(scaleValue, preScaleJobCount)
 	sk.metrics.plannedJobCount.Set(float64(plannedJobCount))
 
-	// TODO: Move this into the scaler. The scaler should provide the information about the last scale.
-	if !dryRunOnly {
-		sk.lastScaleAction = time.Now()
-	}
-	err = sk.scaler.ScaleTo(plannedJobCount, dryRunOnly)
+	err = sk.scaler.ScaleTo(plannedJobCount, force)
 
 	// HACK: For now we ignore all rejected scaling tickets
 	if err != nil {

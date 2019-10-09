@@ -8,6 +8,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var oneDayAgo = time.Now().Add(time.Hour * -24)
+
 // Scaler is a component responsible for scaling a scalingObject
 type Scaler struct {
 	logger zerolog.Logger
@@ -22,6 +24,11 @@ type Scaler struct {
 	// dryRunMode active/ not active. In dry run mode no automatic scaling will
 	// executed. For more information see ../doc/DryRunMode.md
 	dryRunMode bool
+
+	// LastScaleAction represents that point in time
+	// when the scaler was triggered to execute a scaling
+	// action the last time
+	lastScaleAction time.Time
 
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
@@ -101,6 +108,7 @@ func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metri
 		metrics:               metrics,
 		desiredScale:          optionalValue{isKnown: false},
 		dryRunMode:            false,
+		lastScaleAction:       oneDayAgo,
 	}
 
 	// apply the options
@@ -161,4 +169,10 @@ func (s *Scaler) Stop() error {
 // Join blocks/ waits until scaler has been stopped
 func (s *Scaler) Join() {
 	s.wg.Wait()
+}
+
+// GetTimeOfLastScaleAction returns that point in time where the most recent
+// scaling STARTED.
+func (s *Scaler) GetTimeOfLastScaleAction() time.Time {
+	return time.Now()
 }

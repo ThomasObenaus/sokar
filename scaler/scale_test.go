@@ -3,6 +3,7 @@ package scaler
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -261,6 +262,35 @@ func TestScale_UpDryRun(t *testing.T) {
 	result := scaler.scale(2, 1, false)
 	assert.Equal(t, scaleIgnored, result.state)
 	assert.Equal(t, uint(1), result.newCount)
+	oneDayAgo := time.Now().Add(time.Hour * -24)
+	assert.WithinDuration(t, oneDayAgo, scaler.lastScaleAction, time.Second*1)
+}
+
+func TestScale_DryRunForce(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+
+	sObjName := "any"
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true))
+	require.NoError(t, err)
+
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(1), uint(2)).Return(nil)
+
+	// scale up
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+	result := scaler.scale(2, 1, true)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(2), result.newCount)
+	fiveMsAgo := time.Now().Add(time.Millisecond * -5)
+	assert.WithinDuration(t, fiveMsAgo, scaler.lastScaleAction, time.Second*1)
 }
 
 func TestScale_DownDryRun(t *testing.T) {
@@ -285,6 +315,8 @@ func TestScale_DownDryRun(t *testing.T) {
 	result := scaler.scale(1, 4, false)
 	assert.Equal(t, scaleIgnored, result.state)
 	assert.Equal(t, uint(4), result.newCount)
+	oneDayAgo := time.Now().Add(time.Hour * -24)
+	assert.WithinDuration(t, oneDayAgo, scaler.lastScaleAction, time.Second*1)
 }
 
 func Test_IsScalePermitted(t *testing.T) {

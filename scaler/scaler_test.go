@@ -30,6 +30,9 @@ func Test_New(t *testing.T) {
 	assert.NotNil(t, scaler.stopChan)
 	assert.NotNil(t, scaler.scaleTicketChan)
 	assert.NotNil(t, scaler.scalingTarget)
+
+	oneDayAgo := time.Now().Add(time.Hour * -24)
+	assert.WithinDuration(t, oneDayAgo, scaler.lastScaleAction, time.Second*1)
 }
 
 func Test_GetCount(t *testing.T) {
