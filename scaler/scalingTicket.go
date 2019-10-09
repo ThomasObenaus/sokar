@@ -18,23 +18,25 @@ type ScalingTicket struct {
 	// (failed or successful)
 	completedAt *time.Time
 
-	// If this flag is true, then no scaling is executed in the end.
-	// The scaler just checks against the scaling policy if a scaling would be needed.
-	dryRun bool
+	// In case the scaler is in dry-run mode usually the scaling is not applied by actually scaling the scalingObject.
+	// Only a metric is updated, that reflects the fact that a scaling was skipped/ ignored.
+	// With this force flag this behavior overridden. If the force flag is true then even in
+	// dry-run mode the scaling will be applied.
+	force bool
 
 	desiredCount uint
 	state        scaleState
 }
 
 // NewScalingTicket creates and opens/ issues a new ScalingTicket
-func NewScalingTicket(desiredCount uint, dryRun bool) ScalingTicket {
+func NewScalingTicket(desiredCount uint, force bool) ScalingTicket {
 	return ScalingTicket{
 		issuedAt:     time.Now(),
 		startedAt:    nil,
 		completedAt:  nil,
 		desiredCount: desiredCount,
 		state:        scaleNotStarted,
-		dryRun:       dryRun,
+		force:        force,
 	}
 }
 

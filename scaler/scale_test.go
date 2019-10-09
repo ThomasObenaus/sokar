@@ -11,6 +11,81 @@ import (
 	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
 
+func Test_ExecuteScale_NoDryRun(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	sObjName := "any"
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0)).Times(3)
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge).Times(3)
+
+	sObj := ScalingObject{Name: sObjName, MinCount: 0, MaxCount: 2}
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(false))
+	require.NoError(t, err)
+
+	// error
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2), uint(1), uint(1)).Return(fmt.Errorf("err"))
+	result := scaler.executeScale(1, 1, false)
+	assert.Equal(t, scaleFailed, result.state)
+	assert.Equal(t, uint(1), result.newCount)
+
+	// no scale, success
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2), uint(1), uint(1)).Return(nil)
+	result = scaler.executeScale(1, 1, false)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(1), result.newCount)
+
+	// scale up, success
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2), uint(1), uint(2)).Return(nil)
+	result = scaler.executeScale(1, 2, false)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(2), result.newCount)
+
+	// scale down, success
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2), uint(2), uint(1)).Return(nil)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge)
+	result = scaler.executeScale(2, 1, false)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(1), result.newCount)
+}
+
+func Test_ExecuteScale_DryRun(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	sObjName := "any"
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(1))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge)
+
+	sObj := ScalingObject{Name: sObjName, MinCount: 0, MaxCount: 2}
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true))
+	require.NoError(t, err)
+
+	// no scale, dry run
+	result := scaler.executeScale(1, 2, false)
+	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(1), result.newCount)
+
+	// scale up, dry run but force
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(0), uint(2), uint(1), uint(2)).Return(nil)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge)
+	result = scaler.executeScale(1, 2, true)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(2), result.newCount)
+}
+
 func TestScale_ScalingObjectDead(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
@@ -25,13 +100,15 @@ func TestScale_ScalingObjectDead(t *testing.T) {
 
 	// dead scalingObject - error
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, fmt.Errorf("internal error"))
-	result := scaler.scale(2, 0, false)
+	result := scaler.scale(2, 1, false)
 	assert.Equal(t, scaleFailed, result.state)
+	assert.Equal(t, uint(1), result.newCount)
 
 	// dead scalingObject
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(true, nil)
-	result = scaler.scale(2, 0, false)
+	result = scaler.scale(2, 1, false)
 	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(1), result.newCount)
 }
 
 func TestScale_Up(t *testing.T) {
@@ -55,7 +132,8 @@ func TestScale_Up(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(0), uint(2)).Return(nil)
 	result := scaler.scale(2, 0, false)
-	assert.NotEqual(t, scaleFailed, result.state)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(2), result.newCount)
 
 	// scale up - max hit
 	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
@@ -64,7 +142,8 @@ func TestScale_Up(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(0), uint(5)).Return(nil)
 	result = scaler.scale(6, 0, false)
-	assert.NotEqual(t, scaleFailed, result.state)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(5), result.newCount)
 }
 
 func TestScale_Down(t *testing.T) {
@@ -88,7 +167,8 @@ func TestScale_Down(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(4), uint(1)).Return(nil)
 	result := scaler.scale(1, 4, false)
-	assert.NotEqual(t, scaleFailed, result.state)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(1), result.newCount)
 
 	// scale up - min hit
 	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
@@ -97,7 +177,8 @@ func TestScale_Down(t *testing.T) {
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(2), uint(1)).Return(nil)
 	result = scaler.scale(0, 2, false)
-	assert.NotEqual(t, scaleFailed, result.state)
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(1), result.newCount)
 }
 
 func TestScale_NoScale(t *testing.T) {
@@ -113,11 +194,10 @@ func TestScale_NoScale(t *testing.T) {
 	scaler, err := New(scaTgt, sObj, metrics)
 	require.NoError(t, err)
 
-	// scale down
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
 	result := scaler.scale(2, 2, false)
-	assert.False(t, scaler.desiredScale.isKnown)
-	assert.NotEqual(t, scaleFailed, result.state)
+	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(2), result.newCount)
 }
 
 func TestScaleBy_CheckScalingPolicy(t *testing.T) {
@@ -169,7 +249,7 @@ func TestScale_UpDryRun(t *testing.T) {
 
 	sObjName := "any"
 	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
-	scaler, err := New(scaTgt, sObj, metrics)
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true))
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
@@ -178,8 +258,9 @@ func TestScale_UpDryRun(t *testing.T) {
 
 	// scale up
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	result := scaler.scale(2, 0, true)
-	assert.NotEqual(t, scaleFailed, result.state)
+	result := scaler.scale(2, 1, false)
+	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(1), result.newCount)
 }
 
 func TestScale_DownDryRun(t *testing.T) {
@@ -192,7 +273,7 @@ func TestScale_DownDryRun(t *testing.T) {
 
 	sObjName := "any"
 	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
-	scaler, err := New(scaTgt, sObj, metrics)
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true))
 	require.NoError(t, err)
 
 	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
@@ -201,53 +282,7 @@ func TestScale_DownDryRun(t *testing.T) {
 
 	// scale down
 	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
-	result := scaler.scale(1, 4, true)
-	assert.NotEqual(t, scaleFailed, result.state)
+	result := scaler.scale(1, 4, false)
+	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(4), result.newCount)
 }
-
-//func TestScale_DryRun(t *testing.T) {
-//
-//	// TODO: Remove this comment:
-//	// This test fails because of the scaleObjectWatcher, which calls GetScalingObjectCount too often
-//
-//	mockCtrl := gomock.NewController(t)
-//	defer mockCtrl.Finish()
-//	metrics, mocks := NewMockedMetrics(mockCtrl)
-//
-//	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
-//
-//	sObjName := "any"
-//	cfg := Config{Name: sObjName, MinCount: 1, MaxCount: 5, WatcherInterval: time.Millisecond * 100}
-//	scaler, err := cfg.New(scaTgt, metrics)
-//	require.NoError(t, err)
-//
-//	addedScalingTickets := mock_metrics.NewMockCounter(mockCtrl)
-//	addedScalingTickets.EXPECT().Inc()
-//	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
-//	plannedButSkippedGauge.EXPECT().Set(float64(1))
-//	appliedScalingTickets := mock_metrics.NewMockCounter(mockCtrl)
-//	appliedScalingTickets.EXPECT().Inc()
-//	ignoredCounter := mock_metrics.NewMockCounter(mockCtrl)
-//	ignoredCounter.EXPECT().Inc()
-//	gomock.InOrder(
-//		mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(addedScalingTickets),
-//		scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(1), nil),
-//		scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil),
-//		mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge),
-//		mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(appliedScalingTickets),
-//		mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any()),
-//		mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(ignoredCounter),
-//	)
-//	scaler.Run()
-//	defer func() {
-//		scaler.Stop()
-//		scaler.Join()
-//	}()
-//
-//	err = scaler.ScaleTo(2, true)
-//	assert.NoError(t, err)
-//
-//	// needed to give the ticketprocessor some time to start working
-//	time.Sleep(time.Second * 1)
-//}
-//

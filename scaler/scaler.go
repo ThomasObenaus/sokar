@@ -130,9 +130,9 @@ func (s *Scaler) GetCount() (uint, error) {
 }
 
 // ScaleTo will scale the scalingObject to the desired count.
-func (s *Scaler) ScaleTo(desiredCount uint, dryRun bool) error {
-	s.logger.Info().Msgf("Scale to %d requested (dryRun=%t).", desiredCount, dryRun)
-	return s.openScalingTicket(desiredCount, dryRun)
+func (s *Scaler) ScaleTo(desiredCount uint, force bool) error {
+	s.logger.Info().Msgf("Scale to %d requested (force=%t).", desiredCount, force)
+	return s.openScalingTicket(desiredCount, force)
 }
 
 // GetName returns the name of this component

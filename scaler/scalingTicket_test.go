@@ -15,9 +15,9 @@ func TestNewScalingTicket(t *testing.T) {
 	assert.Equal(t, uint(0), sj.desiredCount)
 	assert.Nil(t, sj.startedAt)
 	assert.Nil(t, sj.completedAt)
-	assert.False(t, sj.dryRun)
+	assert.False(t, sj.force)
 	sj = NewScalingTicket(0, true)
-	assert.True(t, sj.dryRun)
+	assert.True(t, sj.force)
 }
 
 func Test_Start(t *testing.T) {
