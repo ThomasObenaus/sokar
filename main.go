@@ -63,7 +63,7 @@ func main() {
 	logger.Info().Msgf("Scaling Target: %s", scalingTarget.String())
 
 	logger.Info().Msg("5. Setup: Scaler")
-	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory)).(*scaler.Scaler)
+	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory, cfg.DryRunMode)).(*scaler.Scaler)
 
 	logger.Info().Msg("6. Setup: CapacityPlanner")
 
@@ -259,7 +259,7 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 }
 
 // setupScaler creates and configures the Scaler. Internally nomad is used as scaling target.
-func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time.Duration, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory) (*scaler.Scaler, error) {
+func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time.Duration, scalingTarget scaler.ScalingTarget, logF logging.LoggerFactory, dryRunMode bool) (*scaler.Scaler, error) {
 
 	if logF == nil {
 		return nil, fmt.Errorf("Logging factory is nil")
@@ -276,6 +276,7 @@ func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time
 		scaler.NewMetrics(),
 		scaler.WithLogger(logF.NewNamedLogger("sokar.scaler")),
 		scaler.WatcherInterval(watcherInterval),
+		scaler.DryRunMode(dryRunMode),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("Failed setting up scaler: %s", err)

@@ -19,6 +19,10 @@ type Scaler struct {
 	// ScalingObject represents the ScalingObject and relevant meta data
 	scalingObject ScalingObject
 
+	// dryRunMode active/ not active. In dry run mode no automatic scaling will
+	// executed. For more information see ../doc/DryRunMode.md
+	dryRunMode bool
+
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
 	watcherInterval time.Duration
@@ -73,6 +77,15 @@ func WatcherInterval(interval time.Duration) Option {
 	}
 }
 
+// DryRunMode can be used to activate/ deactivate the dry run mode.
+// In dry run mode no automatic scaling will executed.
+// For more information see ../doc/DryRunMode.md
+func DryRunMode(enable bool) Option {
+	return func(s *Scaler) {
+		s.dryRunMode = enable
+	}
+}
+
 // New creates a new instance of a scaler using the given
 // ScalingTarget to send scaling events to.
 func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metrics, options ...Option) (*Scaler, error) {
@@ -87,6 +100,7 @@ func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metri
 		maxOpenScalingTickets: maxOpenScalingTickets,
 		metrics:               metrics,
 		desiredScale:          optionalValue{isKnown: false},
+		dryRunMode:            false,
 	}
 
 	// apply the options

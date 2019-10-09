@@ -53,16 +53,16 @@ func Test_SetupScaler_Failures(t *testing.T) {
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
 
 	// no logging factory
-	scaler, err := setupScaler("any", 0, 1, time.Second*1, nil, nil)
+	scaler, err := setupScaler("any", 0, 1, time.Second*1, nil, nil, false)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
-	scaler, err = setupScaler("any", 0, 1, time.Second*1, nil, logF)
+	scaler, err = setupScaler("any", 0, 1, time.Second*1, nil, logF, false)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 
 	// invalid watcher-interval
-	scaler, err = setupScaler("any", 0, 1, time.Second*0, nil, nil)
+	scaler, err = setupScaler("any", 0, 1, time.Second*0, nil, nil, false)
 	assert.Error(t, err)
 	assert.Nil(t, scaler)
 }
@@ -75,7 +75,7 @@ func Test_SetupScaler(t *testing.T) {
 	scalingTarget := mock_scaler.NewMockScalingTarget(mockCtrl)
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 
-	scaler, err := setupScaler("any", 0, 1, time.Second*1, scalingTarget, logF)
+	scaler, err := setupScaler("any", 0, 1, time.Second*1, scalingTarget, logF, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, scaler)
 }
