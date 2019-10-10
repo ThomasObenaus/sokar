@@ -180,5 +180,5 @@ func (s *Scaler) Join() {
 // GetTimeOfLastScaleAction returns that point in time where the most recent
 // scaling STARTED.
 func (s *Scaler) GetTimeOfLastScaleAction() time.Time {
-	return time.Now()
+	return s.lastScaleAction
 }
