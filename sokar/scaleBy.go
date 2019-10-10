@@ -30,7 +30,8 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	percentageFract := float32(percentage) / 100.00
-	err = sk.triggerScale(false, percentageFract, planScaleByPercentage)
+	// this is used in manual (override) mode --> force has to be true
+	err = sk.triggerScale(true, percentageFract, planScaleByPercentage)
 	if err != nil {
 		sk.logger.Error().Err(err).Msg("Unable to trigger scale")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -60,7 +61,8 @@ func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	err = sk.triggerScale(false, float32(value), planScaleByValue)
+	// this is used in manual (override) mode --> force has to be true
+	err = sk.triggerScale(true, float32(value), planScaleByValue)
 	if err != nil {
 		sk.logger.Error().Err(err).Msg("Unable to trigger scale")
 		http.Error(w, err.Error(), http.StatusInternalServerError)

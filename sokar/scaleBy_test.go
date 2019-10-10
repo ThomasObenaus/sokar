@@ -97,7 +97,7 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -133,7 +133,7 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
@@ -201,7 +201,7 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -237,7 +237,7 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
 		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))

@@ -38,7 +38,8 @@ func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	sk.metrics.scaleEventsTotal.Inc()
 	sk.metrics.scaleFactor.Set(float64(scaleFactor))
 
-	err := sk.triggerScale(sk.dryRunMode, scaleFactor, sk.capacityPlanner.Plan)
+	// this method is used for automatic mode only --> force has to be false
+	err := sk.triggerScale(false, scaleFactor, sk.capacityPlanner.Plan)
 	if err != nil {
 		sk.logger.Error().Err(err).Msg("Failed to scale.")
 	}
