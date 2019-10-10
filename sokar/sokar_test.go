@@ -33,9 +33,6 @@ func Test_New(t *testing.T) {
 	assert.NotNil(t, sokar.scaler)
 	assert.NotNil(t, sokar.stopChan)
 	assert.NotNil(t, sokar.metrics)
-
-	oneDayAgo := time.Now().Add(time.Hour * -24)
-	assert.WithinDuration(t, oneDayAgo, sokar.lastScaleAction, time.Second*1)
 }
 
 func Test_HandleScaleEvent(t *testing.T) {
@@ -59,7 +56,8 @@ func Test_HandleScaleEvent(t *testing.T) {
 	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false),
 	)
@@ -117,7 +115,8 @@ func Test_TriggerScale_Scale(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
 	)
@@ -150,8 +149,43 @@ func Test_TriggerScale_Cooldown(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true, time.Second*0),
 		metricMocks.skippedScalingDuringCooldownTotal.EXPECT().Inc(),
+	)
+
+	planFunc := func(scaleValue float32, currentScale uint) uint {
+		return scaleTo
+	}
+
+	sokar.triggerScale(false, scaleFactor, planFunc)
+}
+
+func Test_TriggerScale_NoCooldown(t *testing.T) {
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
+	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
+	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+
+	cfg := Config{}
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	require.NotNil(t, sokar)
+	require.NoError(t, err)
+
+	currentScale := uint(0)
+	scaleFactor := float32(1)
+	scaleTo := uint(1)
+	gomock.InOrder(
+		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
+		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now().Add(time.Hour*-1)),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
+		metricMocks.plannedJobCount.EXPECT().Set(float64(1)),
+		scalerIF.EXPECT().ScaleTo(scaleTo, false),
 	)
 
 	planFunc := func(scaleValue float32, currentScale uint) uint {
@@ -212,7 +246,8 @@ func Test_TriggerScale_ErrScaleTo(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Unable to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),

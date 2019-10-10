@@ -7,6 +7,7 @@ package mock_sokar
 import (
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	time "time"
 )
 
 // MockScaler is a mock of Scaler interface
@@ -33,17 +34,17 @@ func (m *MockScaler) EXPECT() *MockScalerMockRecorder {
 }
 
 // ScaleTo mocks base method
-func (m *MockScaler) ScaleTo(count uint, dryRun bool) error {
+func (m *MockScaler) ScaleTo(count uint, force bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ScaleTo", count, dryRun)
+	ret := m.ctrl.Call(m, "ScaleTo", count, force)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ScaleTo indicates an expected call of ScaleTo
-func (mr *MockScalerMockRecorder) ScaleTo(count, dryRun interface{}) *gomock.Call {
+func (mr *MockScalerMockRecorder) ScaleTo(count, force interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleTo", reflect.TypeOf((*MockScaler)(nil).ScaleTo), count, dryRun)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleTo", reflect.TypeOf((*MockScaler)(nil).ScaleTo), count, force)
 }
 
 // GetCount mocks base method
@@ -59,4 +60,18 @@ func (m *MockScaler) GetCount() (uint, error) {
 func (mr *MockScalerMockRecorder) GetCount() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCount", reflect.TypeOf((*MockScaler)(nil).GetCount))
+}
+
+// GetTimeOfLastScaleAction mocks base method
+func (m *MockScaler) GetTimeOfLastScaleAction() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTimeOfLastScaleAction")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// GetTimeOfLastScaleAction indicates an expected call of GetTimeOfLastScaleAction
+func (mr *MockScalerMockRecorder) GetTimeOfLastScaleAction() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTimeOfLastScaleAction", reflect.TypeOf((*MockScaler)(nil).GetTimeOfLastScaleAction))
 }

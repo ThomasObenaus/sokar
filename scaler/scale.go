@@ -2,6 +2,7 @@ package scaler
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/thomasobenaus/sokar/helper"
 )
@@ -69,27 +70,14 @@ func checkScalingPolicy(desiredCount uint, min uint, max uint) policyCheckResult
 	return result
 }
 
-// trueIfNil returns a scaleResult filled in with an appropriate error message in case the given scaler is nil
-func trueIfNil(s *Scaler) (result scaleResult, ok bool) {
-	ok = false
-	result = scaleResult{state: scaleUnknown}
-
-	if s == nil {
-		ok = true
-		result = scaleResult{
-			state:            scaleFailed,
-			stateDescription: "Scaler is nil",
-			newCount:         0,
-		}
-	}
-	return result, ok
-}
-
 // scale scales the scalingObject from currentCount to desiredCount.
 // Internally it is checked if a scaling is needed and if the scaling policy is valid.
-func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleResult {
-	if r, ok := trueIfNil(s); ok {
-		return r
+// If the force flag is true then even in dry-run mode the scaling will be applied.
+func (s *Scaler) scale(desiredCount uint, currentCount uint, force bool) scaleResult {
+
+	// memorize the time the scaling started
+	if isScalePermitted(s.dryRunMode, force) {
+		s.lastScaleAction = time.Now()
 	}
 
 	sObjName := s.scalingObject.Name
@@ -103,6 +91,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		return scaleResult{
 			state:            scaleFailed,
 			stateDescription: fmt.Sprintf("Error obtaining if scalingObject is dead: %s.", err.Error()),
+			newCount:         currentCount,
 		}
 	}
 
@@ -110,6 +99,7 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		return scaleResult{
 			state:            scaleIgnored,
 			stateDescription: fmt.Sprintf("ScalingObject '%s' is dead. Can't scale", sObjName),
+			newCount:         currentCount,
 		}
 	}
 
@@ -136,10 +126,26 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		}
 	}
 
+	return s.executeScale(currentCount, newCount, force)
+}
+
+// executeScale just executes the wanted scale, even if it is not needed in case currentCount == newCount.
+// The only thing that is checked is if the scaler is in dry run mode or not.
+// In dry-run mode the scaling is not applied by actually scaling the scalingObject, only a metric is
+// updated, that reflects the fact that a scaling was skipped/ ignored.
+// Only the force flag can be used to override this behavior. If the force flag is true then even in
+// dry-run mode the scaling will be applied.
+func (s *Scaler) executeScale(currentCount, newCount uint, force bool) scaleResult {
+	sObjName := s.scalingObject.Name
+	min := s.scalingObject.MinCount
+	max := s.scalingObject.MaxCount
+
+	diff := helper.SubUint(newCount, currentCount)
 	scaleTypeStr := amountToScaleType(diff)
 
-	if dryRun {
-		s.logger.Info().Str("scalingObject", sObjName).Msgf("Skip scale %s by %d to %d (DryRun).", scaleTypeStr, diff, newCount)
+	// the force flag can overrule the dry run mode
+	if !isScalePermitted(s.dryRunMode, force) {
+		s.logger.Info().Str("scalingObject", sObjName).Msgf("Skip scale %s by %d to %d (DryRun, force=%v).", scaleTypeStr, diff, newCount, force)
 		s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(1)
 
 		return scaleResult{
@@ -149,16 +155,15 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		}
 	}
 
-	s.logger.Info().Str("scalingObject", sObjName).Msgf("Scale %s by %d to %d.", scaleTypeStr, diff, newCount)
+	s.logger.Info().Str("scalingObject", sObjName).Msgf("Scale %s by %d to %d (force=%v).", scaleTypeStr, diff, newCount, force)
 	s.metrics.plannedButSkippedScalingOpen.WithLabelValues(scaleTypeStr).Set(0)
 
-	// Set the new scalingObject count
-	s.desiredScale.setValue(newCount)
-	err = s.scalingTarget.AdjustScalingObjectCount(s.scalingObject.Name, s.scalingObject.MinCount, s.scalingObject.MaxCount, currentCount, newCount)
+	err := s.scalingTarget.AdjustScalingObjectCount(sObjName, min, max, currentCount, newCount)
 	if err != nil {
 		return scaleResult{
 			state:            scaleFailed,
 			stateDescription: fmt.Sprintf("Error adjusting scalingObject count to %d: %s.", newCount, err.Error()),
+			newCount:         currentCount,
 		}
 	}
 
@@ -167,4 +172,8 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, dryRun bool) scaleR
 		stateDescription: "Scaling successfully done.",
 		newCount:         newCount,
 	}
+}
+
+func isScalePermitted(dryRun, force bool) bool {
+	return !dryRun || force
 }

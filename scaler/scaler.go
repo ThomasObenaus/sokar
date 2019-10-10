@@ -8,6 +8,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+var oneDayAgo = time.Now().Add(time.Hour * -24)
+
 // Scaler is a component responsible for scaling a scalingObject
 type Scaler struct {
 	logger zerolog.Logger
@@ -18,6 +20,15 @@ type Scaler struct {
 
 	// ScalingObject represents the ScalingObject and relevant meta data
 	scalingObject ScalingObject
+
+	// dryRunMode active/ not active. In dry run mode no automatic scaling will
+	// executed. For more information see ../doc/DryRunMode.md
+	dryRunMode bool
+
+	// LastScaleAction represents that point in time
+	// when the scaler was triggered to execute a scaling
+	// action the last time
+	lastScaleAction time.Time
 
 	// watcherInterval the interval the Scaler will check if
 	// the scalingObject count still matches the desired state.
@@ -48,16 +59,6 @@ type Scaler struct {
 	scalingObjectWatcherPaused bool
 }
 
-// Config is the configuration for the Scaler
-type Config struct {
-	Name                  string
-	MinCount              uint
-	MaxCount              uint
-	Logger                zerolog.Logger
-	MaxOpenScalingTickets uint
-	WatcherInterval       time.Duration
-}
-
 // Option represents an option for the Scaler
 type Option func(c *Scaler)
 
@@ -83,6 +84,15 @@ func WatcherInterval(interval time.Duration) Option {
 	}
 }
 
+// DryRunMode can be used to activate/ deactivate the dry run mode.
+// In dry run mode no automatic scaling will executed.
+// For more information see ../doc/DryRunMode.md
+func DryRunMode(enable bool) Option {
+	return func(s *Scaler) {
+		s.dryRunMode = enable
+	}
+}
+
 // New creates a new instance of a scaler using the given
 // ScalingTarget to send scaling events to.
 func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metrics, options ...Option) (*Scaler, error) {
@@ -97,6 +107,8 @@ func New(scalingTarget ScalingTarget, scalingObject ScalingObject, metrics Metri
 		maxOpenScalingTickets: maxOpenScalingTickets,
 		metrics:               metrics,
 		desiredScale:          optionalValue{isKnown: false},
+		dryRunMode:            false,
+		lastScaleAction:       oneDayAgo,
 	}
 
 	// apply the options
@@ -126,9 +138,9 @@ func (s *Scaler) GetCount() (uint, error) {
 }
 
 // ScaleTo will scale the scalingObject to the desired count.
-func (s *Scaler) ScaleTo(desiredCount uint, dryRun bool) error {
-	s.logger.Info().Msgf("Scale to %d requested (dryRun=%t).", desiredCount, dryRun)
-	return s.openScalingTicket(desiredCount, dryRun)
+func (s *Scaler) ScaleTo(desiredCount uint, force bool) error {
+	s.logger.Info().Msgf("Scale to %d requested (force=%t).", desiredCount, force)
+	return s.openScalingTicket(desiredCount, force)
 }
 
 // GetName returns the name of this component
@@ -140,8 +152,14 @@ func (s *Scaler) GetName() string {
 func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
 	go s.scaleTicketProcessor(s.scaleTicketChan)
-	// handler that checks periodically if the desired count is still valid
-	go s.scalingObjectWatcher(s.watcherInterval)
+
+	if s.dryRunMode {
+		s.logger.Info().Msg("Don't start the ScalingObjectWatcher in dry-run mode.")
+	} else {
+		// handler that checks periodically if the desired count is still valid
+		go s.scalingObjectWatcher(s.watcherInterval)
+		s.logger.Info().Msg("ScalingObjectWatcher started.")
+	}
 }
 
 // Stop tears down scaler
@@ -157,4 +175,10 @@ func (s *Scaler) Stop() error {
 // Join blocks/ waits until scaler has been stopped
 func (s *Scaler) Join() {
 	s.wg.Wait()
+}
+
+// GetTimeOfLastScaleAction returns that point in time where the most recent
+// scaling STARTED.
+func (s *Scaler) GetTimeOfLastScaleAction() time.Time {
+	return s.lastScaleAction
 }

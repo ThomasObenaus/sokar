@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/julienschmidt/httprouter"
@@ -94,8 +95,9 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -129,8 +131,9 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
@@ -196,8 +199,9 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
 	metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo))
@@ -231,8 +235,9 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
-		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Failed to scale")),
+		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
+		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))

@@ -1,6 +1,7 @@
 package capacityPlanner
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -101,27 +102,33 @@ func Test_IsCoolingDown(t *testing.T) {
 	require.NotNil(t, capa)
 
 	lastScale := time.Now()
-	result := capa.IsCoolingDown(lastScale, false)
+	result, timeLeft := capa.IsCoolingDown(lastScale, false)
 	assert.True(t, result)
+	assert.InEpsilon(t, time.Second*10, timeLeft, 0.1, fmt.Sprintf("left %s", timeLeft.String()))
 
-	result = capa.IsCoolingDown(lastScale, true)
+	result, timeLeft = capa.IsCoolingDown(lastScale, true)
 	assert.True(t, result)
+	assert.InEpsilon(t, time.Second*20, timeLeft, 0.1, fmt.Sprintf("left %s", timeLeft.String()))
 
 	// Upscaling
 	lastScale = time.Now().Add(time.Second * -11)
-	result = capa.IsCoolingDown(lastScale, false)
+	result, timeLeft = capa.IsCoolingDown(lastScale, false)
 	assert.False(t, result)
+	assert.Equal(t, time.Second*0, timeLeft, fmt.Sprintf("left %s", timeLeft.String()))
 
 	lastScale = time.Now().Add(time.Second * -9)
-	result = capa.IsCoolingDown(lastScale, false)
+	result, timeLeft = capa.IsCoolingDown(lastScale, false)
 	assert.True(t, result)
+	assert.InEpsilon(t, time.Second*1, timeLeft, 0.1, fmt.Sprintf("left %s", timeLeft.String()))
 
 	// Downscaling
 	lastScale = time.Now().Add(time.Second * -21)
-	result = capa.IsCoolingDown(lastScale, true)
+	result, timeLeft = capa.IsCoolingDown(lastScale, true)
 	assert.False(t, result)
+	assert.Equal(t, time.Second*0, timeLeft, fmt.Sprintf("left %s", timeLeft.String()))
 
 	lastScale = time.Now().Add(time.Second * -19)
-	result = capa.IsCoolingDown(lastScale, true)
+	result, timeLeft = capa.IsCoolingDown(lastScale, true)
 	assert.True(t, result)
+	assert.InEpsilon(t, time.Second*1, timeLeft, 0.1, fmt.Sprintf("left %s", timeLeft.String()))
 }
