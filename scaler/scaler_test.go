@@ -124,7 +124,7 @@ func Test_OpenScalingTicket(t *testing.T) {
 	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
 	scalingTicketCounter.EXPECT().Inc().Times(2)
 	mocks.scalingTicketCount.EXPECT().WithLabelValues("added").Return(scalingTicketCounter)
-	err = scaler.openScalingTicket(0, false)
+	err = scaler.openScalingTicket(1, false)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), scaler.numOpenScalingTickets)
 	assert.Len(t, scaler.scaleTicketChan, 1)
@@ -134,7 +134,8 @@ func Test_OpenScalingTicket(t *testing.T) {
 	assert.Error(t, err)
 
 	ticket := <-scaler.scaleTicketChan
-	assert.Equal(t, uint(0), ticket.desiredCount)
+	assert.Equal(t, uint(1), ticket.desiredCount)
+	assert.False(t, ticket.force)
 }
 
 func Test_ApplyScalingTicket_NoScale_DeadJob(t *testing.T) {
@@ -167,8 +168,65 @@ func Test_ApplyScalingTicket_NoScale_DeadJob(t *testing.T) {
 	assert.Equal(t, uint(0), scaler.desiredScale.value)
 }
 
-// TODO: Add this test
-// func Test_ApplyScalingTicket_NoScale_DryRun(t *testing.T) {
+func Test_ApplyScalingTicket_NoScale_DryRun(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(1))
+	scalingTicketCounter := mock_metrics.NewMockCounter(mockCtrl)
+	scalingTicketCounter.EXPECT().Inc()
+	doneCounter := mock_metrics.NewMockCounter(mockCtrl)
+	doneCounter.EXPECT().Inc()
+	sObjName := "any"
+
+	gomock.InOrder(
+		scaTgt.EXPECT().GetScalingObjectCount(sObjName).Return(uint(1), nil),
+		scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil),
+		mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("UP").Return(plannedButSkippedGauge),
+		mocks.scalingTicketCount.EXPECT().WithLabelValues("applied").Return(scalingTicketCounter),
+		mocks.scalingDurationSeconds.EXPECT().Observe(gomock.Any()),
+		mocks.scaleResultCounter.EXPECT().WithLabelValues("ignored").Return(doneCounter),
+	)
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 10}
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true))
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	ticket := NewScalingTicket(5, false)
+	scaler.applyScaleTicket(ticket)
+	assert.False(t, scaler.desiredScale.isKnown)
+	assert.Equal(t, uint(0), scaler.desiredScale.value)
+}
+
+func Test_ApplyScalingTicket_NoScaleObjectWatcherInDryRunMode(t *testing.T) {
+	// This test was added to ensure that the ScaleObjectWatcher does not
+	// run in dry-run mode. Why, see: https://github.com/ThomasObenaus/sokar/issues/98.
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	sObj := ScalingObject{Name: "any", MinCount: 1, MaxCount: 10}
+	scaler, err := New(scaTgt, sObj, metrics, DryRunMode(true), WatcherInterval(time.Millisecond*100))
+	require.NoError(t, err)
+	require.NotNil(t, scaler)
+
+	scaler.Run()
+	defer func() {
+		scaler.Stop()
+		scaler.Join()
+	}()
+
+	// give the (potential) watcher some time
+	time.Sleep(time.Millisecond * 200)
+
+	// hint: This test would fail in case a running ScaleObjectWatcher would
+	// call a method of the mocked ScalingTarget (e.g. GetCount or Scale)
+}
 
 func Test_ApplyScalingTicket_Scale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)

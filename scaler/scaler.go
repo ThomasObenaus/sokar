@@ -152,8 +152,14 @@ func (s *Scaler) GetName() string {
 func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
 	go s.scaleTicketProcessor(s.scaleTicketChan)
-	// handler that checks periodically if the desired count is still valid
-	go s.scalingObjectWatcher(s.watcherInterval)
+
+	if s.dryRunMode {
+		s.logger.Info().Msg("Don't start the ScalingObjectWatcher in dry-run mode.")
+	} else {
+		// handler that checks periodically if the desired count is still valid
+		go s.scalingObjectWatcher(s.watcherInterval)
+		s.logger.Info().Msg("ScalingObjectWatcher started.")
+	}
 }
 
 // Stop tears down scaler
