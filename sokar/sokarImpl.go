@@ -57,9 +57,9 @@ func (sk *Sokar) triggerScale(force bool, scaleValue float32, planFun func(scale
 	sk.metrics.preScaleJobCount.Set(float64(preScaleJobCount))
 
 	// Don't scale if sokar is in cool down mode
-	if sk.capacityPlanner.IsCoolingDown(sk.scaler.GetTimeOfLastScaleAction(), scaleDown) {
+	if cooldown, timeleft := sk.capacityPlanner.IsCoolingDown(sk.scaler.GetTimeOfLastScaleAction(), scaleDown); cooldown {
 		sk.metrics.skippedScalingDuringCooldownTotal.Inc()
-		sk.logger.Info().Msg("Skip scale event. Sokar is cooling down.")
+		sk.logger.Info().Msgf("Skip scale event. Sokar is cooling down (time left=%s).", timeleft.String())
 		return nil
 	}
 

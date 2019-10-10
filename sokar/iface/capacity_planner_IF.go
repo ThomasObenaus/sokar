@@ -11,5 +11,5 @@ type CapacityPlanner interface {
 
 	// IsCoolingDown returns true if the CapacityPlanner thinks that
 	// its currently not a good idea to apply the wanted scaling event.
-	IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) bool
+	IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) (bool, time.Duration)
 }

@@ -48,11 +48,12 @@ func (mr *MockCapacityPlannerMockRecorder) Plan(scaleFactor, currentScale interf
 }
 
 // IsCoolingDown mocks base method
-func (m *MockCapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) bool {
+func (m *MockCapacityPlanner) IsCoolingDown(timeOfLastScale time.Time, scaleDown bool) (bool, time.Duration) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCoolingDown", timeOfLastScale, scaleDown)
 	ret0, _ := ret[0].(bool)
-	return ret0
+	ret1, _ := ret[1].(time.Duration)
+	return ret0, ret1
 }
 
 // IsCoolingDown indicates an expected call of IsCoolingDown
