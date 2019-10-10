@@ -57,7 +57,7 @@ func Test_HandleScaleEvent(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		capaPlannerIF.EXPECT().Plan(scaleFactor, uint(0)).Return(scaleTo),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false),
 	)
@@ -116,7 +116,7 @@ func Test_TriggerScale_Scale(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(nil),
 	)
@@ -150,7 +150,7 @@ func Test_TriggerScale_Cooldown(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(true, time.Second*0),
 		metricMocks.skippedScalingDuringCooldownTotal.EXPECT().Inc(),
 	)
 
@@ -183,7 +183,7 @@ func Test_TriggerScale_NoCooldown(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now().Add(time.Hour*-1)),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(1)),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false),
 	)
@@ -247,7 +247,7 @@ func Test_TriggerScale_ErrScaleTo(t *testing.T) {
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale)),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		metricMocks.plannedJobCount.EXPECT().Set(float64(scaleTo)),
 		scalerIF.EXPECT().ScaleTo(scaleTo, false).Return(fmt.Errorf("Unable to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),

@@ -96,7 +96,7 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
@@ -132,7 +132,7 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
@@ -200,7 +200,7 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(nil),
 	)
 	metricMocks.preScaleJobCount.EXPECT().Set(float64(currentScale))
@@ -236,7 +236,7 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
-		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false),
+		capaPlannerIF.EXPECT().IsCoolingDown(gomock.Any(), false).Return(false, time.Second*0),
 		scalerIF.EXPECT().ScaleTo(scaleTo, true).Return(fmt.Errorf("Failed to scale")),
 		metricMocks.failedScalingTotal.EXPECT().Inc(),
 	)
