@@ -300,42 +300,6 @@ func Test_StrToScalerMode(t *testing.T) {
 	assert.Equal(t, ScalerModeAwsEc2, mode)
 }
 
-// TODO: Remove as soon as the sca.nomad.mode flag has been removed
-func Test_FillCfg_SupportDeprecatedFlags(t *testing.T) {
-
-	cfg := NewDefaultConfig()
-	args := []string{
-		"--sca.nomad.mode=aws-ec2",
-		"--sca.mode=job",
-	}
-
-	err := cfg.ReadConfig(args)
-	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
-
-	// old job
-	cfg = NewDefaultConfig()
-	args = []string{
-		"--sca.mode=job",
-		"--sca.nomad.server-address=http://1.2.3.4",
-	}
-
-	err = cfg.ReadConfig(args)
-	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeNomadJob, cfg.Scaler.Mode)
-
-	// old dc
-	cfg = NewDefaultConfig()
-	args = []string{
-		"--sca.mode=dc",
-		"--sca.nomad.server-address=http://1.2.3.4",
-	}
-
-	err = cfg.ReadConfig(args)
-	assert.NoError(t, err)
-	assert.Equal(t, ScalerModeNomadDataCenter, cfg.Scaler.Mode)
-}
-
 func Test_ValidateCapacityPlanner(t *testing.T) {
 	capacityPlanner := CapacityPlanner{}
 	err := validateCapacityPlanner(capacityPlanner)

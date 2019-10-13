@@ -20,16 +20,6 @@ func (cfg *Config) fillScaler() error {
 	}
 	cfg.Scaler.Mode = scaMode
 
-	// TODO: DEPRECATED, Remove it
-	scaNomadModeStr := cfg.viper.GetString(scaNomadMode.name)
-	if len(scaNomadModeStr) > 0 {
-		scaMode, err = strToScalerMode(scaNomadModeStr)
-		if err != nil {
-			return err
-		}
-		cfg.Scaler.Mode = scaMode
-	}
-
 	// Context: Scaler - AWS EC2
 	cfg.Scaler.AwsEc2.Profile = cfg.viper.GetString(scaAWSEC2Profile.name)
 	cfg.Scaler.AwsEc2.Region = cfg.viper.GetString(scaAWSEC2Region.name)

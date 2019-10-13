@@ -29,15 +29,6 @@ var port = configEntry{
 }
 
 // ###################### Context: scaler ####################################################
-// TODO: DEPRECATED, remove it
-var scaNomadMode = configEntry{
-	name:         "sca.nomad.mode",
-	bindEnv:      true,
-	bindFlag:     true,
-	defaultValue: "",
-	usage:        "Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted.",
-}
-
 var scaMode = configEntry{
 	name:         "sca.mode",
 	bindEnv:      true,
@@ -294,7 +285,6 @@ var configEntries = []configEntry{
 	scaAWSEC2ASGTagKey,
 	scaNomadDataCenterAWSProfile,
 	scaNomadDataCenterAWSRegion,
-	scaNomadMode,
 	scaNomadModeServerAddress,
 	capConstantModeEnable,
 	capConstantModeOffset,

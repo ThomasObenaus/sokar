@@ -58,14 +58,14 @@ The order they are applied is:
 
 ### Mode
 
-|         |                                                                                                                                                                                                                                   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name    | mode                                                                                                                                                                                                                              |
-| usage   | Scaling target mode is either job based, aws Ec2 or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
-| type    | string (enum: nomad-job \| nomad-dc \| aws-ec2 ) - **the values job and dc are deprecated**                                                                                                                                       |
-| default | job                                                                                                                                                                                                                               |
-| flag    | --sca.mode                                                                                                                                                                                                                        |
-| env     | SK_SCA_MODE                                                                                                                                                                                                                       |
+|         |                                                                                                                                                                                                                                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| name    | mode                                                                                                                                                                                                                                                                                                                                                   |
+| usage   | Scaling target mode is either nomad-job based, aws EC2 or nomad data-center (worker/ instance) based scaling. In data-center (`noamd-dc`) mode the nomad workers will be scaled. In `nomad-job` mode the number of allocations for this job will be adjusted. In `aws-ec2` mode AWS instances will be scaled adjusting the according AutoScalingGroup. |
+| type    | string (enum: nomad-job \| nomad-dc \| aws-ec2 )                                                                                                                                                                                                                                                                                                       |
+| default | job                                                                                                                                                                                                                                                                                                                                                    |
+| flag    | --sca.mode                                                                                                                                                                                                                                                                                                                                             |
+| env     | SK_SCA_MODE                                                                                                                                                                                                                                                                                                                                            |
 
 ### AWS EC2
 
@@ -107,19 +107,6 @@ The order they are applied is:
 ### Nomad
 
 - This section contains the configuration parameters for nomad based scalers (i.e. job or data-center on AWS).
-
-#### [DEPRECATED] Mode
-
-- The parameter `sca.nomad.mode` will be replaced by `sca.mode`
-
-|         |                                                                                                                                                                                                                          |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| name    | mode                                                                                                                                                                                                                     |
-| usage   | Scaling target mode is either job based or data-center (worker/ instance) based scaling. In data-center (dc) mode the nomad workers will be scaled. In job mode the number of allocations for this job will be adjusted. |
-| type    | string (enum: job \| dc )                                                                                                                                                                                                |
-| default | job                                                                                                                                                                                                                      |
-| flag    | --sca.nomad.mode                                                                                                                                                                                                         |
-| env     | SK_SCA_NOMAD_MODE                                                                                                                                                                                                        |
 
 #### Server-Address
 
