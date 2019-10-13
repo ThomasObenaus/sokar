@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.0.10 (2019-??-??)
+## v0.0.10 (2019-10-13)
 
+- Config: With [#103](https://github.com/ThomasObenaus/sokar/issues/103) the deprecated parameter `sca.nomad.mode` was removed. That parameter was replaced by `sca.mode` in a previous release.
 - Build: With [#99](https://github.com/ThomasObenaus/sokar/issues/99) sokar is build based on golang 1.13.1 and the docker image is based on alpine 3.10.
 - With [#98](https://github.com/ThomasObenaus/sokar/issues/98) sokar won't modify any scaleObject automatically any more. Now the ScaleObjectWatcher is disabled in dry-run mode. For more information about dry-run mode see [DryRunMode.md](doc/DryRunMode.md).
 - Refactor: With [#95](https://github.com/ThomasObenaus/sokar/issues/95) the code was refactored to use the functional option approach instead of config structs.
