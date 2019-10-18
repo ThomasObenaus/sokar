@@ -19,3 +19,8 @@ tc.endpoints: ## TestCase for sokar endpoints
 	@echo "############# TestCase EndPoints (_EndPoints_) ........ ####################################################"
 	go test -v -run="_EndPoints_" .
 	@echo "############# TestCase EndPoints (_EndPoints_) Complete ####################################################"
+
+
+# TODO: Remove this
+run:
+	go test -v -run="_My" .
