@@ -1,16 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
-	"github.com/thomasobenaus/sokar/api"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // # Notes:
@@ -26,38 +21,51 @@ func Test_My(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mock := NewMockHTTP(mockCtrl)
+	mock := NewMockHTTP(mockCtrl, 18000)
 
-	mock.EXPECT().POST("HELLO").Return(http.StatusOK, "huhu")
+	mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
 
-	receiver := api.New(18000)
-	receiver.Run()
-	// receiver.GET(/health,response)
-	receiver.Router.HandlerFunc("GET", "/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//server := New(18000, t)
+	//defer server.Close()
+	//
+	//server.GET("/health", http.StatusOK, "SUPER")
+	//
+	time.Sleep(time.Second * 5)
 
-		code, _ := mock.POST("HELLO")
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(code)
-		io.WriteString(w, "data")
-
-		//receiver.Stop()
-	}))
-	time.Sleep(time.Millisecond * 100)
-
-	res, err := http.Get("http://127.0.0.1:18000/health")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	greeting, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s\n", greeting)
-
-	//receiver.Join()
-	receiver.Stop()
+	//mockCtrl := gomock.NewController(t)
+	//defer mockCtrl.Finish()
+	//mock := NewMockHTTP(mockCtrl)
+	//
+	//mock.EXPECT().POST("HELLO").Return(http.StatusOK, "huhu")
+	//
+	//receiver := api.New(18000)
+	//receiver.Run()
+	//// receiver.GET(/health,response)
+	//receiver.Router.HandlerFunc("GET", "/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	//
+	//	code, _ := mock.POST("HELLO")
+	//	w.Header().Set("Content-Type", "application/json")
+	//	w.WriteHeader(code)
+	//	io.WriteString(w, "data")
+	//
+	//	//receiver.Stop()
+	//}))
+	//time.Sleep(time.Millisecond * 100)
+	//
+	//res, err := http.Get("http://127.0.0.1:18000/health")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//greeting, err := ioutil.ReadAll(res.Body)
+	//res.Body.Close()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//fmt.Printf("%s\n", greeting)
+	//
+	////receiver.Join()
+	//receiver.Stop()
 
 }
