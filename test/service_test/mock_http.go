@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	reflect "reflect"
+	"testing"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/thomasobenaus/sokar/api"
@@ -22,10 +23,17 @@ type MockHTTPMockRecorder struct {
 }
 
 // NewMockHTTP creates a new mock instance
-func NewMockHTTP(ctrl *gomock.Controller, port int) *MockHTTP {
+// Pattern:
+// mock := NewMockHTTP(t, 18000)
+// defer mock.Finish()
+// mock.EXPECT().GET("/path").Return(http.StatusOK, "Someting")
+func NewMockHTTP(t *testing.T, port int) *MockHTTP {
+
+	mockCtrl := gomock.NewController(t)
+
 	receiver := api.New(port)
 	receiver.Run()
-	mock := &MockHTTP{ctrl: ctrl}
+	mock := &MockHTTP{ctrl: mockCtrl}
 	mock.recorder = &MockHTTPMockRecorder{mock: mock, receiver: receiver}
 
 	mock.recorder.receiver.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,8 +45,12 @@ func NewMockHTTP(ctrl *gomock.Controller, port int) *MockHTTP {
 
 	mock.recorder.receiver.Router.HandleMethodNotAllowed = false
 
-	// TODO: How/ when to stop the api server
 	return mock
+}
+
+func (m *MockHTTP) Finish() {
+	m.recorder.receiver.Stop()
+	m.ctrl.Finish()
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use

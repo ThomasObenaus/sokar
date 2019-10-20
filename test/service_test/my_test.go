@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"time"
-
-	gomock "github.com/golang/mock/gomock"
 )
 
 // # Notes:
@@ -19,10 +17,8 @@ import (
 
 func Test_My(t *testing.T) {
 
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-
-	mock := NewMockHTTP(mockCtrl, 18000)
+	mock := NewMockHTTP(t, 18000)
+	defer mock.Finish()
 	mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
 
 	time.Sleep(time.Second * 5)
