@@ -33,16 +33,18 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 
 	receiver := api.New(port)
 	receiver.Run()
+
 	mock := &MockHTTP{ctrl: mockCtrl}
 	mock.recorder = &MockHTTPMockRecorder{mock: mock, receiver: receiver}
 
+	// Install a handler for all resources that are not expected to be called
 	mock.recorder.receiver.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mock.GET(r.URL.Path)
 
 		w.WriteHeader(http.StatusNotFound)
-		io.WriteString(w, "This page does not exist.")
+		io.WriteString(w, "Unexpected call to this resource")
 	})
-
+	// Disable the method not allowed handler to be able to catch all unexpected calls to resources
 	mock.recorder.receiver.Router.HandleMethodNotAllowed = false
 
 	return mock
