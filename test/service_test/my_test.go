@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -19,8 +21,31 @@ import (
 
 func Test_My(t *testing.T) {
 
-	mockCtrl := gomock.NewController(t)
+	//ctx := myCTX{donechan: make(chan struct{}, 1)}
+
+	//mockCtrl := gomock.NewController(t)
+
+	ctx := context.Background()
+	//ctx, cn := context.WithTimeout(ctx, time.Second*10)
+	//_ = cn
+
+	mockCtrl, ctx := gomock.WithContext(ctx, t)
+
+	go func() {
+		fmt.Println("STAAAAAAAART")
+
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Printf("EEEEEEEEEEEEEEEND %s\n", ctx.Err().Error())
+				return
+			}
+		}
+	}()
+
+	//mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
+
 	mock := NewMockHTTP(mockCtrl, 18000)
 	_ = mock
 	//mock.GET("jj")
