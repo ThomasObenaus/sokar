@@ -4,7 +4,9 @@ import (
 	"io"
 	"net/http"
 	reflect "reflect"
+	"sync"
 	"testing"
+	"time"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/thomasobenaus/sokar/api"
@@ -20,6 +22,7 @@ type MockHTTP struct {
 type MockHTTPMockRecorder struct {
 	mock     *MockHTTP
 	receiver *api.API
+	wg       sync.WaitGroup
 }
 
 // NewMockHTTP creates a new mock instance
@@ -51,8 +54,11 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 }
 
 func (m *MockHTTP) Finish() {
+
+	m.recorder.wg.Wait()
 	m.recorder.receiver.Stop()
 	m.ctrl.Finish()
+
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
@@ -85,13 +91,16 @@ func (m *MockHTTP) GET(path string) (int, string) {
 }
 
 // GET indicates an expected call of GET
-func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
+func (mr *MockHTTPMockRecorder) GET(path string, timeout time.Duration) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
+	mr.wg.Add(1)
 
 	mr.receiver.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		code, data := mr.mock.GET(path)
 		w.WriteHeader(code)
 		io.WriteString(w, data)
+
+		mr.wg.Done()
 	}))
 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)

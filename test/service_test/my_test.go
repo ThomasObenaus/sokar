@@ -19,7 +19,10 @@ func Test_My(t *testing.T) {
 
 	mock := NewMockHTTP(t, 18000)
 	defer mock.Finish()
-	mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
+	// with timeout...
+	mock.EXPECT().GET("/health", time.Second*10).Return(http.StatusOK, "BLA")
+	//mock.EXPECT().GET("/healthy").Return(http.StatusOK, "BLA")
 
-	time.Sleep(time.Second * 5)
+	//time.Sleep(time.Second * 5)
+
 }
