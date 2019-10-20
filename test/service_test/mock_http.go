@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -106,7 +105,7 @@ func (m *MockHTTP) POST(path, data string) (int, string) {
 }
 
 // POST indicates an expected call of POST
-func (mr *MockHTTPMockRecorder) POST(path, data string) *gomock.Call {
+func (mr *MockHTTPMockRecorder) POST(path, data string) Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
 
@@ -136,7 +135,11 @@ func (mr *MockHTTPMockRecorder) POST(path, data string) *gomock.Call {
 		}))
 	}
 
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockHTTP)(nil).POST), path, data)
+	call := callImpl{
+		gomockCall: mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockHTTP)(nil).POST), path, data),
+	}
+
+	return &call
 }
 
 // GET mocks base method
@@ -149,7 +152,7 @@ func (m *MockHTTP) GET(path string) (int, string) {
 }
 
 // GET indicates an expected call of GET
-func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
+func (mr *MockHTTPMockRecorder) GET(path string) Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
 
@@ -169,9 +172,13 @@ func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
 			code, data := mr.mock.GET(path)
 			w.WriteHeader(code)
 			io.WriteString(w, data)
-			fmt.Printf("Request: %v\n", r)
 		}))
 	}
 
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
+	call := callImpl{
+		gomockCall: mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path),
+		wg:         &mr.wg,
+	}
+
+	return &call
 }

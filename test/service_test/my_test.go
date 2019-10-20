@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"testing"
 	"time"
-
-	"github.com/golang/mock/gomock"
 )
 
 // # Notes:
@@ -23,18 +21,9 @@ func Test_My(t *testing.T) {
 	defer mock.Finish()
 
 	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
-	gomock.InOrder(
-		mock.EXPECT().GET("/v1/job/fail-service").Return(http.StatusOK, "BLA"),
+	InOrder(
+		mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA").Times(2),
+		mock.EXPECT().GET("/healths").Return(http.StatusOK, "BLA").Times(1),
+		mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA").Times(3),
 	)
-
-	// TODO: Solve Times(n) problem
-	// Probably the mock methods should return an interface aligned to gomock.Call
-	// and then wrap the Times(n) method by internally incrementing/ setting the wg accordingly
-	// e.g.
-	// func (c *myCall) Times(n int) *Call{
-	// c.wg.Add(n)
-	// return c.gomockCall
-	//}
-	//
-	// Works probably also for the in order problem
 }
