@@ -54,11 +54,10 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 }
 
 func (m *MockHTTP) Finish() {
-
+	//Wait(&m.recorder.wg, time.Second*10)
 	m.recorder.wg.Wait()
 	m.recorder.receiver.Stop()
 	m.ctrl.Finish()
-
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
@@ -94,6 +93,7 @@ func (m *MockHTTP) GET(path string) (int, string) {
 func (mr *MockHTTPMockRecorder) GET(path string, timeout time.Duration) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
+	DoneIn(&mr.wg, timeout)
 
 	mr.receiver.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		code, data := mr.mock.GET(path)
