@@ -17,12 +17,11 @@ import (
 
 func Test_My(t *testing.T) {
 
-	mock := NewMockHTTP(t, 18000)
+	mock := WithTimeout(t, 18000, time.Second*10)
 	defer mock.Finish()
-	// with timeout...
-	mock.EXPECT().GET("/health", time.Second*10).Return(http.StatusOK, "BLA")
-	//mock.EXPECT().GET("/healthy").Return(http.StatusOK, "BLA")
 
-	//time.Sleep(time.Second * 5)
+	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
+	mock.EXPECT().POST("/health", "hi").Return(http.StatusOK, "BLA")
+	mock.EXPECT().POST("/health", "hiho").Return(http.StatusOK, "BLUBB")
 
 }

@@ -18,10 +18,10 @@ func wait(wg *sync.WaitGroup, timeout time.Duration) {
 
 	select {
 	case <-time.After(timeout):
-		fmt.Printf("Time Expired (timeout=%s)\n", timeout.String())
+		fmt.Printf("--[Dbg] Time Expired (timeout=%s)\n", timeout.String())
 		return
 	case <-waitFor:
-		fmt.Printf("Wg released (time left=%s)\n", deadline.Sub(time.Now()).String())
+		fmt.Printf("--[Dbg] WaitGroup released (time left=%s)\n", deadline.Sub(time.Now()).String())
 		return
 	}
 }

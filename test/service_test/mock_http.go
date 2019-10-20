@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
 	reflect "reflect"
 	"sync"
@@ -87,18 +88,40 @@ func (m *MockHTTP) EXPECT() *MockHTTPMockRecorder {
 }
 
 // POST mocks base method
-func (m *MockHTTP) POST(data string) (int, string) {
+func (m *MockHTTP) POST(path, data string) (int, string) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "POST", data)
+	ret := m.ctrl.Call(m, "POST", path, data)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(string)
 	return ret0, ret1
 }
 
 // POST indicates an expected call of POST
-func (mr *MockHTTPMockRecorder) POST(data string) *gomock.Call {
+func (mr *MockHTTPMockRecorder) POST(path, data string) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockHTTP)(nil).POST), data)
+	mr.wg.Add(1)
+
+	mr.server.Router.HandlerFunc("POST", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer mr.wg.Done()
+
+		if r == nil {
+			http.Error(w, "Request is nil", http.StatusInternalServerError)
+			return
+		}
+
+		defer r.Body.Close()
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		code, data := mr.mock.POST(path, string(body))
+		w.WriteHeader(code)
+		io.WriteString(w, data)
+	}))
+
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockHTTP)(nil).POST), path, data)
 }
 
 // GET mocks base method
@@ -111,16 +134,16 @@ func (m *MockHTTP) GET(path string) (int, string) {
 }
 
 // GET indicates an expected call of GET
-func (mr *MockHTTPMockRecorder) GET(path string, timeout time.Duration) *gomock.Call {
+func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
 
 	mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer mr.wg.Done()
+
 		code, data := mr.mock.GET(path)
 		w.WriteHeader(code)
 		io.WriteString(w, data)
-
-		mr.wg.Done()
 	}))
 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
