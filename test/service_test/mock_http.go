@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -168,6 +169,7 @@ func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
 			code, data := mr.mock.GET(path)
 			w.WriteHeader(code)
 			io.WriteString(w, data)
+			fmt.Printf("Request: %v\n", r)
 		}))
 	}
 
