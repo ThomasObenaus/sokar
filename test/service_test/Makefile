@@ -23,4 +23,4 @@ tc.endpoints: ## TestCase for sokar endpoints
 
 # TODO: Remove this
 run:
-	go test -v -run="_My" .
+	go test -v -count=1 -run="_My" .

@@ -28,6 +28,15 @@ func NewMockHTTP(ctrl *gomock.Controller, port int) *MockHTTP {
 	mock := &MockHTTP{ctrl: ctrl}
 	mock.recorder = &MockHTTPMockRecorder{mock: mock, receiver: receiver}
 
+	mock.recorder.receiver.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mock.GET(r.URL.Path)
+
+		w.WriteHeader(http.StatusNotFound)
+		io.WriteString(w, "This page does not exist.")
+	})
+
+	mock.recorder.receiver.Router.HandleMethodNotAllowed = false
+
 	// TODO: How/ when to stop the api server
 	return mock
 }

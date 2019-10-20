@@ -22,8 +22,11 @@ func Test_My(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	mock := NewMockHTTP(mockCtrl, 18000)
+	_ = mock
+	//mock.GET("jj")
 
 	mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
+	//mock.EXPECT().GET("/api/alerts").Return(http.StatusNotFound, "BLA")
 
 	//server := New(18000, t)
 	//defer server.Close()
