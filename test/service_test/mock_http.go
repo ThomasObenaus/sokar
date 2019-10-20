@@ -12,20 +12,23 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 )
 
+const defaultTimeout = time.Second * 20
+
 // MockHTTP is a mock of ScalingTarget interface
 type MockHTTP struct {
 	ctrl     *gomock.Controller
 	recorder *MockHTTPMockRecorder
+	timeout  time.Duration
 }
 
 // MockHTTPMockRecorder is the mock recorder for MockHTTP
 type MockHTTPMockRecorder struct {
-	mock     *MockHTTP
-	receiver *api.API
-	wg       sync.WaitGroup
+	mock   *MockHTTP
+	server *api.API
+	wg     sync.WaitGroup
 }
 
-// NewMockHTTP creates a new mock instance
+// NewMockHTTP creates a new mock instance (timeout/ deadline is 20s)
 // Pattern:
 // mock := NewMockHTTP(t, 18000)
 // defer mock.Finish()
@@ -34,29 +37,47 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 
 	mockCtrl := gomock.NewController(t)
 
-	receiver := api.New(port)
-	receiver.Run()
+	server := api.New(port)
+	server.Run()
 
-	mock := &MockHTTP{ctrl: mockCtrl}
-	mock.recorder = &MockHTTPMockRecorder{mock: mock, receiver: receiver}
+	mock := &MockHTTP{ctrl: mockCtrl, timeout: defaultTimeout}
+	mock.recorder = &MockHTTPMockRecorder{mock: mock, server: server}
 
 	// Install a handler for all resources that are not expected to be called
-	mock.recorder.receiver.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mock.recorder.server.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mock.GET(r.URL.Path)
 
 		w.WriteHeader(http.StatusNotFound)
 		io.WriteString(w, "Unexpected call to this resource")
 	})
 	// Disable the method not allowed handler to be able to catch all unexpected calls to resources
-	mock.recorder.receiver.Router.HandleMethodNotAllowed = false
+	mock.recorder.server.Router.HandleMethodNotAllowed = false
 
 	return mock
 }
 
+// WithTimeout creates a new mock instance wit the specified timeout.
+// This means if not all specified EXPECT calls are made within the defined timeout
+// the test will fail.
+// Pattern:
+// mock := WithTimeout(t, 18000,time.Second*5)
+// defer mock.Finish()
+// mock.EXPECT().GET("/path").Return(http.StatusOK, "Someting")
+func WithTimeout(t *testing.T, port int, timeout time.Duration) *MockHTTP {
+	mock := NewMockHTTP(t, port)
+	mock.timeout = timeout
+	return mock
+}
+
+// Finish has to be called at the end to clean up and to check if all expected calls where made.
 func (m *MockHTTP) Finish() {
-	//Wait(&m.recorder.wg, time.Second*10)
-	m.recorder.wg.Wait()
-	m.recorder.receiver.Stop()
+
+	// wait until the wait group was released (all expected calls where made)
+	// or until the deadline/ timeout was exceeded
+	wait(&m.recorder.wg, m.timeout)
+
+	// clean up
+	m.recorder.server.Stop()
 	m.ctrl.Finish()
 }
 
@@ -93,9 +114,8 @@ func (m *MockHTTP) GET(path string) (int, string) {
 func (mr *MockHTTPMockRecorder) GET(path string, timeout time.Duration) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
-	DoneIn(&mr.wg, timeout)
 
-	mr.receiver.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		code, data := mr.mock.GET(path)
 		w.WriteHeader(code)
 		io.WriteString(w, data)
