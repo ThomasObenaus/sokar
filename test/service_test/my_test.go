@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/golang/mock/gomock"
 )
 
 // # Notes:
@@ -17,11 +19,14 @@ import (
 
 func Test_My(t *testing.T) {
 
-	mock := WithTimeout(t, 18000, time.Second*10)
+	mock := WithTimeout(t, 18000, time.Second*30)
 	defer mock.Finish()
 
 	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
-	mock.EXPECT().POST("/health", "hi").Return(http.StatusOK, "BLA")
-	mock.EXPECT().POST("/health", "hiho").Return(http.StatusOK, "BLUBB")
+	gomock.InOrder(
+		mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA"),
+		mock.EXPECT().GET("/health").Return(http.StatusOK, "BLUBB"),
+		mock.EXPECT().GET("/healths").Return(http.StatusOK, "BLUBB2"),
+	)
 
 }

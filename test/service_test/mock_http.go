@@ -27,6 +27,9 @@ type MockHTTPMockRecorder struct {
 	mock   *MockHTTP
 	server *api.API
 	wg     sync.WaitGroup
+
+	registeredPOSTPaths map[string]struct{}
+	registeredGETPaths  map[string]struct{}
 }
 
 // NewMockHTTP creates a new mock instance (timeout/ deadline is 20s)
@@ -42,7 +45,12 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 	server.Run()
 
 	mock := &MockHTTP{ctrl: mockCtrl, timeout: defaultTimeout}
-	mock.recorder = &MockHTTPMockRecorder{mock: mock, server: server}
+	mock.recorder = &MockHTTPMockRecorder{
+		mock:                mock,
+		server:              server,
+		registeredPOSTPaths: make(map[string]struct{}, 0),
+		registeredGETPaths:  make(map[string]struct{}, 0),
+	}
 
 	// Install a handler for all resources that are not expected to be called
 	mock.recorder.server.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -101,25 +109,31 @@ func (mr *MockHTTPMockRecorder) POST(path, data string) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
 
-	mr.server.Router.HandlerFunc("POST", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer mr.wg.Done()
+	// Register the http handler, but only if it is not already registered for this path
+	_, pathAlreadyRegistered := mr.registeredPOSTPaths[path]
+	if !pathAlreadyRegistered {
+		mr.registeredPOSTPaths[path] = struct{}{}
 
-		if r == nil {
-			http.Error(w, "Request is nil", http.StatusInternalServerError)
-			return
-		}
+		mr.server.Router.HandlerFunc("POST", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer mr.wg.Done()
 
-		defer r.Body.Close()
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+			if r == nil {
+				http.Error(w, "Request is nil", http.StatusInternalServerError)
+				return
+			}
 
-		code, data := mr.mock.POST(path, string(body))
-		w.WriteHeader(code)
-		io.WriteString(w, data)
-	}))
+			defer r.Body.Close()
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			code, data := mr.mock.POST(path, string(body))
+			w.WriteHeader(code)
+			io.WriteString(w, data)
+		}))
+	}
 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "POST", reflect.TypeOf((*MockHTTP)(nil).POST), path, data)
 }
@@ -138,13 +152,24 @@ func (mr *MockHTTPMockRecorder) GET(path string) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	mr.wg.Add(1)
 
-	mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer mr.wg.Done()
+	// Register the http handler, but only if it is not already registered for this path
+	_, pathAlreadyRegistered := mr.registeredGETPaths[path]
+	if !pathAlreadyRegistered {
+		mr.registeredGETPaths[path] = struct{}{}
 
-		code, data := mr.mock.GET(path)
-		w.WriteHeader(code)
-		io.WriteString(w, data)
-	}))
+		mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer mr.wg.Done()
+
+			if r == nil {
+				http.Error(w, "Request is nil", http.StatusInternalServerError)
+				return
+			}
+
+			code, data := mr.mock.GET(path)
+			w.WriteHeader(code)
+			io.WriteString(w, data)
+		}))
+	}
 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
 }
