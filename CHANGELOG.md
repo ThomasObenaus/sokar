@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.11 (2019-??-??)
+
+- BugFixes:
+  - [#106 Downscaling of AWS instances fails (Throttling: Rate exceeded)](https://github.com/ThomasObenaus/sokar/issues/106)
+
 ## v0.0.10 (2019-10-13)
 
 - Config: With [#103](https://github.com/ThomasObenaus/sokar/issues/103) the deprecated parameter `sca.nomad.mode` was removed. That parameter was replaced by `sca.mode` in a previous release.
