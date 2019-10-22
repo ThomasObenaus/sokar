@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	nomadApi "github.com/hashicorp/nomad/api"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/aws"
 )
@@ -56,8 +57,8 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	}
 
 	// wait until the instance is scaled down
-	if err := aws.MonitorInstanceScaling(autoScalingIF, autoscalingGroupName, activityID, c.monitorInstanceTimeout); err != nil {
-		return err
+	if iter, err := aws.MonitorInstanceScaling(autoScalingIF, autoscalingGroupName, activityID, c.monitorInstanceTimeout); err != nil {
+		return errors.WithMessage(err, fmt.Sprintf("Monitor instance scaling failed after %d iterations.", iter))
 	}
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	return nil
@@ -65,14 +66,14 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 
 func setEligibility(nodesIF Nodes, nodeID string, eligible bool) error {
 	_, err := nodesIF.ToggleEligibility(nodeID, eligible, nil)
-	return err
+	return errors.WithMessage(err, "Failed toggling node eligibility")
 }
 
 func selectCandidate(nodesIF Nodes, datacenter string, log zerolog.Logger) (*candidate, error) {
 
 	nodeListStub, _, err := nodesIF.List(nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "Failed listing nomad nodes")
 	}
 
 	// filter out the nodes for this datacenter that are not draining already and are ready
@@ -90,9 +91,9 @@ func selectCandidate(nodesIF Nodes, datacenter string, log zerolog.Logger) (*can
 	// now select the best node based on the least running allocations
 	bestCandidate := candidate{
 		numRunningAllocations: MaxUint,
-		cpu:      MaxInt,
-		memoryMB: MaxInt,
-		diskMB:   MaxInt,
+		cpu:                   MaxInt,
+		memoryMB:              MaxInt,
+		diskMB:                MaxInt,
 	}
 
 	for _, node := range nodes {

@@ -40,3 +40,7 @@
 [[override]]
   name = "github.com/ugorji/go"
   revision = "c88ee250d0221a57af388746f5cf03768c21d6e2"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.1"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/pkg/errors"
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
@@ -46,7 +47,7 @@ func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName 
 	activityIDs = append(activityIDs, &activityID)
 	input := aws.DescribeScalingActivitiesInput{AutoScalingGroupName: &autoScalingGroupName, ActivityIds: activityIDs}
 	if err := input.Validate(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Validation of input failed")
 	}
 
 	// First create the request
@@ -57,7 +58,7 @@ func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName 
 
 	// Now send the request
 	if err := req.Send(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed sending request to describe the scaling activities")
 	}
 
 	if output == nil {
