@@ -5,26 +5,33 @@ import (
 	"time"
 
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/pkg/errors"
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
-// MonitorInstanceScaling will block until the instance is scaled up/ down
-func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) error {
-	start := time.Now()
+var monitorAWSStateBackoff time.Duration = time.Millisecond * 500
 
+// MonitorInstanceScaling will block until the instance is scaled up/ down
+// The function returns the number of iterations that where needed to monitor the scaling of the instance
+func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) (uint, error) {
+	start := time.Now()
+	iterations := uint(0)
 	for {
+		iterations++
 		state, err := getCurrentScalingState(autoScaling, autoScalingGroupName, activityID)
 		if err != nil {
-			return err
+			return iterations, err
 		}
 
 		if state.progress >= 100 {
 			// scaling completed
-			return nil
+			return iterations, nil
 		}
 
+		time.Sleep(monitorAWSStateBackoff)
+
 		if time.Since(start) >= timeout {
-			return fmt.Errorf("MonitorInstanceScaling timed out after %v", timeout)
+			return iterations, fmt.Errorf("MonitorInstanceScaling timed out after %v (%d iterations)", timeout, iterations)
 		}
 	}
 }
@@ -40,7 +47,7 @@ func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName 
 	activityIDs = append(activityIDs, &activityID)
 	input := aws.DescribeScalingActivitiesInput{AutoScalingGroupName: &autoScalingGroupName, ActivityIds: activityIDs}
 	if err := input.Validate(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Validation of input failed")
 	}
 
 	// First create the request
@@ -51,7 +58,7 @@ func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName 
 
 	// Now send the request
 	if err := req.Send(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed sending request to describe the scaling activities")
 	}
 
 	if output == nil {

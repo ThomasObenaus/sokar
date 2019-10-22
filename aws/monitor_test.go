@@ -58,8 +58,9 @@ func Test_MonitorInstanceScaling(t *testing.T) {
 	asgName := "asgName"
 	activityID := "activityID"
 	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(nil, nil)
-	err := MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*10)
+	iters, err := MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*10)
 	assert.Error(t, err)
+	assert.Equal(t, uint(1), iters)
 
 	// success one loop
 	progress := int64(100)
@@ -70,8 +71,9 @@ func Test_MonitorInstanceScaling(t *testing.T) {
 	output := autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
 	req := request.Request{}
 	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &output)
-	err = MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*10)
+	iters, err = MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*10)
 	assert.NoError(t, err)
+	assert.Equal(t, uint(1), iters)
 
 	// timeout
 	progress = int64(50)
@@ -81,6 +83,36 @@ func Test_MonitorInstanceScaling(t *testing.T) {
 	activities = append(activities, &activity)
 	output = autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
 	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &output).AnyTimes()
-	err = MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*1)
+	iters, err = MonitorInstanceScaling(asgIF, asgName, activityID, time.Second*1)
 	assert.Error(t, err)
+	assert.LessOrEqual(t, iters, uint(5))
+}
+
+func Test_MonitorInstanceScaling_Backoff(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	asgIF := mock_nomadWorker.NewMockAutoScaling(mockCtrl)
+
+	// timeout but ensure that the configured backoff is respected and not too many iterations where made
+	backoff := time.Millisecond * 500
+	timeout := time.Millisecond * 1000
+	allowedIterations := timeout.Milliseconds()/backoff.Milliseconds() + 1
+
+	monitorAWSStateBackoff = backoff
+	asgName := "asgName"
+	activityID := "activityID"
+	progress := int64(50)
+	statusCode := "InProgress"
+	activity := autoscaling.Activity{ActivityId: &activityID, AutoScalingGroupName: &asgName, Progress: &progress, StatusCode: &statusCode}
+	activities := make([]*autoscaling.Activity, 0)
+	activities = append(activities, &activity)
+	output := autoscaling.DescribeScalingActivitiesOutput{Activities: activities}
+	req := request.Request{}
+
+	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&req, &output).AnyTimes()
+
+	iters, err := MonitorInstanceScaling(asgIF, asgName, activityID, timeout)
+	assert.Error(t, err)
+	assert.LessOrEqual(t, iters, uint(allowedIterations))
 }

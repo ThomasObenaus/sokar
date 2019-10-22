@@ -22,8 +22,9 @@ func (s *Scaler) scalingObjectWatcher(cycle time.Duration) {
 			// Skip/ ignore the events for checking the current scale in case the
 			// watcher is paused. This is usually the case if already a scaling is ongoing
 			if !s.scalingObjectWatcherPaused {
+				s.logger.Debug().Bool("watcher", true).Msgf("Check scalingObject state")
 				if err := s.ensureScalingObjectCount(); err != nil {
-					s.logger.Error().Msgf("Check scalingObject state failed: %s", err.Error())
+					s.logger.Error().Bool("watcher", true).Msgf("Check scalingObject state failed: %s", err)
 				}
 			}
 		}
@@ -111,7 +112,11 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	s.metrics.scalingDurationSeconds.Observe(float64(dur.Seconds()))
 	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
-	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
+	logEvent := s.logger.Info()
+	if result.state != scaleDone {
+		logEvent = s.logger.Error()
+	}
+	logEvent.Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, force bool) scaleResult {
