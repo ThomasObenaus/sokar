@@ -8,23 +8,29 @@ import (
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
-// MonitorInstanceScaling will block until the instance is scaled up/ down
-func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) error {
-	start := time.Now()
+var monitorAWSStateBackoff time.Duration = time.Millisecond * 500
 
+// MonitorInstanceScaling will block until the instance is scaled up/ down
+// The function returns the number of iterations that where needed to monitor the scaling of the instance
+func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) (uint, error) {
+	start := time.Now()
+	iterations := uint(0)
 	for {
+		iterations++
 		state, err := getCurrentScalingState(autoScaling, autoScalingGroupName, activityID)
 		if err != nil {
-			return err
+			return iterations, err
 		}
 
 		if state.progress >= 100 {
 			// scaling completed
-			return nil
+			return iterations, nil
 		}
 
+		time.Sleep(monitorAWSStateBackoff)
+
 		if time.Since(start) >= timeout {
-			return fmt.Errorf("MonitorInstanceScaling timed out after %v", timeout)
+			return iterations, fmt.Errorf("MonitorInstanceScaling timed out after %v (%d iterations)", timeout, iterations)
 		}
 	}
 }
