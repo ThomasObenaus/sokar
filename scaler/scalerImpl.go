@@ -112,7 +112,11 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	s.metrics.scalingDurationSeconds.Observe(float64(dur.Seconds()))
 	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
-	s.logger.Info().Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
+	logEvent := s.logger.Info()
+	if result.state != scaleDone {
+		logEvent = s.logger.Error()
+	}
+	logEvent.Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, force bool) scaleResult {
