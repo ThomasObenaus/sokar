@@ -42,7 +42,7 @@ func (s *Scaler) ensureScalingObjectCount() error {
 
 	asExpected, expected := countMeetsExpectations(count, s.scalingObject.MinCount, s.scalingObject.MaxCount, s.desiredScale)
 	if !asExpected {
-		s.logger.Warn().Msgf("The scalingObject count (%d) was not as expected. Thus the scalingObject had to be rescaled to %d.", count, expected)
+		s.logger.Warn().Bool("watcher", true).Msgf("The scalingObject count (%d) is not as expected. Thus the scalingObject has to be rescaled to %d.", count, expected)
 		if err := s.openScalingTicket(expected, false); err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ func (s *Scaler) ensureScalingObjectCount() error {
 		if s.desiredScale.isKnown {
 			desiredStr = strconv.Itoa(int(s.desiredScale.value))
 		}
-		s.logger.Debug().Uint("count", count).Str("desired", desiredStr).Uint("expected", expected).Msg("Count as expected, no adjustment needed.")
+		s.logger.Debug().Bool("watcher", true).Uint("count", count).Str("desired", desiredStr).Uint("expected", expected).Msg("Count as expected, no adjustment needed.")
 	}
 
 	return nil

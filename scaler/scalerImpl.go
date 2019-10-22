@@ -22,8 +22,9 @@ func (s *Scaler) scalingObjectWatcher(cycle time.Duration) {
 			// Skip/ ignore the events for checking the current scale in case the
 			// watcher is paused. This is usually the case if already a scaling is ongoing
 			if !s.scalingObjectWatcherPaused {
+				s.logger.Debug().Bool("watcher", true).Msgf("Check scalingObject state")
 				if err := s.ensureScalingObjectCount(); err != nil {
-					s.logger.Error().Msgf("Check scalingObject state failed: %s", err.Error())
+					s.logger.Error().Bool("watcher", true).Msgf("Check scalingObject state failed: %s", err.Error())
 				}
 			}
 		}
