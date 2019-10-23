@@ -63,7 +63,7 @@ func validateScaler(scaler Scaler) error {
 		return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaMode.name, mode)
 	}
 
-	if scaler.WatcherInterval <= time.Millisecond*500 {
+	if scaler.WatcherInterval < time.Millisecond*500 {
 		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.name)
 	}
 
