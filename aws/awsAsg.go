@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/pkg/errors"
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 	"github.com/thomasobenaus/sokar/helper"
 )
@@ -131,11 +132,11 @@ func GetAutoScalingGroups(autoScaling iface.AutoScaling) ([]*aws.Group, error) {
 	input := aws.DescribeAutoScalingGroupsInput{}
 	result, err := autoScaling.DescribeAutoScalingGroups(&input)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "Failure while DescribeAutoScalingGroups call")
 	}
 
 	if result == nil {
-		return nil, fmt.Errorf("Result is nil")
+		return nil, fmt.Errorf("Result of DescribeAutoScalingGroups is nil")
 	}
 
 	return result.AutoScalingGroups, nil
@@ -147,7 +148,7 @@ func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) (a
 
 	input := aws.TerminateInstanceInAutoScalingGroupInput{InstanceId: &instanceID, ShouldDecrementDesiredCapacity: &shouldDecDesiredCapa}
 	if err := input.Validate(); err != nil {
-		return "", "", err
+		return "", "", errors.WithMessage(err, "Validation of TerminateInstanceInAutoScalingGroupInput failed")
 	}
 
 	// First create the request
@@ -159,7 +160,7 @@ func TerminateInstanceInAsg(autoScaling iface.AutoScaling, instanceID string) (a
 
 	// Now send the request
 	if err := req.Send(); err != nil {
-		return "", "", err
+		return "", "", errors.WithMessage(err, "Sending TerminateInstanceInAutoScalingGroupRequest failed")
 	}
 
 	if output == nil || output.Activity == nil || output.Activity.AutoScalingGroupName == nil || output.Activity.ActivityId == nil {
