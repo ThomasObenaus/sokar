@@ -82,7 +82,7 @@ func New(nomadServerAddress, awsProfile string, options ...Option) (*Connector, 
 		fnCreateSession:            aws.NewAWSSession,
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
 		nodeDrainDeadline:          time.Second * 30,
-		monitorInstanceTimeout:     time.Second * 180,
+		monitorInstanceTimeout:     time.Minute * 10,
 		awsProfile:                 awsProfile,
 	}
 

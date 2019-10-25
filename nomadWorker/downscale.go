@@ -57,7 +57,7 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	}
 
 	// wait until the instance is scaled down
-	if iter, err := aws.MonitorInstanceScaling(autoScalingIF, autoscalingGroupName, activityID, c.monitorInstanceTimeout); err != nil {
+	if iter, err := aws.MonitorInstanceScaling(autoScalingIF, autoscalingGroupName, activityID, c.monitorInstanceTimeout, c.log); err != nil {
 		return errors.WithMessage(err, fmt.Sprintf("Monitor instance scaling failed after %d iterations.", iter))
 	}
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
