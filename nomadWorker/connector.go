@@ -81,7 +81,7 @@ func New(nomadServerAddress, awsProfile string, options ...Option) (*Connector, 
 		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
 		fnCreateSession:            aws.NewAWSSession,
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
-		nodeDrainDeadline:          time.Second * 30,
+		nodeDrainDeadline:          time.Second * 60,
 		monitorInstanceTimeout:     time.Minute * 10,
 		awsProfile:                 awsProfile,
 	}
