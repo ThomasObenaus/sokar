@@ -1,6 +1,7 @@
 package nomadWorker
 
 import (
+	"context"
 	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -18,17 +19,16 @@ func drainNode(nodesIF Nodes, nodeID string, deadline time.Duration) (nodeModify
 	return resp.NodeModifyIndex, err
 }
 
-func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, logger zerolog.Logger) uint {
+func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, timeout time.Duration, logger zerolog.Logger) uint {
 
-	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s) ... ", nodeID)
-
-	deadline := time.Now().Add(time.Second * 60)
-	ctx := monitoringCtx{
-		deadline: deadline,
-		doneChan: make(chan struct{}),
-	}
+	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s, timeout=%s) ... ", nodeID, timeout.String())
 
 	var numEvents uint
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	// FIXME: Find out if and when we need to call the cancel function from the outside to close the context
+	_ = cancel
+
+	// create and obtain the monitoring channel and then wait until it is closed
 	events := nodesIF.MonitorDrain(ctx, nodeID, nodeModifyIndex, false)
 	for ev := range events {
 		if ev != nil {
@@ -36,24 +36,6 @@ func monitorDrainNode(nodesIF Nodes, nodeID string, nodeModifyIndex uint64, logg
 			numEvents++
 		}
 	}
-	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s) ... done", nodeID)
+	logger.Info().Str("NodeID", nodeID).Msgf("Monitoring node draining (node=%s, timeout=%s, #events=%d) ... done", nodeID, timeout.String(), numEvents)
 	return numEvents
-}
-
-type monitoringCtx struct {
-	doneChan <-chan struct{}
-	deadline time.Time
-}
-
-func (ctx monitoringCtx) Deadline() (deadline time.Time, ok bool) {
-	return ctx.deadline, false
-}
-func (ctx monitoringCtx) Done() <-chan struct{} {
-	return ctx.doneChan
-}
-func (ctx monitoringCtx) Err() error {
-	return nil
-}
-func (ctx monitoringCtx) Value(key interface{}) interface{} {
-	return nil
 }

@@ -9,7 +9,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/nomadWorker"
 )
 
 func TestDrainNode(t *testing.T) {
@@ -34,6 +34,7 @@ func TestMonitorDrainNode(t *testing.T) {
 
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
+	monitorTimeout := time.Second * 10
 	nodeID := "1234"
 	nodeModifyIndex := uint64(1234)
 	evChan := make(chan *nomadApi.MonitorMessage)
@@ -45,6 +46,6 @@ func TestMonitorDrainNode(t *testing.T) {
 	}()
 
 	nodesIF.EXPECT().MonitorDrain(gomock.Any(), nodeID, nodeModifyIndex, false).Return(evChan)
-	numEvents := monitorDrainNode(nodesIF, nodeID, nodeModifyIndex, logger)
+	numEvents := monitorDrainNode(nodesIF, nodeID, nodeModifyIndex, monitorTimeout, logger)
 	assert.Equal(t, uint(1), numEvents)
 }

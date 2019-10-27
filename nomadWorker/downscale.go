@@ -2,6 +2,7 @@ package nomadWorker
 
 import (
 	"fmt"
+	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/pkg/errors"
@@ -41,7 +42,7 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	if err != nil {
 		return err
 	}
-	monitorDrainNode(c.nodesIF, candidate.nodeID, nodeModifyIndex, c.log)
+	monitorDrainNode(c.nodesIF, candidate.nodeID, nodeModifyIndex, c.nodeDrainDeadline+time.Second*30, c.log)
 	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 3. Terminate the node using the AWS ASG [needs instance id]
