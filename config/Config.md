@@ -145,6 +145,17 @@ The order they are applied is:
 | flag    | --sca.nomad.dc-aws.region                                                                                                                                                          |
 | env     | SK_SCA_NOMAD_DC_AWS_REGION                                                                                                                                                         |
 
+##### Timeout for Instance Termination
+
+|         |                                                                                                                                              |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| name    | instance-termination-timeout                                                                                                                 |
+| usage   | The maximum time the instance termination will be monitored before assuming that this action (instance termination due to downscale) failed. |
+| type    | duration                                                                                                                                     |
+| default | 10m                                                                                                                                          |
+| flag    | --sca.nomad.dc-aws.instance-termination-timeout                                                                                              |
+| env     | SK_SCA_NOMAD_DC_AWS_INSTANCE_TERMINATION_TIMEOUT                                                                                             |
+
 ## ScaleObject
 
 ### Name

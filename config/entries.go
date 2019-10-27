@@ -87,6 +87,14 @@ var scaNomadDataCenterAWSRegion = configEntry{
 	usage:        "This is an optional parameter and is regarded only if the parameter AWSProfile is empty. The AWSRegion has to specify the region in which the data-center to be scaled resides in.",
 }
 
+var scaNomadDataCenterAWSInstanceTerminationTimeout = configEntry{
+	name:         "sca.nomad.dc-aws.instance-termination-timeout",
+	bindEnv:      true,
+	bindFlag:     true,
+	defaultValue: time.Minute * 10,
+	usage:        "The maximum time the instance termination will be monitored before assuming that this action (instance termination due to downscale) failed.",
+}
+
 var scaNomadModeServerAddress = configEntry{
 	name:         "sca.nomad.server-address",
 	bindEnv:      true,
@@ -285,6 +293,7 @@ var configEntries = []configEntry{
 	scaAWSEC2ASGTagKey,
 	scaNomadDataCenterAWSProfile,
 	scaNomadDataCenterAWSRegion,
+	scaNomadDataCenterAWSInstanceTerminationTimeout,
 	scaNomadModeServerAddress,
 	capConstantModeEnable,
 	capConstantModeOffset,
