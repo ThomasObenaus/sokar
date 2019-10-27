@@ -13,6 +13,7 @@ import (
 const MaxUint = ^uint(0)
 const MaxInt = int(MaxUint >> 1)
 
+var downscaleCounter uint = 0
 type candidate struct {
 	// nodeID is the nomad node ID
 	nodeID     string
@@ -27,6 +28,7 @@ type candidate struct {
 }
 
 func (c *Connector) downscale(datacenter string, desiredCount uint) error {
+	downscaleCounter++
 
 	// 1. Select a candidate for downscaling -> returns [needs node id]
 	candidate, err := selectCandidate(c.nodesIF, datacenter, c.log)
@@ -34,19 +36,19 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 		return err
 	}
 
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("1. [Select] Selected node '%s' (%s, %s) as candidate for downscaling.", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 2. Drain the node [needs node id]
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	nodeModifyIndex, err := drainNode(c.nodesIF, candidate.nodeID, c.nodeDrainDeadline)
 	if err != nil {
 		return err
 	}
 	monitorDrainNode(c.nodesIF, candidate.nodeID, nodeModifyIndex, c.nodeDrainDeadline+time.Second*30, c.log)
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("2. [Drain] Draining node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 
 	// 3. Terminate the node using the AWS ASG [needs instance id]
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... ", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	sess, err := c.createSession()
 	if err != nil {
 		return err
@@ -60,8 +62,9 @@ func (c *Connector) downscale(datacenter string, desiredCount uint) error {
 	// wait until the instance is scaled down
 	if iter, err := aws.MonitorInstanceScaling(autoScalingIF, autoscalingGroupName, activityID, c.monitorInstanceTimeout, c.log); err != nil {
 		return errors.WithMessage(err, fmt.Sprintf("Monitor instance scaling failed after %d iterations.", iter))
+		c.log.Error().Err(err).Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... failed", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	}
-	c.log.Info().Str("NodeID", candidate.nodeID).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
+	c.log.Info().Str("NodeID", candidate.nodeID).Uint("count", downscaleCounter).Msgf("3. [Terminate] Terminate node '%s' (%s, %s) ... done", candidate.nodeID, candidate.ipAddress, candidate.instanceID)
 	return nil
 }
 
