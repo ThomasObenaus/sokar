@@ -194,8 +194,7 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 	}
 
 	gomockCall := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
-	getCall := NewGETCall(gomockCall)
-
-	mr.mock.calls = append(mr.mock.calls, getCall)
-	return getCall
+	call := NewCall(gomockCall, GET())
+	mr.mock.calls = append(mr.mock.calls, call)
+	return call
 }

@@ -20,6 +20,7 @@ type Call interface {
 	join() (deadlineExpired bool)
 	updateDeadline(start time.Time) time.Time
 	release()
+	commitCall()
 }
 
 type callImpl struct {
@@ -51,29 +52,35 @@ func (c *callImpl) join() (deadlineExpired bool) {
 	return time.Now().After(c.deadline)
 }
 
-func NewGETCall(gomockCall *gomock.Call) Call {
+func NewCall(gomockCall *gomock.Call, method Method) Call {
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	call := callImpl{
-		wg:        wg,
-		timeout:   time.Second * 10,
-		deadline:  time.Now().Add(time.Hour * 24), // initialized with a value that should never pass during test
-		successor: nil,
+		gomockCall: gomockCall,
+		wg:         wg,
+		timeout:    time.Second * 10,
+		deadline:   time.Now().Add(time.Hour * 24), // initialized with a value that should never pass during test
+		successor:  nil,
 	}
 
-	call.gomockCall = gomockCall.Do(func(path string) {
-		wg.Done()
+	method(&call)
 
-		// Update the deadline of the succeeding call (if any)
-		// as soon as this call was called.
-		if call.successor != nil {
-			call.successor.updateDeadline(time.Now())
-		}
-	})
 	return &call
 }
+
+// commitCall should be called as soon as the expected request has been triggered
+func (c *callImpl) commitCall() {
+	c.wg.Done()
+
+	// Update the deadline of the succeeding call (if any)
+	// as soon as this call was called.
+	if c.successor != nil {
+		c.successor.updateDeadline(time.Now())
+	}
+}
+
 func (c *callImpl) Within(timeout time.Duration) Call {
 	c.timeout = timeout
 	return c
