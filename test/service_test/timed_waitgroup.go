@@ -25,3 +25,8 @@ func wait(wg *sync.WaitGroup, timeout time.Duration) {
 		return
 	}
 }
+
+func waitUntil(wg *sync.WaitGroup, deadline time.Time) {
+	timeout := time.Until(deadline)
+	wait(wg, timeout)
+}

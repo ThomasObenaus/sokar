@@ -1,28 +1,76 @@
 package main
 
 import (
+	"fmt"
+	reflect "reflect"
 	"sync"
+	"time"
 
 	gomock "github.com/golang/mock/gomock"
 )
 
+// Call is a interface representing an expected call to the HTTP mock server
 type Call interface {
-	Times(n int) Call
 	Return(rets ...interface{}) Call
 	After(preReq Call) Call
+	Within(timeout time.Duration) Call
+	String() string
+
+	// Internal methods
+	join() (deadlineExpired bool)
+	updateDeadline(start time.Time) time.Time
 }
 
 type callImpl struct {
+	// the underlying gomock call
 	gomockCall *gomock.Call
-	wg         *sync.WaitGroup
+
+	// the waitgroup needed to block/ wait until the expected call has arrived
+	wg       *sync.WaitGroup
+	timeout  time.Duration
+	deadline time.Time
+
+	// The succeeding call (can be nil)
+	successor Call
 }
 
-func (c *callImpl) Times(n int) Call {
-	c.gomockCall.Times(n)
+func (c *callImpl) String() string {
+	return c.gomockCall.String() + fmt.Sprintf(" (deadline=%s, timeout=%s)", c.deadline, c.timeout)
+}
 
-	incWg := n - 1
-	c.wg.Add(incWg)
+// join blocks until the expected call to the end point was made but at max until the internal
+// deadline as been expired. In this case the method returns true.
+func (c *callImpl) join() (deadlineExpired bool) {
+	waitUntil(c.wg, c.deadline)
 
+	return time.Now().After(c.deadline)
+}
+
+func NewGETCall(gomockCall *gomock.Call) Call {
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	call := callImpl{
+		wg:        wg,
+		timeout:   time.Second * 10,
+		deadline:  time.Now().Add(time.Hour * 24), // initialized with a value that should never pass during test
+		successor: nil,
+	}
+
+	call.gomockCall = gomockCall.Do(func(path string) {
+		wg.Done()
+
+		// Update the deadline of the succeeding call (if any)
+		// as soon as this call was called.
+		if call.successor != nil {
+			call.successor.updateDeadline(time.Now())
+		}
+	})
+	return &call
+}
+func (c *callImpl) Within(timeout time.Duration) Call {
+	c.timeout = timeout
 	return c
 }
 
@@ -33,15 +81,39 @@ func (c *callImpl) Return(rets ...interface{}) Call {
 
 func (c *callImpl) After(preReq Call) Call {
 
-	preReqCall, _ := preReq.(*callImpl)
-	// TODO: Check for failing cast
+	preReqCall, ok := preReq.(*callImpl)
+	if !ok {
+		panic(fmt.Sprintf("Failed to cast %s to %s", reflect.TypeOf(preReqCall).String(), reflect.TypeOf(&callImpl{}).String()))
+	}
 
 	c.gomockCall.After(preReqCall.gomockCall)
+
+	// this callImpl is the successor of the given preReq
+	preReqCall.successor = c
 	return c
 }
 
-func InOrder(calls ...Call) {
+func (c *callImpl) updateDeadline(start time.Time) time.Time {
+	c.deadline = start.Add(c.timeout)
+	return c.deadline
+}
+
+func InOrder(startTime time.Time, calls ...Call) {
+
+	if len(calls) == 0 {
+		return
+	}
+
+	// Set the deadline for the first call in the order.
+	// The deadline for the succeeding calls will be updated as soon
+	// as the preceding call is called.
+	firstCall := calls[0]
+	firstCall.updateDeadline(startTime)
+
+	// Store the order of the calls
 	for i := 1; i < len(calls); i++ {
-		calls[i].After(calls[i-1])
+		predecessor := calls[i-1]
+		call := calls[i]
+		call.After(predecessor)
 	}
 }
