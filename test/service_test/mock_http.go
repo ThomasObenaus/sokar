@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	reflect "reflect"
@@ -175,26 +176,41 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 	if !pathAlreadyRegistered {
 		mr.registeredGETPaths[path] = struct{}{}
 
-		mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			if r == nil {
-				http.Error(w, "Request is nil", http.StatusInternalServerError)
-				return
-			}
-
-			response := mr.mock.GET(path)
-			for key, valueList := range response.header {
-				for _, value := range valueList {
-					w.Header().Add(key, value)
-				}
-			}
-			w.WriteHeader(response.statusCode)
-			w.Write(response.data)
-		}))
+		mr.server.Router.HandlerFunc("GET", path, mr.mock.handleRequest)
 	}
 
 	gomockCall := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
 	call := NewCall(gomockCall, GET())
 	mr.mock.calls = append(mr.mock.calls, call)
 	return call
+}
+
+func (m *MockHTTP) handleRequest(w http.ResponseWriter, r *http.Request) {
+
+	if r == nil {
+		http.Error(w, "Request is nil", http.StatusInternalServerError)
+		return
+	}
+	if r.URL == nil {
+		http.Error(w, "Request.URL is nil", http.StatusInternalServerError)
+		return
+	}
+
+	path := r.URL.Path
+
+	var response Response
+	if r.Method == http.MethodGet {
+		response = m.GET(path)
+	} else {
+		panic(fmt.Sprintf("HTTP Method '%s' not implemented yet.", r.Method))
+	}
+
+	// fill the response (header, data and status code)
+	for key, valueList := range response.header {
+		for _, value := range valueList {
+			w.Header().Add(key, value)
+		}
+	}
+	w.WriteHeader(response.statusCode)
+	w.Write(response.data)
 }
