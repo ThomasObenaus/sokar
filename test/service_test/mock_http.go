@@ -6,19 +6,15 @@ import (
 	reflect "reflect"
 	"sync"
 	"testing"
-	"time"
 
 	gomock "github.com/golang/mock/gomock"
 	"github.com/thomasobenaus/sokar/api"
 )
 
-const defaultTimeout = time.Second * 20
-
 // MockHTTP is a mock of ScalingTarget interface
 type MockHTTP struct {
 	ctrl     *gomock.Controller
 	recorder *MockHTTPMockRecorder
-	timeout  time.Duration
 
 	// failOnUnexpectedCalls set if the test should fail in case a end-point is called which is not covered by an EXPECT call.
 	failOnUnexpectedCalls bool
@@ -45,13 +41,6 @@ func FailOnUnexpectedCalls(fail bool) Option {
 	}
 }
 
-// WithTimeout set the timeout after all the expect calls have to be satisfied at latest.
-func WithTimeout(timeout time.Duration) Option {
-	return func(m *MockHTTP) {
-		m.timeout = timeout
-	}
-}
-
 // NewMockHTTP creates a new mock instance (timeout/ deadline is 20s)
 // Pattern:
 // mock := NewMockHTTP(t, 18000)
@@ -66,7 +55,6 @@ func NewMockHTTP(t *testing.T, port int, options ...Option) *MockHTTP {
 
 	mock := &MockHTTP{
 		ctrl:                  mockCtrl,
-		timeout:               defaultTimeout,
 		failOnUnexpectedCalls: false,
 		calls:                 make([]Call, 0),
 	}
@@ -85,16 +73,23 @@ func NewMockHTTP(t *testing.T, port int, options ...Option) *MockHTTP {
 	if mock.failOnUnexpectedCalls {
 		// Install a handler for all resources that are not expected to be called
 		mock.recorder.server.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			mock.GET(r.URL.Path)
-
 			w.WriteHeader(http.StatusNotFound)
 			io.WriteString(w, "Unexpected call to this resource")
+
+			mock.releaseAllCallLocks()
+			mock.GET(r.URL.Path)
 		})
 		// Disable the method not allowed handler to be able to catch all unexpected calls to resources
 		mock.recorder.server.Router.HandleMethodNotAllowed = false
 	}
 
 	return mock
+}
+
+func (m *MockHTTP) releaseAllCallLocks() {
+	for _, call := range m.calls {
+		call.release()
+	}
 }
 
 // Finish has to be called at the end to clean up and to check if all expected calls where made.

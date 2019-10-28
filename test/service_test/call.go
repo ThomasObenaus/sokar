@@ -19,6 +19,7 @@ type Call interface {
 	// Internal methods
 	join() (deadlineExpired bool)
 	updateDeadline(start time.Time) time.Time
+	release()
 }
 
 type callImpl struct {
@@ -36,6 +37,10 @@ type callImpl struct {
 
 func (c *callImpl) String() string {
 	return c.gomockCall.String() + fmt.Sprintf(" (deadline=%s, timeout=%s)", c.deadline, c.timeout)
+}
+
+func (c *callImpl) release() {
+	c.wg.Done()
 }
 
 // join blocks until the expected call to the end point was made but at max until the internal
