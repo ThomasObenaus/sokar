@@ -23,8 +23,8 @@ func Test_My(t *testing.T) {
 	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
 	InOrder(
 		time.Now(),
-		mock.EXPECT().GET("/health").Within(time.Second*5).Return(http.StatusOK, "Call 1"),
-		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusOK, "Call 2"),
-		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusInternalServerError, "Call 3"),
+		mock.EXPECT().GET("/health").Within(time.Second*5).Return(http.StatusOK, []byte("Call 1")),
+		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusOK, []byte("Call 2")),
+		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusInternalServerError, []byte("Call 3")),
 	)
 }

@@ -4,7 +4,6 @@ import (
 	"io"
 	"net/http"
 	reflect "reflect"
-	"sync"
 	"testing"
 
 	gomock "github.com/golang/mock/gomock"
@@ -25,7 +24,6 @@ type MockHTTP struct {
 type MockHTTPMockRecorder struct {
 	mock   *MockHTTP
 	server *api.API
-	wg     sync.WaitGroup
 
 	registeredPOSTPaths map[string]struct{}
 	registeredGETPaths  map[string]struct{}
@@ -161,18 +159,17 @@ func (m *MockHTTP) EXPECT() *MockHTTPMockRecorder {
 //}
 
 // GET mocks base method
-func (m *MockHTTP) GET(path string) (int, string) {
+func (m *MockHTTP) GET(path string) (int, []byte) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GET", path)
 	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(string)
+	ret1, _ := ret[1].([]byte)
 	return ret0, ret1
 }
 
 // GET indicates an expected call of GET
 func (mr *MockHTTPMockRecorder) GET(path string) Call {
 	mr.mock.ctrl.T.Helper()
-	mr.wg.Add(1)
 
 	// Register the http handler, but only if it is not already registered for this path
 	_, pathAlreadyRegistered := mr.registeredGETPaths[path]
@@ -180,7 +177,6 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 		mr.registeredGETPaths[path] = struct{}{}
 
 		mr.server.Router.HandlerFunc("GET", path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer mr.wg.Done()
 
 			if r == nil {
 				http.Error(w, "Request is nil", http.StatusInternalServerError)
@@ -189,7 +185,7 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 
 			code, data := mr.mock.GET(path)
 			w.WriteHeader(code)
-			io.WriteString(w, data)
+			w.Write(data)
 		}))
 	}
 
