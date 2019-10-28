@@ -17,7 +17,7 @@ import (
 
 func Test_My(t *testing.T) {
 
-	mock := WithTimeout(t, 18000, time.Second*180)
+	mock := NewMockHTTP(t, 18000, WithTimeout(time.Second*180), FailOnUnexpectedCalls(true))
 	defer mock.Finish()
 
 	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")

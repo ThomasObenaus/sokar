@@ -20,6 +20,9 @@ type MockHTTP struct {
 	ctrl     *gomock.Controller
 	recorder *MockHTTPMockRecorder
 	timeout  time.Duration
+
+	// failOnUnexpectedCalls set if the test should fail in case a end-point is called which is not covered by an EXPECT call.
+	failOnUnexpectedCalls bool
 }
 
 // MockHTTPMockRecorder is the mock recorder for MockHTTP
@@ -32,19 +35,40 @@ type MockHTTPMockRecorder struct {
 	registeredGETPaths  map[string]struct{}
 }
 
+// Option represents an option for the MockHTTP
+type Option func(m *MockHTTP)
+
+// FailOnUnexpectedCalls set if the test should fail in case a end-point is called which is not covered by an EXPECT call.
+func FailOnUnexpectedCalls(fail bool) Option {
+	return func(m *MockHTTP) {
+		m.failOnUnexpectedCalls = fail
+	}
+}
+
+// WithTimeout set the timeout after all the expect calls have to be satisfied at latest.
+func WithTimeout(timeout time.Duration) Option {
+	return func(m *MockHTTP) {
+		m.timeout = timeout
+	}
+}
+
 // NewMockHTTP creates a new mock instance (timeout/ deadline is 20s)
 // Pattern:
 // mock := NewMockHTTP(t, 18000)
 // defer mock.Finish()
 // mock.EXPECT().GET("/path").Return(http.StatusOK, "Someting")
-func NewMockHTTP(t *testing.T, port int) *MockHTTP {
+func NewMockHTTP(t *testing.T, port int, options ...Option) *MockHTTP {
 
 	mockCtrl := gomock.NewController(t)
 
 	server := api.New(port)
 	server.Run()
 
-	mock := &MockHTTP{ctrl: mockCtrl, timeout: defaultTimeout}
+	mock := &MockHTTP{
+		ctrl:                  mockCtrl,
+		timeout:               defaultTimeout,
+		failOnUnexpectedCalls: false,
+	}
 	mock.recorder = &MockHTTPMockRecorder{
 		mock:                mock,
 		server:              server,
@@ -52,29 +76,23 @@ func NewMockHTTP(t *testing.T, port int) *MockHTTP {
 		registeredGETPaths:  make(map[string]struct{}, 0),
 	}
 
-	// Install a handler for all resources that are not expected to be called
-	mock.recorder.server.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mock.GET(r.URL.Path)
+	// apply the options
+	for _, opt := range options {
+		opt(mock)
+	}
 
-		w.WriteHeader(http.StatusNotFound)
-		io.WriteString(w, "Unexpected call to this resource")
-	})
-	// Disable the method not allowed handler to be able to catch all unexpected calls to resources
-	mock.recorder.server.Router.HandleMethodNotAllowed = false
+	if mock.failOnUnexpectedCalls {
+		// Install a handler for all resources that are not expected to be called
+		mock.recorder.server.Router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mock.GET(r.URL.Path)
 
-	return mock
-}
+			w.WriteHeader(http.StatusNotFound)
+			io.WriteString(w, "Unexpected call to this resource")
+		})
+		// Disable the method not allowed handler to be able to catch all unexpected calls to resources
+		mock.recorder.server.Router.HandleMethodNotAllowed = false
+	}
 
-// WithTimeout creates a new mock instance wit the specified timeout.
-// This means if not all specified EXPECT calls are made within the defined timeout
-// the test will fail.
-// Pattern:
-// mock := WithTimeout(t, 18000,time.Second*5)
-// defer mock.Finish()
-// mock.EXPECT().GET("/path").Return(http.StatusOK, "Someting")
-func WithTimeout(t *testing.T, port int, timeout time.Duration) *MockHTTP {
-	mock := NewMockHTTP(t, port)
-	mock.timeout = timeout
 	return mock
 }
 
