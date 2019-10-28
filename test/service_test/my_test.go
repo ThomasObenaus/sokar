@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"testing"
 	"time"
 )
@@ -23,8 +22,8 @@ func Test_My(t *testing.T) {
 	//mock.EXPECT().GET("/health").Return(http.StatusOK, "BLA")
 	InOrder(
 		time.Now(),
-		mock.EXPECT().GET("/health").Within(time.Second*5).Return(http.StatusOK, []byte("Call 1")),
-		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusOK, []byte("Call 2")),
-		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(http.StatusInternalServerError, []byte("Call 3")),
+		mock.EXPECT().GET("/health").Within(time.Second*5).Return(NewStringResponse("Call 1", AddHeader("Content-Type", "application/json"))),
+		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(NewStringResponse("Call 2", AddHeader("Content-Type", "application/protobuf"))),
+		mock.EXPECT().GET("/healths").Within(time.Second*10).Return(NewStringResponse("Call 3", AddHeader("Content-Type", "application/json"))),
 	)
 }

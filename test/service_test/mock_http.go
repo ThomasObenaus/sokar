@@ -159,12 +159,11 @@ func (m *MockHTTP) EXPECT() *MockHTTPMockRecorder {
 //}
 
 // GET mocks base method
-func (m *MockHTTP) GET(path string) (int, []byte) {
+func (m *MockHTTP) GET(path string) Response {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GET", path)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].([]byte)
-	return ret0, ret1
+	ret0, _ := ret[0].(Response)
+	return ret0
 }
 
 // GET indicates an expected call of GET
@@ -183,9 +182,14 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 				return
 			}
 
-			code, data := mr.mock.GET(path)
-			w.WriteHeader(code)
-			w.Write(data)
+			response := mr.mock.GET(path)
+			for key, valueList := range response.header {
+				for _, value := range valueList {
+					w.Header().Add(key, value)
+				}
+			}
+			w.WriteHeader(response.statusCode)
+			w.Write(response.data)
 		}))
 	}
 
