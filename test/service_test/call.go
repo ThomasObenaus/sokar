@@ -34,6 +34,8 @@ type callImpl struct {
 
 	// The succeeding call (can be nil)
 	successor Call
+
+	once sync.Once
 }
 
 func (c *callImpl) String() string {
@@ -41,7 +43,9 @@ func (c *callImpl) String() string {
 }
 
 func (c *callImpl) release() {
-	c.wg.Done()
+	c.once.Do(func() {
+		c.wg.Done()
+	})
 }
 
 // join blocks until the expected call to the end point was made but at max until the internal
@@ -72,7 +76,7 @@ func NewCall(gomockCall *gomock.Call, method Method) Call {
 
 // commitCall should be called as soon as the expected request has been triggered
 func (c *callImpl) commitCall() {
-	c.wg.Done()
+	c.release()
 
 	// Update the deadline of the succeeding call (if any)
 	// as soon as this call was called.

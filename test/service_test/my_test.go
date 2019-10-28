@@ -16,16 +16,16 @@ import (
 
 func Test_My(t *testing.T) {
 
-	nomadMock := NewMockHTTP(t, 18000, FailOnUnexpectedCalls(false))
-	defer nomadMock.Finish()
+	ctrl := NewController(t)
+	defer ctrl.Finish()
 
-	awsMock := NewMockHTTP(t, 18001, FailOnUnexpectedCalls(false))
-	defer awsMock.Finish()
+	nomadMock := NewMockHTTP(ctrl, 18000, FailOnUnexpectedCalls(true))
+	awsMock := NewMockHTTP(ctrl, 18001, FailOnUnexpectedCalls(true))
 
 	InOrder(
 		time.Now(),
-		nomadMock.EXPECT().GET("/health").Within(time.Second*5).Return(NewStringResponse("Call 1", AddHeader("Content-Type", "application/json"))),
-		//awsMock.EXPECT().GET("/health").Within(time.Second*10).Return(NewStringResponse("Call 2", AddHeader("Content-Type", "application/protobuf"))),
-		nomadMock.EXPECT().GET("/health").Within(time.Second*10).Return(NewStringResponse("Call 3", AddHeader("Content-Type", "application/json"))),
+		nomadMock.EXPECT().GET("/health").Within(time.Second*10).Return(NewStringResponse("{\"Call\": 1}", AddHeader("Content-Type", "application/json"))),
+		awsMock.EXPECT().GET("/health").Within(time.Second*10).Return(NewStringResponse("{\"Call\": 2}", AddHeader("Content-Type", "application/protobuf"))),
+		nomadMock.EXPECT().GET("/health").Within(time.Second*10).Return(NewStringResponse("{\"Call\": 3}", AddHeader("Content-Type", "application/json"))),
 	)
 }

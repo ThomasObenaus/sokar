@@ -5,20 +5,17 @@ import (
 	"io"
 	"net/http"
 	reflect "reflect"
-	"testing"
 
-	gomock "github.com/golang/mock/gomock"
 	"github.com/thomasobenaus/sokar/api"
 )
 
 // MockHTTP is a mock of ScalingTarget interface
 type MockHTTP struct {
-	ctrl     *gomock.Controller
+	ctrl     *Controller
 	recorder *MockHTTPMockRecorder
 
 	// failOnUnexpectedCalls set if the test should fail in case a end-point is called which is not covered by an EXPECT call.
 	failOnUnexpectedCalls bool
-	calls                 []Call
 }
 
 // MockHTTPMockRecorder is the mock recorder for MockHTTP
@@ -45,17 +42,14 @@ func FailOnUnexpectedCalls(fail bool) Option {
 // mock := NewMockHTTP(t, 18000)
 // defer mock.Finish()
 // mock.EXPECT().GET("/path").Return(http.StatusOK, "Someting")
-func NewMockHTTP(t *testing.T, port int, options ...Option) *MockHTTP {
-
-	mockCtrl := gomock.NewController(t)
+func NewMockHTTP(c *Controller, port int, options ...Option) *MockHTTP {
 
 	server := api.New(port)
 	server.Run()
 
 	mock := &MockHTTP{
-		ctrl:                  mockCtrl,
+		ctrl:                  c,
 		failOnUnexpectedCalls: false,
-		calls:                 make([]Call, 0),
 	}
 	mock.recorder = &MockHTTPMockRecorder{
 		mock:                mock,
@@ -75,36 +69,17 @@ func NewMockHTTP(t *testing.T, port int, options ...Option) *MockHTTP {
 			w.WriteHeader(http.StatusNotFound)
 			io.WriteString(w, "Unexpected call to this resource")
 
-			mock.releaseAllCallLocks()
+			mock.ctrl.releaseAllCallLocks()
 			mock.GET(r.URL.Path)
 		})
 		// Disable the method not allowed handler to be able to catch all unexpected calls to resources
 		mock.recorder.server.Router.HandleMethodNotAllowed = false
 	}
 
+	// register the stop method of the router to be called after the controller has been finished
+	c.addCleanupCallback(mock.recorder.server.Stop)
+
 	return mock
-}
-
-func (m *MockHTTP) releaseAllCallLocks() {
-	for _, call := range m.calls {
-		call.release()
-	}
-}
-
-// Finish has to be called at the end to clean up and to check if all expected calls where made.
-func (m *MockHTTP) Finish() {
-
-	// Wait here for all registered calls until they succeed.
-	// And fail immediately in case their deadline (timeout) has been exceeded.
-	for _, call := range m.calls {
-		deadlineIsExpired := call.join()
-		if deadlineIsExpired {
-			m.ctrl.T.Fatalf("The deadline for call '%v' has been expired before someone called the according end-point.", call)
-		}
-	}
-	// clean up
-	m.recorder.server.Stop()
-	m.ctrl.Finish()
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
@@ -161,15 +136,15 @@ func (m *MockHTTP) EXPECT() *MockHTTPMockRecorder {
 
 // GET mocks base method
 func (m *MockHTTP) GET(path string) Response {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GET", path)
+	m.ctrl.gmckCtrl.T.Helper()
+	ret := m.ctrl.gmckCtrl.Call(m, "GET", path)
 	ret0, _ := ret[0].(Response)
 	return ret0
 }
 
 // GET indicates an expected call of GET
 func (mr *MockHTTPMockRecorder) GET(path string) Call {
-	mr.mock.ctrl.T.Helper()
+	mr.mock.ctrl.gmckCtrl.T.Helper()
 
 	// Register the http handler, but only if it is not already registered for this path
 	_, pathAlreadyRegistered := mr.registeredGETPaths[path]
@@ -179,14 +154,11 @@ func (mr *MockHTTPMockRecorder) GET(path string) Call {
 		mr.server.Router.HandlerFunc("GET", path, mr.mock.handleRequest)
 	}
 
-	gomockCall := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
-	call := NewCall(gomockCall, GET())
-	mr.mock.calls = append(mr.mock.calls, call)
-	return call
+	gomockCall := mr.mock.ctrl.gmckCtrl.RecordCallWithMethodType(mr.mock, "GET", reflect.TypeOf((*MockHTTP)(nil).GET), path)
+	return mr.mock.ctrl.CreateAndRegisterGETCall(gomockCall)
 }
 
 func (m *MockHTTP) handleRequest(w http.ResponseWriter, r *http.Request) {
-
 	if r == nil {
 		http.Error(w, "Request is nil", http.StatusInternalServerError)
 		return
