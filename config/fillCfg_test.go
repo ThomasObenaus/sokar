@@ -37,6 +37,8 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--sca.aws-ec2.profile=profile-test",
 		"--sca.aws-ec2.region=region-test",
 		"--sca.aws-ec2.asg-tag-key=asg-tag-key",
+		"--sca.aws-ec2.asg-tag-key=asg-tag-key",
+		"--sca.nomad.dc-aws.instance-termination-timeout=124s",
 		"--sca.watcher-interval=50s",
 		"--cap.constant-mode.enable=false",
 		"--cap.constant-mode.offset=106",
@@ -49,6 +51,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
 	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.Region)
+	assert.Equal(t, time.Duration(time.Second*124), cfg.Scaler.Nomad.DataCenterAWS.InstanceTerminationTimeout)
 	assert.Equal(t, "http://nomad", cfg.Scaler.Nomad.ServerAddr)
 	assert.Equal(t, "profile-test", cfg.Scaler.AwsEc2.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.AwsEc2.Region)

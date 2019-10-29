@@ -227,6 +227,7 @@ func setupScalingTarget(cfg config.Scaler, logF logging.LoggerFactory) (scaler.S
 			cfg.Nomad.DataCenterAWS.Profile,
 			nomadWorker.WithLogger(logF.NewNamedLogger("sokar.nomadWorker")),
 			nomadWorker.WithAwsRegion(cfg.Nomad.DataCenterAWS.Region),
+			nomadWorker.TimeoutForInstanceTermination(cfg.Nomad.DataCenterAWS.InstanceTerminationTimeout),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("Failed setting up nomad worker connector: %s", err)

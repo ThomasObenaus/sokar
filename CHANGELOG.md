@@ -4,6 +4,8 @@
 
 - BugFixes:
   - [#106 Downscaling of AWS instances fails (Throttling: Rate exceeded)](https://github.com/ThomasObenaus/sokar/issues/106)
+  - [#108 Instance Downscaling does not complete](https://github.com/ThomasObenaus/sokar/issues/108)
+- Config: With [#108](https://github.com/ThomasObenaus/sokar/issues/108) the new configuration parameter `instance-termination-timeout` was introduced.
 
 ## v0.0.10 (2019-10-13)
 

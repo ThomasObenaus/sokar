@@ -58,9 +58,10 @@ type SCANomad struct {
 
 // SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
 type SCANomadDataCenterAWS struct {
-	Profile   string `json:"profile,omitempty"`
-	Region    string `json:"region,omitempty"`
-	ASGTagKey string `json:"asg_tag_key,omitempty"`
+	Profile                    string        `json:"profile,omitempty"`
+	Region                     string        `json:"region,omitempty"`
+	ASGTagKey                  string        `json:"asg_tag_key,omitempty"`
+	InstanceTerminationTimeout time.Duration `json:"instance_termination_timeout,omitempty"`
 }
 
 // ScaleObject represents the definition for the object that should be scaled.

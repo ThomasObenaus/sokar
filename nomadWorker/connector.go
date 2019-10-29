@@ -46,8 +46,8 @@ type Connector struct {
 	// nodeDrainDeadline the maximum amount of time nomad will wait before the containers will be forced to be moved
 	nodeDrainDeadline time.Duration
 
-	// monitorInstanceTimeout is the timeout used to monitor the scale of an aws instance at maximum
-	monitorInstanceTimeout time.Duration
+	// instanceTerminationTimeout is the timeout used to monitor the scale of an aws instance at maximum
+	instanceTerminationTimeout time.Duration
 }
 
 // Option represents an option for the nomadWorker Connector
@@ -67,6 +67,13 @@ func WithAwsRegion(region string) Option {
 	}
 }
 
+// TimeoutForInstanceTermination sets the maximum time the instance termination will be monitored before assuming that this action failed.
+func TimeoutForInstanceTermination(timeout time.Duration) Option {
+	return func(c *Connector) {
+		c.instanceTerminationTimeout = timeout
+	}
+}
+
 // New creates a new nomad worker connector.
 // The profile represents the name of the aws profile that shall be used to access the resources to scale the aws AutoScalingGroup.
 // This parameter is optional. If the profile is NOT set the instance where sokar runs on has to have enough permissions to access the
@@ -81,8 +88,8 @@ func New(nomadServerAddress, awsProfile string, options ...Option) (*Connector, 
 		autoScalingFactory:         &aws.AutoScalingFactoryImpl{},
 		fnCreateSession:            aws.NewAWSSession,
 		fnCreateSessionFromProfile: aws.NewAWSSessionFromProfile,
-		nodeDrainDeadline:          time.Second * 30,
-		monitorInstanceTimeout:     time.Second * 180,
+		nodeDrainDeadline:          time.Second * 60,
+		instanceTerminationTimeout: time.Minute * 10,
 		awsProfile:                 awsProfile,
 	}
 
