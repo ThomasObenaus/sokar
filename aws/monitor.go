@@ -6,7 +6,6 @@ import (
 
 	aws "github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog"
 	iface "github.com/thomasobenaus/sokar/aws/iface"
 )
 
@@ -14,12 +13,12 @@ var monitorAWSStateBackoff time.Duration = time.Millisecond * 500
 
 // MonitorInstanceScaling will block until the instance is scaled up/ down
 // The function returns the number of iterations that where needed to monitor the scaling of the instance
-func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration, log zerolog.Logger) (uint, error) {
+func MonitorInstanceScaling(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, timeout time.Duration) (uint, error) {
 	start := time.Now()
 	iterations := uint(0)
 	for {
 		iterations++
-		state, err := getCurrentScalingState(autoScaling, autoScalingGroupName, activityID, log)
+		state, err := getCurrentScalingState(autoScaling, autoScalingGroupName, activityID)
 		if err != nil {
 			return iterations, err
 		}
@@ -42,7 +41,7 @@ type scalingState struct {
 	progress int64
 }
 
-func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string, log zerolog.Logger) (*scalingState, error) {
+func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName string, activityID string) (*scalingState, error) {
 
 	activityIDs := make([]*string, 0)
 	activityIDs = append(activityIDs, &activityID)
@@ -70,7 +69,6 @@ func getCurrentScalingState(autoScaling iface.AutoScaling, autoScalingGroupName 
 		return nil, fmt.Errorf("DescribeScalingActivitiesOutput contains no valid activities")
 	}
 
-	log.Debug().Str("activityID", activityID).Str("autoScalingGroupName", autoScalingGroupName).Msgf("Output: %v\n", output)
 	state := &scalingState{status: *output.Activities[0].StatusCode, progress: *output.Activities[0].Progress}
 	return state, nil
 }
