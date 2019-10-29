@@ -13,7 +13,7 @@ import (
 const MaxUint = ^uint(0)
 const MaxInt = int(MaxUint >> 1)
 
-var downscaleCounter uint = 0
+var downscaleCounter uint
 
 type candidate struct {
 	// nodeID is the nomad node ID
