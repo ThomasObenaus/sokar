@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -42,6 +43,10 @@ func (c *Controller) Finish() {
 			c.gmckCtrl.T.Fatalf("The deadline for call '%v' has been expired before someone called the according end-point.", call)
 		}
 	}
+
+	// wait to give the latest responses some time to be read from the receiver
+	time.Sleep(time.Millisecond * 200)
+
 	// clean up
 	c.gmckCtrl.Finish()
 
