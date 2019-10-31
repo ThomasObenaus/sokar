@@ -70,7 +70,21 @@ func NewMockHTTP(c *Controller, port int, options ...Option) *MockHTTP {
 			io.WriteString(w, "Unexpected call to this resource")
 
 			mock.ctrl.releaseAllCallLocks()
-			mock.GET(r.URL.Path)
+
+			if r == nil {
+				mock.ctrl.gmckCtrl.T.Fatalf("Received request object is nil.")
+			}
+
+			path := r.URL.Path
+
+			switch r.Method {
+			case http.MethodGet:
+				mock.GET(path)
+				break
+			default:
+				mock.ctrl.gmckCtrl.T.Fatalf("HTTP method %s is not yet supported (Request was %s: %s%s).", r.Method, r.Method, r.Host, r.URL)
+				break
+			}
 		})
 		// Disable the method not allowed handler to be able to catch all unexpected calls to resources
 		mock.recorder.server.Router.HandleMethodNotAllowed = false
