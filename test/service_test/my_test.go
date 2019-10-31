@@ -2,11 +2,17 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/davecgh/go-spew/spew"
+	nomadApi "github.com/hashicorp/nomad/api"
+	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
 	"github.com/thomasobenaus/sokar/api"
 )
 
@@ -40,14 +46,33 @@ func Test_Job(t *testing.T) {
 	ctrl := NewController(t)
 	defer ctrl.Finish()
 
-	nomadMock := NewMockHTTP(ctrl, 18000, FailOnUnexpectedCalls(false))
+	nomadMock := NewMockHTTP(ctrl, 18000, FailOnUnexpectedCalls(true))
 
 	InOrder(
 		time.Now(),
-		nomadMock.EXPECT().GET("/v1/job/fail-service").Within(time.Second*50).Return(NewStringResponse("{\"Call\": 1}", AddHeader("Content-Type", "application/json"))),
+		nomadMock.EXPECT().GET("/v1/job/fail-service").Within(time.Second*50).Return(NewBinResponse(jobResponse(t), AddHeader("Content-Type", "application/json"))),
+		nomadMock.EXPECT().GET("/v1/job/fail-service").Within(time.Second*50).Return(NewBinResponse(jobResponse(t), AddHeader("Content-Type", "application/json"))),
+		nomadMock.EXPECT().GET("/v1/job/fail-service").Within(time.Second*50).Return(NewBinResponse(jobResponse(t), AddHeader("Content-Type", "application/json"))),
+		nomadMock.EXPECT().GET("/v1/job/fail-service").Within(time.Second*50).Return(NewBinResponse(jobResponse(t), AddHeader("Content-Type", "application/json"))),
+		//nomadMock.EXPECT().GET("/v1/jobs").Within(time.Second*50).Return(NewBinResponse(jobResponse(t), StatusCode(http.StatusNotFound), AddHeader("Content-Type", "application/json"))),
 	)
 
-	//sendAlert("http://127.0.0.1:11000/api/alerts")
+	sendAlert("http://127.0.0.1:11000/api/alerts")
+}
+
+func jobResponse(t *testing.T) []byte {
+	job := nomadApi.NewServiceJob("1", "fail-service", "region", 1)
+	job.TaskGroups = append(job.TaskGroups, nomadApi.NewTaskGroup("fail-service", 0))
+	status := nomadstructs.JobStatusRunning
+	job.Status = &status
+
+	debug := false
+	if debug {
+		spew.Dump(job)
+	}
+	data, err := json.Marshal(job)
+	require.NoError(t, err)
+	return data
 }
 
 func Test_Jow(t *testing.T) {
