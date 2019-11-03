@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.0.11 (2019-??-??)
+## v0.0.11 (2019-11-03)
 
 - BugFixes:
   - [#106 Downscaling of AWS instances fails (Throttling: Rate exceeded)](https://github.com/ThomasObenaus/sokar/issues/106)
