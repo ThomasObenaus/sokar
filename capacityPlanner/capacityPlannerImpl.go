@@ -18,6 +18,12 @@ func (cp *CapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
 		cp.logger.Error().Msgf("No planning mode defined")
 	}
 
+	// TODO: Ensure here that the scheduled scale is satisfied.
+	// TODO: Check how we know here that scheduled scaling is active?
+	// TODO: Introduce a new event-source to ensure that (in scheduled scaling) the CAP can do the stuff described above
+	// TODO: New Metrics?
+	// TODO: Ensure that the old metrics still make sense (since we introduce a new event source)
+
 	return plannedScale
 }
 
