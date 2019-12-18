@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +24,7 @@ import (
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/robfig/cron"
 )
 
 var version string
@@ -31,6 +33,16 @@ var revision string
 var branch string
 
 func main() {
+
+	p := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+	sched, err := p.Parse("@weekly")
+	if err != nil {
+		log.Fatalf("Err %s", err.Error())
+	}
+
+	fmt.Printf("Sched %v", sched.Next(time.Now()))
+
+	os.Exit(0)
 
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
