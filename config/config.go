@@ -99,10 +99,18 @@ type Logging struct {
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
 type CapacityPlanner struct {
-	DownScaleCooldownPeriod time.Duration `json:"down_scale_cooldown_period,omitempty"`
-	UpScaleCooldownPeriod   time.Duration `json:"up_scale_cooldown_period,omitempty"`
-	ConstantMode            CAPConstMode  `json:"constant_mode,omitempty"`
-	LinearMode              CAPLinearMode `json:"linear_mode,omitempty"`
+	DownScaleCooldownPeriod time.Duration          `json:"down_scale_cooldown_period,omitempty"`
+	UpScaleCooldownPeriod   time.Duration          `json:"up_scale_cooldown_period,omitempty"`
+	ConstantMode            CAPConstMode           `json:"constant_mode,omitempty"`
+	LinearMode              CAPLinearMode          `json:"linear_mode,omitempty"`
+	ScalingSchedule         []ScalingScheduleEntry `json:"scaling_schedule,omitempty"`
+}
+
+// ScalingScheduleEntry is a entity that represents one entry of a scaling schedule configuration
+type ScalingScheduleEntry struct {
+	Schedule string `json:"schedule,omitempty"`
+	MinScale uint   `json:"min_scale,omitempty"`
+	MaxScale uint   `json:"max_scale,omitempty"`
 }
 
 // CAPLinearMode configuration parameters needed for linear mode of the CapacityPlanner
@@ -147,6 +155,7 @@ func NewDefaultConfig() Config {
 			UpScaleCooldownPeriod:   time.Second * 60,
 			ConstantMode:            CAPConstMode{Enable: true, Offset: 1},
 			LinearMode:              CAPLinearMode{Enable: false},
+			ScalingSchedule:         make([]ScalingScheduleEntry, 0),
 		},
 	}
 

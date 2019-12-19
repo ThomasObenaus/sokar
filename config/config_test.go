@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_NewDefaultConfig(t *testing.T) {
@@ -28,4 +29,6 @@ func Test_NewDefaultConfig(t *testing.T) {
 	assert.Equal(t, uint(1), config.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, config.CapacityPlanner.ConstantMode.Enable)
 	assert.False(t, config.CapacityPlanner.LinearMode.Enable)
+	assert.NotNil(t, config.CapacityPlanner.ScalingSchedule)
+	require.Empty(t, config.CapacityPlanner.ScalingSchedule)
 }

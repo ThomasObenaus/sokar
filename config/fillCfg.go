@@ -2,9 +2,11 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/robfig/cron"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/thomasobenaus/sokar/helper"
@@ -89,7 +91,77 @@ func (cfg *Config) fillCapacityPlanner() error {
 		cfg.CapacityPlanner.ConstantMode.Enable = false
 	}
 
+	rawScaleSchedule := cfg.viper.GetString(capScaleSchedule.name)
+	entries, err := parseScalingScheduleEntries(rawScaleSchedule)
+	if err != nil {
+		return err
+	}
+	cfg.CapacityPlanner.ScalingSchedule = entries
+
 	return validateCapacityPlanner(cfg.CapacityPlanner)
+}
+
+func parseScalingScheduleEntries(raw string) ([]ScalingScheduleEntry, error) {
+	parts := strings.Split(raw, ";")
+	result := make([]ScalingScheduleEntry, 0)
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if len(part) == 0 {
+			continue
+		}
+		entry, err := parseScalingScheduleEntry(part)
+		if err != nil {
+			return make([]ScalingScheduleEntry, 0), err
+		}
+		result = append(result, entry)
+	}
+
+	return result, nil
+}
+
+func parseScalingScheduleEntry(raw string) (ScalingScheduleEntry, error) {
+
+	parts := strings.Split(raw, ":")
+	if len(parts) != 3 {
+		return ScalingScheduleEntry{}, fmt.Errorf("ScalingScheduleEntry '%s' is malformed", raw)
+	}
+
+	schedule := strings.TrimSpace(parts[0])
+
+	if len(schedule) == 0 {
+		return ScalingScheduleEntry{}, fmt.Errorf("No schedule specified")
+	}
+
+	err := validateTimeRangeOfScheduleEntry(schedule)
+	if err != nil {
+		return ScalingScheduleEntry{}, err
+	}
+
+	min, err := strconv.ParseUint(parts[1], 10, 64)
+	if err != nil {
+		return ScalingScheduleEntry{}, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", parts[1])
+	}
+	max, err := strconv.ParseUint(parts[2], 10, 64)
+	if err != nil {
+		return ScalingScheduleEntry{}, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", parts[2])
+	}
+
+	result := ScalingScheduleEntry{Schedule: schedule, MinScale: uint(min), MaxScale: uint(max)}
+	return result, nil
+}
+
+func validateTimeRangeOfScheduleEntry(schedule string) error {
+	if !strings.Contains(schedule, "-") {
+		return fmt.Errorf("Schedule has duration of 0")
+	}
+
+	// validate the cron format
+	// here we allow only minute, hour and day of week
+	p := cron.NewParser(cron.Minute | cron.Hour | cron.Dow)
+	_, err := p.Parse(schedule)
+
+	return err
 }
 
 func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {

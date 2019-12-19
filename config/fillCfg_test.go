@@ -44,6 +44,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--cap.constant-mode.offset=106",
 		"--cap.linear-mode.enable=true",
 		"--cap.linear-mode.scale-factor-weight=0.107",
+		"--cap.scale-schedule=* 7-8,16-17 MON-FRI:10:30",
 	}
 
 	err := cfg.ReadConfig(args)
@@ -82,6 +83,12 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, uint(106), cfg.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, cfg.CapacityPlanner.LinearMode.Enable)
 	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
+
+	require.NotNil(t, cfg.CapacityPlanner.ScalingSchedule)
+	require.NotEmpty(t, cfg.CapacityPlanner.ScalingSchedule)
+	assert.Equal(t, "* 7-8,16-17 MON-FRI", cfg.CapacityPlanner.ScalingSchedule[0].Schedule)
+	assert.Equal(t, uint(10), cfg.CapacityPlanner.ScalingSchedule[0].MinScale)
+	assert.Equal(t, uint(30), cfg.CapacityPlanner.ScalingSchedule[0].MaxScale)
 }
 
 func Test_ValidateScaler_NomadJob(t *testing.T) {
@@ -327,4 +334,69 @@ func Test_ValidateCapacityPlanner(t *testing.T) {
 	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 1}}
 	err = validateCapacityPlanner(capacityPlanner)
 	assert.NoError(t, err)
+
+	// success - no schedule
+	scalingSchedule := make([]ScalingScheduleEntry, 0)
+	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 1}, ScalingSchedule: scalingSchedule}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.NoError(t, err)
+}
+
+func Test_ParseScalingScheduleEntry(t *testing.T) {
+
+	// success
+	entry, err := parseScalingScheduleEntry("* 7-8,16-17 MON-FRI:10:30")
+	assert.NoError(t, err)
+	assert.Equal(t, uint(10), entry.MinScale)
+	assert.Equal(t, uint(30), entry.MaxScale)
+	assert.Equal(t, "* 7-8,16-17 MON-FRI", entry.Schedule)
+
+	// failure - malformed
+	entry, err = parseScalingScheduleEntry(":sslklerk;")
+	assert.Error(t, err)
+
+	// failure - min no uint
+	entry, err = parseScalingScheduleEntry("* 7-8,16-17 MON-FRI:ad:30")
+	assert.Error(t, err)
+
+	// failure - max no uint
+	entry, err = parseScalingScheduleEntry("* 7-8,16-17 MON-FRI:10:-30")
+	assert.Error(t, err)
+
+	// failure - no schedule
+	entry, err = parseScalingScheduleEntry("   :10:-30")
+	assert.Error(t, err)
+
+	// failure - invalid cron
+	entry, err = parseScalingScheduleEntry("* * MON-SUT:10:-30")
+	assert.Error(t, err)
+}
+
+func Test_ParseScalingScheduleEntries(t *testing.T) {
+
+	// success
+	entries, err := parseScalingScheduleEntries("* 7-8,16-17 MON-FRI:10:30;* 7-8 MON-FRI:2:3")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, entries)
+	assert.Len(t, entries, 2)
+
+	// failure - one entry invalid
+	entries, err = parseScalingScheduleEntries("* 7-8,16-17 MON-FRI:10:30;invalid")
+	assert.Error(t, err)
+
+	// success - empty
+	entries, err = parseScalingScheduleEntries("")
+	assert.NoError(t, err)
+	assert.Empty(t, entries)
+}
+
+func Test_ValidateTimeRangeOfScheduleEntry(t *testing.T) {
+
+	// success
+	err := validateTimeRangeOfScheduleEntry("* 7-8,16-17 MON-FRI")
+	assert.NoError(t, err)
+
+	// failure - no duration
+	err = validateTimeRangeOfScheduleEntry("* 8 MON")
+	assert.Error(t, err)
 }
