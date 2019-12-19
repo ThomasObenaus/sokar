@@ -23,6 +23,7 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
+	//"github.com/gorhill/cronexpr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/robfig/cron"
 )
@@ -34,15 +35,25 @@ var branch string
 
 func main() {
 
-	p := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
-	sched, err := p.Parse("@weekly")
+	p := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dow)
+	_ = p
+	// second, minute, hour, day of week
+	expression := "* 0-30 9 *"
+	sched, err := p.Parse(expression)
 	if err != nil {
 		log.Fatalf("Err %s", err.Error())
 	}
 
-	fmt.Printf("Sched %v", sched.Next(time.Now()))
+	fmt.Printf("Cron     %v\n", sched.Next(time.Now()))
+	fmt.Printf("Cron     %v\n", sched.Next(time.Now().Add(time.Hour*10)))
 
-	os.Exit(0)
+	//parsed := cronexpr.MustParse(expression)
+	//nextTime := parsed.Next(time.Now())
+	//fmt.Printf("Cronexpr %v\n", nextTime)
+	//
+	//nextTimes := parsed.NextN(time.Now().Add(time.Minute*40), 4)
+	//fmt.Printf("Cronexpr %v\n", nextTimes)
+	//os.Exit(0)
 
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
