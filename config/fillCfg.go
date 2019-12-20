@@ -91,8 +91,7 @@ func (cfg *Config) fillCapacityPlanner() error {
 		cfg.CapacityPlanner.ConstantMode.Enable = false
 	}
 
-	rawScaleSchedule := cfg.viper.GetString(capScaleSchedule.name)
-	entries, err := parseScalingScheduleEntries(rawScaleSchedule)
+	entries, err := extractScaleScheduleFromViper(cfg.viper)
 	if err != nil {
 		return err
 	}
@@ -348,4 +347,64 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
+}
+
+func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScalingScheduleEntry, error) {
+	var scaleSchedule = make([]ScalingScheduleEntry, 0)
+
+	if !vp.IsSet(capScaleSchedule.name) {
+		return nil, nil
+	}
+
+	scaleScheduleAsStr := vp.GetString(capScaleSchedule.name)
+
+	if len(scaleScheduleAsStr) > 0 {
+		return parseScalingScheduleEntries(scaleScheduleAsStr)
+	}
+
+	scaleScheduleAsMap := helper.CastToStringMapSlice(vp.Get(capScaleSchedule.name))
+	if scaleScheduleAsMap == nil {
+		return scaleSchedule, nil
+	}
+
+	scaleSchedule, err := scaleScheduleMapToScaleSchedule(scaleScheduleAsMap)
+	if err != nil {
+		return scaleSchedule, fmt.Errorf("Error reading scale schedule configuration: %s", err.Error())
+	}
+	return scaleSchedule, nil
+}
+
+func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]ScalingScheduleEntry, error) {
+
+	if scaleScheduleCfg == nil {
+		return nil, fmt.Errorf("Parameter is nil")
+	}
+	var scaleSchedule = make([]ScalingScheduleEntry, 0)
+
+	for _, scheduleEntry := range scaleScheduleCfg {
+		schedule := strings.TrimSpace(scheduleEntry["schedule"])
+		if len(schedule) == 0 {
+			return nil, fmt.Errorf("Schedule is missing for scale schedule entry")
+		}
+
+		if err := validateTimeRangeOfScheduleEntry(schedule); err != nil {
+			return nil, err
+		}
+
+		minStr := scheduleEntry["min"]
+		maxStr := scheduleEntry["max"]
+
+		min, err := strconv.ParseUint(minStr, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", minStr)
+		}
+		max, err := strconv.ParseUint(maxStr, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", maxStr)
+		}
+
+		scaleSchedule = append(scaleSchedule, ScalingScheduleEntry{Schedule: schedule, MinScale: uint(min), MaxScale: uint(max)})
+	}
+
+	return scaleSchedule, nil
 }

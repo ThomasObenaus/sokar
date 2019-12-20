@@ -400,3 +400,127 @@ func Test_ValidateTimeRangeOfScheduleEntry(t *testing.T) {
 	err = validateTimeRangeOfScheduleEntry("* 8 MON")
 	assert.Error(t, err)
 }
+
+func Test_ExtractScaleScheduleFromViper(t *testing.T) {
+
+	vp := viper.New()
+	scaleScheduleEntries, err := extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+
+	// Success - commandline
+	vp.Set(capScaleSchedule.name, "* 7-8,16-17 MON-FRI:10:30;* 7-8 MON-FRI:2:3")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.NotEmpty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+	assert.Len(t, scaleScheduleEntries, 2)
+	assert.Equal(t, "* 7-8,16-17 MON-FRI", scaleScheduleEntries[0].Schedule)
+	assert.Equal(t, uint(10), scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].MaxScale)
+	assert.Equal(t, "* 7-8 MON-FRI", scaleScheduleEntries[1].Schedule)
+	assert.Equal(t, uint(2), scaleScheduleEntries[1].MinScale)
+	assert.Equal(t, uint(3), scaleScheduleEntries[1].MaxScale)
+
+	// Success - config
+	entries := make([]map[string]string, 0)
+	entry := make(map[string]string, 0)
+	entry["schedule"] = "* 7-8,16-17 MON-FRI"
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+
+	entry = make(map[string]string, 0)
+	entry["schedule"] = "* 7-8 MON-FRI"
+	entry["min"] = "2"
+	entry["max"] = "3"
+	entries = append(entries, entry)
+
+	vp.Set(capScaleSchedule.name, entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.NotEmpty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+	assert.Len(t, scaleScheduleEntries, 2)
+	assert.Equal(t, "* 7-8,16-17 MON-FRI", scaleScheduleEntries[0].Schedule)
+	assert.Equal(t, uint(10), scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].MaxScale)
+	assert.Equal(t, "* 7-8 MON-FRI", scaleScheduleEntries[1].Schedule)
+	assert.Equal(t, uint(2), scaleScheduleEntries[1].MinScale)
+	assert.Equal(t, uint(3), scaleScheduleEntries[1].MaxScale)
+
+	// Fail - config - schedule
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["schedule"] = "invalid"
+	entries = append(entries, entry)
+	vp.Set(capScaleSchedule.name, entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+	//
+	// Success - config - empty
+	vp.Set(capScaleSchedule.name, "")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+}
+
+func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
+
+	scaleScheduleEntries, err := scaleScheduleMapToScaleSchedule(nil)
+	assert.Nil(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Success
+	entries := make([]map[string]string, 0)
+	entry := make(map[string]string, 0)
+	entry["schedule"] = "* 7-8,16-17 MON-FRI"
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Equal(t, "* 7-8,16-17 MON-FRI", scaleScheduleEntries[0].Schedule)
+	assert.Equal(t, uint(10), scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].MaxScale)
+
+	// Fail - config - schedule
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["schedule"] = "invalid"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - min
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["schedule"] = "* 7-8,16-17 MON-FRI"
+	entry["min"] = "invalid"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - max
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["schedule"] = "* 7-8,16-17 MON-FRI"
+	entry["min"] = "10"
+	entry["max"] = "invalid"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - no schedule
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["schedule"] = ""
+	entry["min"] = "10"
+	entry["max"] = "invalid"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+}
