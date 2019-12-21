@@ -325,3 +325,60 @@ func Test_IsScalePermitted(t *testing.T) {
 	assert.True(t, isScalePermitted(false, false))
 	assert.False(t, isScalePermitted(true, false))
 }
+
+func Test_ShouldUpdateLastScaleActionOnScale(t *testing.T) {
+
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	sObjName := "any"
+	sObj := ScalingObject{Name: sObjName, MinCount: 1, MaxCount: 5}
+	scaler, err := New(scaTgt, sObj, metrics)
+	require.NoError(t, err)
+
+	// WHEN - expecting
+	plannedButSkippedGauge := mock_metrics.NewMockGauge(mockCtrl)
+	plannedButSkippedGauge.EXPECT().Set(float64(0))
+	mocks.plannedButSkippedScalingOpen.EXPECT().WithLabelValues("DOWN").Return(plannedButSkippedGauge)
+	scaTgt.EXPECT().AdjustScalingObjectCount(sObjName, uint(1), uint(5), uint(4), uint(2)).Return(nil)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+
+	// WHEN - scale down
+	result := scaler.scale(2, 4, false)
+
+	// THEN
+	assert.Equal(t, scaleDone, result.state)
+	assert.Equal(t, uint(2), result.newCount)
+	assert.WithinDuration(t, time.Now(), scaler.lastScaleAction, time.Second*1)
+	//oneDayAgo := time.Now().Add(time.Hour * -24)
+}
+
+func Test_ShouldNotUpdateLastScaleActionIfNoScaleIsNeeded(t *testing.T) {
+
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, mocks := NewMockedMetrics(mockCtrl)
+	scaTgt := mock_scaler.NewMockScalingTarget(mockCtrl)
+	sObjName := "any"
+	sObj := ScalingObject{Name: sObjName, MinCount: 2, MaxCount: 5}
+	scaler, err := New(scaTgt, sObj, metrics)
+	require.NoError(t, err)
+
+	// WHEN - expecting
+	polViolatedCounter := mock_metrics.NewMockCounter(mockCtrl)
+	polViolatedCounter.EXPECT().Inc()
+	mocks.scalingPolicyViolated.EXPECT().WithLabelValues("min").Return(polViolatedCounter)
+	scaTgt.EXPECT().IsScalingObjectDead(sObjName).Return(false, nil)
+
+	// WHEN - scale
+	result := scaler.scale(1, 2, false)
+
+	// THEN
+	assert.Equal(t, scaleIgnored, result.state)
+	assert.Equal(t, uint(2), result.newCount)
+	oneDayAgo := time.Now().Add(time.Hour * -24)
+	assert.WithinDuration(t, oneDayAgo, scaler.lastScaleAction, time.Second*1)
+}
