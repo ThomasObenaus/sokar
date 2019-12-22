@@ -10,6 +10,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
+	"github.com/thomasobenaus/sokar/alertscheduler"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/awsEc2"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
@@ -198,15 +199,17 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 	if logF == nil {
 		return nil, fmt.Errorf("LoggingFactory is nil")
 	}
+	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 
 	// Alertmanger Connector
 	logger := logF.NewNamedLogger("sokar.alertmanager")
 	amConnector := alertmanager.New(alertmanager.WithLogger(logger))
 	api.Router.POST(sokar.PathAlertmanager, amConnector.HandleScaleAlerts)
 	logger.Info().Msgf("Connector for alerts from prometheus/alertmanager setup successfully. Will listen for alerts on %s", sokar.PathAlertmanager)
-
-	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
+
+	alertScheduler := alertscheduler.New(alertscheduler.WithLogger(logF.NewNamedLogger("sokar.alertscheduler")))
+	scaleAlertEmitters = append(scaleAlertEmitters, alertScheduler)
 
 	return scaleAlertEmitters, nil
 }
