@@ -126,6 +126,9 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, force bool) scaleRe
 		s.lastScaleAction = time.Now()
 	}
 
+	// TODO: Go in cooldown just incase the scaling was successful
+	// TODO: Split cooldown for up and downscaling
+	// See: https://github.com/ThomasObenaus/sokar/issues/111
 	return s.executeScale(currentCount, newCount, force)
 }
 
