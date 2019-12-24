@@ -29,6 +29,6 @@ func Test_NewDefaultConfig(t *testing.T) {
 	assert.Equal(t, uint(1), config.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, config.CapacityPlanner.ConstantMode.Enable)
 	assert.False(t, config.CapacityPlanner.LinearMode.Enable)
-	assert.NotNil(t, config.CapacityPlanner.ScalingSchedule)
-	require.Empty(t, config.CapacityPlanner.ScalingSchedule)
+	assert.NotNil(t, config.CapacityPlanner.ScaleSchedule)
+	require.Empty(t, config.CapacityPlanner.ScaleSchedule)
 }

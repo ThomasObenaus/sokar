@@ -2,11 +2,9 @@ package config
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/robfig/cron"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 	"github.com/thomasobenaus/sokar/helper"
@@ -95,72 +93,28 @@ func (cfg *Config) fillCapacityPlanner() error {
 	if err != nil {
 		return err
 	}
-	cfg.CapacityPlanner.ScalingSchedule = entries
+	cfg.CapacityPlanner.ScaleSchedule = entries
 
 	return validateCapacityPlanner(cfg.CapacityPlanner)
 }
 
-func parseScalingScheduleEntries(raw string) ([]ScalingScheduleEntry, error) {
-	parts := strings.Split(raw, ";")
-	result := make([]ScalingScheduleEntry, 0)
+func parseScalingScheduleEntries(raw string) ([]ScaleScheduleEntry, error) {
+	parts := strings.Split(raw, "|")
+	result := make([]ScaleScheduleEntry, 0)
 
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
 		if len(part) == 0 {
 			continue
 		}
-		entry, err := parseScalingScheduleEntry(part)
+		entry, err := NewScaleScheduleEntry(part)
 		if err != nil {
-			return make([]ScalingScheduleEntry, 0), err
+			return make([]ScaleScheduleEntry, 0), err
 		}
 		result = append(result, entry)
 	}
 
 	return result, nil
-}
-
-func parseScalingScheduleEntry(raw string) (ScalingScheduleEntry, error) {
-
-	parts := strings.Split(raw, ":")
-	if len(parts) != 3 {
-		return ScalingScheduleEntry{}, fmt.Errorf("ScalingScheduleEntry '%s' is malformed", raw)
-	}
-
-	schedule := strings.TrimSpace(parts[0])
-
-	if len(schedule) == 0 {
-		return ScalingScheduleEntry{}, fmt.Errorf("No schedule specified")
-	}
-
-	err := validateTimeRangeOfScheduleEntry(schedule)
-	if err != nil {
-		return ScalingScheduleEntry{}, err
-	}
-
-	min, err := strconv.ParseUint(parts[1], 10, 64)
-	if err != nil {
-		return ScalingScheduleEntry{}, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", parts[1])
-	}
-	max, err := strconv.ParseUint(parts[2], 10, 64)
-	if err != nil {
-		return ScalingScheduleEntry{}, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", parts[2])
-	}
-
-	result := ScalingScheduleEntry{Schedule: schedule, MinScale: uint(min), MaxScale: uint(max)}
-	return result, nil
-}
-
-func validateTimeRangeOfScheduleEntry(schedule string) error {
-	if !strings.Contains(schedule, "-") {
-		return fmt.Errorf("Schedule has duration of 0")
-	}
-
-	// validate the cron format
-	// here we allow only minute, hour and day of week
-	p := cron.NewParser(cron.Minute | cron.Hour | cron.Dow)
-	_, err := p.Parse(schedule)
-
-	return err
 }
 
 func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
@@ -349,15 +303,14 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
 }
 
-func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScalingScheduleEntry, error) {
-	var scaleSchedule = make([]ScalingScheduleEntry, 0)
+func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScaleScheduleEntry, error) {
+	var scaleSchedule = make([]ScaleScheduleEntry, 0)
 
 	if !vp.IsSet(capScaleSchedule.name) {
 		return nil, nil
 	}
 
 	scaleScheduleAsStr := vp.GetString(capScaleSchedule.name)
-
 	if len(scaleScheduleAsStr) > 0 {
 		return parseScalingScheduleEntries(scaleScheduleAsStr)
 	}
@@ -374,37 +327,38 @@ func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScalingScheduleEntry, err
 	return scaleSchedule, nil
 }
 
-func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]ScalingScheduleEntry, error) {
+func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]ScaleScheduleEntry, error) {
 
 	if scaleScheduleCfg == nil {
 		return nil, fmt.Errorf("Parameter is nil")
 	}
-	var scaleSchedule = make([]ScalingScheduleEntry, 0)
+	var scaleSchedule = make([]ScaleScheduleEntry, 0)
 
-	for _, scheduleEntry := range scaleScheduleCfg {
-		schedule := strings.TrimSpace(scheduleEntry["schedule"])
-		if len(schedule) == 0 {
-			return nil, fmt.Errorf("Schedule is missing for scale schedule entry")
-		}
-
-		if err := validateTimeRangeOfScheduleEntry(schedule); err != nil {
-			return nil, err
-		}
-
-		minStr := scheduleEntry["min"]
-		maxStr := scheduleEntry["max"]
-
-		min, err := strconv.ParseUint(minStr, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", minStr)
-		}
-		max, err := strconv.ParseUint(maxStr, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", maxStr)
-		}
-
-		scaleSchedule = append(scaleSchedule, ScalingScheduleEntry{Schedule: schedule, MinScale: uint(min), MaxScale: uint(max)})
-	}
+	// TODO: parse from cfg file
+	//for _, scheduleEntry := range scaleScheduleCfg {
+	//	schedule := strings.TrimSpace(scheduleEntry["schedule"])
+	//	if len(schedule) == 0 {
+	//		return nil, fmt.Errorf("Schedule is missing for scale schedule entry")
+	//	}
+	//
+	//	if err := validateTimeRangeOfScheduleEntry(schedule); err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	minStr := scheduleEntry["min"]
+	//	maxStr := scheduleEntry["max"]
+	//
+	//	min, err := strconv.ParseUint(minStr, 10, 64)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", minStr)
+	//	}
+	//	max, err := strconv.ParseUint(maxStr, 10, 64)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", maxStr)
+	//	}
+	//
+	//	scaleSchedule = append(scaleSchedule, ScaleScheduleEntry{Days: schedule, MinScale: uint(min), MaxScale: uint(max)})
+	//}
 
 	return scaleSchedule, nil
 }

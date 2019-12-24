@@ -9,19 +9,19 @@ import (
 
 // ScaleScheduleEntry represents one entry of a ScaleSchedule
 type ScaleScheduleEntry struct {
-	Days      []time.Weekday
-	StartTime SimpleTime
-	EndTime   SimpleTime
+	Days      []time.Weekday `json:"days,omitempty"`
+	StartTime SimpleTime     `json:"start_time,omitempty"`
+	EndTime   SimpleTime     `json:"end_time,omitempty"`
 	// MinScale -1 means unbound
-	MinScale int
+	MinScale int `json:"min_scale,omitempty"`
 	// MaxScale -1 means unbound
-	MaxScale int
+	MaxScale int `json:"max_scale,omitempty"`
 }
 
 // SimpleTime represents a pair of hours and minutes
 type SimpleTime struct {
-	Hour   uint
-	Minute uint
+	Hour   uint `json:"hour,omitempty"`
+	Minute uint `json:"minute,omitempty"`
 }
 
 func parseScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
