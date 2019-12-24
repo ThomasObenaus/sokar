@@ -334,31 +334,39 @@ func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]Sc
 	}
 	var scaleSchedule = make([]ScaleScheduleEntry, 0)
 
-	// TODO: parse from cfg file
-	//for _, scheduleEntry := range scaleScheduleCfg {
-	//	schedule := strings.TrimSpace(scheduleEntry["schedule"])
-	//	if len(schedule) == 0 {
-	//		return nil, fmt.Errorf("Schedule is missing for scale schedule entry")
-	//	}
-	//
-	//	if err := validateTimeRangeOfScheduleEntry(schedule); err != nil {
-	//		return nil, err
-	//	}
-	//
-	//	minStr := scheduleEntry["min"]
-	//	maxStr := scheduleEntry["max"]
-	//
-	//	min, err := strconv.ParseUint(minStr, 10, 64)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("Min value of ScalingScheduleEntry is no uint '%s'", minStr)
-	//	}
-	//	max, err := strconv.ParseUint(maxStr, 10, 64)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("Max value of ScalingScheduleEntry is no uint '%s'", maxStr)
-	//	}
-	//
-	//	scaleSchedule = append(scaleSchedule, ScaleScheduleEntry{Days: schedule, MinScale: uint(min), MaxScale: uint(max)})
-	//}
+	for _, scheduleEntry := range scaleScheduleCfg {
+		days := strings.TrimSpace(scheduleEntry["days"])
+		if len(days) == 0 {
+			return nil, fmt.Errorf("Days is missing for scale schedule entry")
+		}
+
+		startTime := strings.TrimSpace(scheduleEntry["start-time"])
+		if len(startTime) == 0 {
+			return nil, fmt.Errorf("StartTime is missing for scale schedule entry")
+		}
+
+		endTime := strings.TrimSpace(scheduleEntry["end-time"])
+		if len(endTime) == 0 {
+			return nil, fmt.Errorf("EndTime is missing for scale schedule entry")
+		}
+
+		min := strings.TrimSpace(scheduleEntry["min"])
+		if len(min) == 0 {
+			return nil, fmt.Errorf("Min is missing for scale schedule entry")
+		}
+
+		max := strings.TrimSpace(scheduleEntry["max"])
+		if len(max) == 0 {
+			return nil, fmt.Errorf("Max is missing for scale schedule entry")
+		}
+
+		spec := fmt.Sprintf("%s %s %s %s-%s", days, startTime, endTime, min, max)
+		sse, err := NewScaleScheduleEntry(spec)
+		if err != nil {
+			return nil, fmt.Errorf("ScaleScheduleSpec malformed (%s): %s", spec, err.Error())
+		}
+		scaleSchedule = append(scaleSchedule, sse)
+	}
 
 	return scaleSchedule, nil
 }

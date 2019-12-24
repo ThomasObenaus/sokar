@@ -254,7 +254,7 @@ func parseDays(daysSpec string) ([]time.Weekday, error) {
 	}
 
 	// dowStart >= dowEnd
-	numDays := int(dowStart) - int(dowEnd)
+	numDays := (6 - int(dowStart)) + int(dowEnd) + 2
 	for i := 0; i < numDays; i++ {
 		dow, _ := dowTokens[fmt.Sprintf("%d", (i+int(dowStart))%7)]
 		days = append(days, dow)
