@@ -1,4 +1,4 @@
-package scaleschedule
+package config
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// Entry represents one entry of a ScaleSchedule
-type Entry struct {
+// ScaleScheduleEntry represents one entry of a ScaleSchedule
+type ScaleScheduleEntry struct {
 	Days      []time.Weekday
 	StartTime SimpleTime
 	EndTime   SimpleTime
@@ -24,15 +24,15 @@ type SimpleTime struct {
 	Minute uint
 }
 
-func parseScaleScheduleEntry(spec string) (Entry, error) {
+func parseScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
 	spec = strings.TrimSpace(spec)
 	if len(spec) == 0 {
-		return Entry{}, fmt.Errorf("ScaleScheduleSpec (%s) is empty", spec)
+		return ScaleScheduleEntry{}, fmt.Errorf("ScaleScheduleSpec (%s) is empty", spec)
 	}
 
 	parts := strings.Split(spec, " ")
 	if len(parts) != 4 {
-		return Entry{}, fmt.Errorf("ScaleScheduleSpec (%s) is malformed", spec)
+		return ScaleScheduleEntry{}, fmt.Errorf("ScaleScheduleSpec (%s) is malformed", spec)
 	}
 	daysSpec := parts[0]
 	startTimeSpec := parts[1]
@@ -41,25 +41,25 @@ func parseScaleScheduleEntry(spec string) (Entry, error) {
 
 	days, err := parseDays(daysSpec)
 	if err != nil {
-		return Entry{}, err
+		return ScaleScheduleEntry{}, err
 	}
 
 	startTime, err := parseTime(startTimeSpec)
 	if err != nil {
-		return Entry{}, err
+		return ScaleScheduleEntry{}, err
 	}
 
 	endTime, err := parseTime(endTimeSpec)
 	if err != nil {
-		return Entry{}, err
+		return ScaleScheduleEntry{}, err
 	}
 
 	min, max, err := parseScaleRange(scaleRangeSpec)
 	if err != nil {
-		return Entry{}, err
+		return ScaleScheduleEntry{}, err
 	}
 
-	return Entry{Days: days, StartTime: startTime, EndTime: endTime, MinScale: min, MaxScale: max}, nil
+	return ScaleScheduleEntry{Days: days, StartTime: startTime, EndTime: endTime, MinScale: min, MaxScale: max}, nil
 }
 
 func parseScaleRange(scaleRangeSpec string) (min int, max int, err error) {
@@ -263,7 +263,7 @@ func parseDays(daysSpec string) ([]time.Weekday, error) {
 	return days, nil
 }
 
-// NewEntry creates a new Entry based on the given specification
+// NewScaleScheduleEntry creates a new Entry based on the given specification
 // The spec of an entry consist of five parts '<days> <start-time> <end-time> <scale-range>'.
 // The parts are separated by '<space>'
 // 1. <days>
@@ -287,6 +287,6 @@ func parseDays(daysSpec string) ([]time.Weekday, error) {
 //   - The wildcard '*' is also allowed and means unbound. For example '*-10' means the min scale is not bound whereas the max is set to 10.
 //   - It is allowed to just specify '*' instead of '*-*' if both, min- and max-scale shall be unbound.
 //     Even though it makes no sense, since no scheduled scaling would be done in this case.
-func NewEntry(spec string) (Entry, error) {
+func NewScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
 	return parseScaleScheduleEntry(spec)
 }

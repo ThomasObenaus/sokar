@@ -1,4 +1,4 @@
-package scaleschedule
+package config
 
 import (
 	"testing"
