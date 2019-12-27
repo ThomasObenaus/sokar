@@ -248,3 +248,51 @@ func Test_ShouldNotReportConflict(t *testing.T) {
 	assert.False(t, hasConflict2)
 	assert.False(t, hasConflict3)
 }
+
+func Test_IsActiveAt(t *testing.T) {
+
+	// GIVEN
+	scaleSchedule := New()
+	day := time.Monday
+	startTime, _ := helper.NewTime(0, 0)
+	endTime, _ := helper.NewTime(10, 0)
+	minScale := uint(1)
+	maxScale := uint(2)
+	err := scaleSchedule.Insert(day, startTime, endTime, minScale, maxScale)
+	require.NoError(t, err)
+
+	// WHEN
+	at, _ := helper.NewTime(10, 0)
+	res1 := scaleSchedule.IsActiveAt(time.Monday, at)
+	at, _ = helper.NewTime(10, 1)
+	res2 := scaleSchedule.IsActiveAt(time.Monday, at)
+
+	//THEN
+	assert.True(t, res1)
+	assert.False(t, res2)
+}
+
+func Test_ScaleRangeAt(t *testing.T) {
+
+	// GIVEN
+	scaleSchedule := New()
+	day := time.Monday
+	startTime, _ := helper.NewTime(0, 0)
+	endTime, _ := helper.NewTime(10, 0)
+	minScale := uint(1)
+	maxScale := uint(2)
+	err := scaleSchedule.Insert(day, startTime, endTime, minScale, maxScale)
+	require.NoError(t, err)
+
+	// WHEN
+	at, _ := helper.NewTime(10, 0)
+	min1, max1, err1 := scaleSchedule.ScaleRangeAt(time.Monday, at)
+	at, _ = helper.NewTime(10, 1)
+	_, _, err2 := scaleSchedule.ScaleRangeAt(time.Monday, at)
+
+	//THEN
+	assert.NoError(t, err1)
+	assert.Error(t, err2)
+	assert.Equal(t, uint(1), min1)
+	assert.Equal(t, uint(2), max1)
+}

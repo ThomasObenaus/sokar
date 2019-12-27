@@ -120,3 +120,22 @@ func (s *Schedule) at(day time.Weekday, at helper.SimpleTime) (entry, error) {
 	}
 	return entry{}, fmt.Errorf("No entry found at %s %s", day, at)
 }
+
+// ScaleRangeAt returns the scale range (min and max scale) at the requested time.
+// If there is no schedule active for that time an error is returned
+func (s *Schedule) ScaleRangeAt(day time.Weekday, at helper.SimpleTime) (min uint, max uint, err error) {
+	entry, err := s.at(day, at)
+	if err != nil {
+		return 0, 0, fmt.Errorf("No scaling scheduled for %s at %s", day, at)
+	}
+	return entry.minScale, entry.maxScale, nil
+}
+
+// IsActiveAt returns true in case there is a schedule active at the requested time, false ohterwise.
+func (s *Schedule) IsActiveAt(day time.Weekday, at helper.SimpleTime) bool {
+	_, err := s.at(day, at)
+	if err != nil {
+		return false
+	}
+	return true
+}
