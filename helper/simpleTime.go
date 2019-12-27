@@ -25,3 +25,7 @@ func NewTime(hour, minute uint) (SimpleTime, error) {
 func (s SimpleTime) Minutes() uint {
 	return s.Hour*60 + s.Minute
 }
+
+func (s SimpleTime) String() string {
+	return fmt.Sprintf("%02d:%02d", s.Hour, s.Minute)
+}
