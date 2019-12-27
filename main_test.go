@@ -5,13 +5,69 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/config"
+	"github.com/thomasobenaus/sokar/helper"
 	mock_logging "github.com/thomasobenaus/sokar/test/logging"
 	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
+
+func Test_SetupScaleScheduleShouldSucceed(t *testing.T) {
+	logger := zerolog.Logger{}
+	_, err := setupSchedule(nil, logger)
+	assert.Error(t, err)
+
+	// GIVEN
+	entries := make([]config.ScaleScheduleEntry, 0)
+
+	// normal entry
+	start := helper.SimpleTime{Hour: 9, Minute: 30}
+	end := helper.SimpleTime{Hour: 10, Minute: 30}
+	entry := config.ScaleScheduleEntry{Days: []time.Weekday{time.Monday, time.Wednesday}, StartTime: start, EndTime: end, MinScale: 1, MaxScale: 30}
+	entries = append(entries, entry)
+
+	// entry with min scale unbound
+	start = helper.SimpleTime{Hour: 11, Minute: 30}
+	end = helper.SimpleTime{Hour: 12, Minute: 30}
+	entry = config.ScaleScheduleEntry{Days: []time.Weekday{time.Monday, time.Wednesday}, StartTime: start, EndTime: end, MinScale: -1, MaxScale: 30}
+	entries = append(entries, entry)
+
+	// entry with max scale unbound
+	start = helper.SimpleTime{Hour: 13, Minute: 30}
+	end = helper.SimpleTime{Hour: 14, Minute: 30}
+	entry = config.ScaleScheduleEntry{Days: []time.Weekday{time.Monday, time.Wednesday}, StartTime: start, EndTime: end, MinScale: 1, MaxScale: -1}
+	entries = append(entries, entry)
+
+	// conflicting entry
+	start = helper.SimpleTime{Hour: 9, Minute: 35}
+	end = helper.SimpleTime{Hour: 14, Minute: 30}
+	entry = config.ScaleScheduleEntry{Days: []time.Weekday{time.Monday, time.Wednesday}, StartTime: start, EndTime: end, MinScale: 1, MaxScale: 10}
+	entries = append(entries, entry)
+
+	cap := config.CapacityPlanner{ScaleSchedule: entries}
+	cfg := config.Config{CapacityPlanner: cap}
+
+	// WHEN
+	schedule, err := setupSchedule(&cfg, logger)
+
+	// THEN
+	assert.NoError(t, err)
+	assert.NotNil(t, schedule)
+	at := helper.SimpleTime{Hour: 9, Minute: 31}
+	minScale, maxScale, err := schedule.ScaleRangeAt(time.Monday, at)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(1), minScale)
+	assert.Equal(t, uint(30), maxScale)
+	minScale, maxScale, err = schedule.ScaleRangeAt(time.Wednesday, at)
+	assert.NoError(t, err)
+	assert.Equal(t, uint(1), minScale)
+	assert.Equal(t, uint(30), maxScale)
+	_, _, err = schedule.ScaleRangeAt(time.Thursday, at)
+	assert.Error(t, err)
+}
 
 func Test_CliAndConfig(t *testing.T) {
 
@@ -95,10 +151,10 @@ func Test_SetupScaleEmitters(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, emitters)
 
-	logF.EXPECT().NewNamedLogger(gomock.Any())
+	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(2)
 	emitters, err = setupScaleAlertEmitters(apiInst, logF)
 	assert.NoError(t, err)
-	assert.Len(t, emitters, 1)
+	assert.Len(t, emitters, 2)
 }
 
 func Test_SetupScalingTarget(t *testing.T) {

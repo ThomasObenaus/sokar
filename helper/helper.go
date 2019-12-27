@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	maxUint = ^uint(0)
-	minUint = 0
-	maxInt  = int(maxUint >> 1)
-	minInt  = -maxInt - 1
+	MaxUint = ^uint(0)
+	MinUint = 0
+	MaxInt  = int(MaxUint >> 1)
+	MinInt  = -MaxInt - 1
 )
 
 // IncUint increments the given value (unsigned) by the given amount (signed)
@@ -22,8 +22,8 @@ func IncUint(value uint, by int) uint {
 
 	// upper thresh of uint reached
 	// avoid overflow
-	if value >= maxUint && by >= 0 {
-		return maxUint
+	if value >= MaxUint && by >= 0 {
+		return MaxUint
 	}
 
 	// positive by --> just add
@@ -47,12 +47,12 @@ func IncUint(value uint, by int) uint {
 func SubUint(a uint, by uint) int {
 	r := float64(a) - float64(by)
 
-	if r >= float64(maxInt) {
-		return maxInt
+	if r >= float64(MaxInt) {
+		return MaxInt
 	}
 
-	if r <= float64(minInt) {
-		return minInt
+	if r <= float64(MinInt) {
+		return MinInt
 	}
 
 	return int(r)

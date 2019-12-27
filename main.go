@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,12 +20,11 @@ import (
 	"github.com/thomasobenaus/sokar/nomadWorker"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
 	"github.com/thomasobenaus/sokar/scaler"
+	"github.com/thomasobenaus/sokar/scaleschedule"
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
-	//"github.com/gorhill/cronexpr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/robfig/cron"
 )
 
 var version string
@@ -35,26 +33,6 @@ var revision string
 var branch string
 
 func main() {
-
-	p := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dow)
-	_ = p
-	// second, minute, hour, day of week
-	expression := "* 0-30 9 *"
-	sched, err := p.Parse(expression)
-	if err != nil {
-		log.Fatalf("Err %s", err.Error())
-	}
-
-	fmt.Printf("Cron     %v\n", sched.Next(time.Now()))
-	fmt.Printf("Cron     %v\n", sched.Next(time.Now().Add(time.Hour*10)))
-
-	//parsed := cronexpr.MustParse(expression)
-	//nextTime := parsed.Next(time.Now())
-	//fmt.Printf("Cronexpr %v\n", nextTime)
-	//
-	//nextTimes := parsed.NextN(time.Now().Add(time.Minute*40), 4)
-	//fmt.Printf("Cronexpr %v\n", nextTimes)
-	//os.Exit(0)
 
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
@@ -76,20 +54,24 @@ func main() {
 	logger.Info().Msg("1. Setup: API")
 	api := api.New(cfg.Port, api.WithLogger(loggingFactory.NewNamedLogger("sokar.api")))
 
-	logger.Info().Msg("2. Setup: ScaleAlertEmitters")
+	logger.Info().Msg("2. Setup: ScaleSchedule")
+	schedule := helper.Must(setupSchedule(cfg, logger)).(*scaleschedule.Schedule)
+	_ = schedule
+
+	logger.Info().Msg("3. Setup: ScaleAlertEmitters")
 	scaleAlertEmitters := helper.Must(setupScaleAlertEmitters(api, loggingFactory)).([]scaleAlertAggregator.ScaleAlertEmitter)
 
-	logger.Info().Msg("3. Setup: ScaleAlertAggregator")
+	logger.Info().Msg("4. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
 
-	logger.Info().Msg("4. Setup: Scaling Target")
+	logger.Info().Msg("5. Setup: Scaling Target")
 	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
 	logger.Info().Msgf("Scaling Target: %s", scalingTarget.String())
 
-	logger.Info().Msg("5. Setup: Scaler")
+	logger.Info().Msg("6. Setup: Scaler")
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory, cfg.DryRunMode)).(*scaler.Scaler)
 
-	logger.Info().Msg("6. Setup: CapacityPlanner")
+	logger.Info().Msg("7. Setup: CapacityPlanner")
 
 	var mode capacityPlanner.Option
 	if cfg.CapacityPlanner.ConstantMode.Enable {
@@ -105,7 +87,7 @@ func main() {
 		mode,
 	)).(*capacityPlanner.CapacityPlanner)
 
-	logger.Info().Msg("7. Setup: Sokar")
+	logger.Info().Msg("8. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
 	// Register metrics handler
@@ -310,4 +292,35 @@ func setupScaler(scalingObjName string, min uint, max uint, watcherInterval time
 	}
 
 	return scaler, nil
+}
+
+// TODO: Add endpoint to provide schedule
+func setupSchedule(cfg *config.Config, logger zerolog.Logger) (*scaleschedule.Schedule, error) {
+
+	if cfg == nil {
+		return nil, fmt.Errorf("Config is nil")
+	}
+
+	scaleSchedule := scaleschedule.New()
+	for _, entry := range cfg.CapacityPlanner.ScaleSchedule {
+		for _, day := range entry.Days {
+			minScale := uint(entry.MinScale)
+			maxScale := uint(entry.MaxScale)
+			if entry.MinScale < 0 {
+				minScale = 0
+			}
+
+			if entry.MaxScale < 0 {
+				maxScale = helper.MaxUint
+			}
+			if err := scaleSchedule.Insert(day, entry.StartTime, entry.EndTime, minScale, maxScale); err != nil {
+				logger.Warn().Msgf("Entry '%s' was not added to scale schedule: %s", entry, err.Error())
+			} else {
+				logger.Debug().Msgf("Entry to scale schedule added: On %s at %s to %s -> [%d,%d]", day, entry.StartTime, entry.EndTime, minScale, maxScale)
+			}
+		}
+
+	}
+
+	return &scaleSchedule, nil
 }

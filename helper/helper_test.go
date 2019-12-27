@@ -30,11 +30,11 @@ func Test_SubUint2(t *testing.T) {
 	r = SubUint2(0, 1)
 	assert.Equal(t, uint(0), r)
 
-	r = SubUint2(0, maxUint)
+	r = SubUint2(0, MaxUint)
 	assert.Equal(t, uint(0), r)
 
-	r = SubUint2(maxUint, 0)
-	assert.Equal(t, maxUint, r)
+	r = SubUint2(MaxUint, 0)
+	assert.Equal(t, MaxUint, r)
 }
 func Test_SubUint(t *testing.T) {
 	r := SubUint(1, 1)
@@ -43,11 +43,11 @@ func Test_SubUint(t *testing.T) {
 	r = SubUint(0, 1)
 	assert.Equal(t, -1, r)
 
-	r = SubUint(0, maxUint)
-	assert.Equal(t, minInt, r)
+	r = SubUint(0, MaxUint)
+	assert.Equal(t, MinInt, r)
 
-	r = SubUint(uint(maxInt), 0)
-	assert.Equal(t, maxInt, r)
+	r = SubUint(uint(MaxInt), 0)
+	assert.Equal(t, MaxInt, r)
 }
 
 func Test_IncUint(t *testing.T) {
@@ -64,14 +64,14 @@ func Test_IncUint(t *testing.T) {
 	r = IncUint(2, 2)
 	assert.Equal(t, uint(4), r)
 
-	r = IncUint(2, maxInt)
-	assert.Equal(t, uint(maxInt)+uint(2), r)
+	r = IncUint(2, MaxInt)
+	assert.Equal(t, uint(MaxInt)+uint(2), r)
 
-	r = IncUint(maxUint, 1)
-	assert.Equal(t, maxUint, r)
+	r = IncUint(MaxUint, 1)
+	assert.Equal(t, MaxUint, r)
 
-	r = IncUint(maxUint, -1)
-	assert.Equal(t, maxUint-1, r)
+	r = IncUint(MaxUint, -1)
+	assert.Equal(t, MaxUint-1, r)
 }
 
 func Test_Hash(t *testing.T) {

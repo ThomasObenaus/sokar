@@ -18,6 +18,12 @@ type ScaleScheduleEntry struct {
 	MinScale int `json:"min_scale,omitempty"`
 	// MaxScale -1 means unbound
 	MaxScale int `json:"max_scale,omitempty"`
+
+	spec string
+}
+
+func (s ScaleScheduleEntry) String() string {
+	return s.spec
 }
 
 func parseScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
@@ -55,7 +61,7 @@ func parseScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
 		return ScaleScheduleEntry{}, err
 	}
 
-	return ScaleScheduleEntry{Days: days, StartTime: startTime, EndTime: endTime, MinScale: min, MaxScale: max}, nil
+	return ScaleScheduleEntry{Days: days, StartTime: startTime, EndTime: endTime, MinScale: min, MaxScale: max, spec: spec}, nil
 }
 
 func parseScaleRange(scaleRangeSpec string) (min int, max int, err error) {
