@@ -2,6 +2,7 @@ package scaleschedule
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/thomasobenaus/sokar/helper"
@@ -12,14 +13,6 @@ type scheduleByDay map[time.Weekday][]*entry
 // Schedule is a structure for creating and handling a scaling schedule
 type Schedule struct {
 	scheduleByDay scheduleByDay
-}
-
-type entry struct {
-	startMinute uint
-	endMinute   uint
-
-	minScale uint
-	maxScale uint
 }
 
 // New creates a new empty Schedule
@@ -55,8 +48,75 @@ func (s *Schedule) Insert(day time.Weekday, start, end helper.SimpleTime, minSca
 	}
 
 	entry := entry{startMinutes, endMinutes, minScale, maxScale}
+	if s.isConflicting(day, entry) {
+		return fmt.Errorf("%s can't be inserted since it conflicts/ overlaps with entries of the schedule", entry)
+	}
+
 	s.scheduleByDay[day] = append(entries, &entry)
 
-	// TODO: Sort and verify
+	// Sort the entries based on their start on that day
+	sort.Sort(byStartMinute(s.scheduleByDay[day]))
 	return nil
+}
+
+// isConflicting returns true in case the given entry overlaps with any entry of the current
+// schedule at the specified day. If no conflict/ overlap is detected false will be returned.
+func (s *Schedule) isConflicting(day time.Weekday, e entry) bool {
+
+	entries, ok := s.scheduleByDay[day]
+	if !ok {
+		return false
+	}
+
+	for _, currentEntry := range entries {
+		// should not happen
+		if currentEntry == nil {
+			continue
+		}
+
+		cStart := currentEntry.startMinute
+		cEnd := currentEntry.endMinute
+
+		if cStart >= e.startMinute && cEnd <= e.endMinute {
+			return true
+		}
+
+		if cStart >= e.startMinute && cEnd >= e.endMinute && cStart <= e.endMinute {
+			return true
+		}
+
+		if cStart <= e.startMinute && cEnd <= e.endMinute && cEnd >= e.startMinute {
+			return true
+		}
+
+		if cStart <= e.startMinute && cEnd >= e.endMinute {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Returns the scale schedule entry for the given day whose time range covers the given time.
+// In case no entry can be found an error is returned.
+func (s *Schedule) at(day time.Weekday, at helper.SimpleTime) (entry, error) {
+
+	entries, ok := s.scheduleByDay[day]
+	if !ok {
+		return entry{}, fmt.Errorf("No entry at this day (%s)", day)
+	}
+
+	relevantMinute := at.Minutes()
+	for _, currentEntry := range entries {
+
+		// should not happen
+		if currentEntry == nil {
+			return entry{}, fmt.Errorf("The given entry is nil")
+		}
+
+		if currentEntry.startMinute <= relevantMinute && currentEntry.endMinute >= relevantMinute {
+			return *currentEntry, nil
+		}
+	}
+	return entry{}, fmt.Errorf("No entry found at %s %s", day, at)
 }

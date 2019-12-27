@@ -21,6 +21,15 @@ func NewTime(hour, minute uint) (SimpleTime, error) {
 	return SimpleTime{hour, minute}, nil
 }
 
+// NewTimeFromMinute creates a new SimpleTime instance based on the given parameters
+func NewTimeFromMinute(minutes uint) (SimpleTime, error) {
+
+	hour := minutes / 60
+	minute := minutes - hour*60
+
+	return NewTime(hour, minute)
+}
+
 // Minutes returns the time in minutes
 func (s SimpleTime) Minutes() uint {
 	return s.Hour*60 + s.Minute
