@@ -5,23 +5,19 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/thomasobenaus/sokar/helper"
 )
 
 // ScaleScheduleEntry represents one entry of a ScaleSchedule
 type ScaleScheduleEntry struct {
-	Days      []time.Weekday `json:"days,omitempty"`
-	StartTime SimpleTime     `json:"start_time,omitempty"`
-	EndTime   SimpleTime     `json:"end_time,omitempty"`
+	Days      []time.Weekday    `json:"days,omitempty"`
+	StartTime helper.SimpleTime `json:"start_time,omitempty"`
+	EndTime   helper.SimpleTime `json:"end_time,omitempty"`
 	// MinScale -1 means unbound
 	MinScale int `json:"min_scale,omitempty"`
 	// MaxScale -1 means unbound
 	MaxScale int `json:"max_scale,omitempty"`
-}
-
-// SimpleTime represents a pair of hours and minutes
-type SimpleTime struct {
-	Hour   uint `json:"hour,omitempty"`
-	Minute uint `json:"minute,omitempty"`
 }
 
 func parseScaleScheduleEntry(spec string) (ScaleScheduleEntry, error) {
@@ -121,11 +117,11 @@ func parseScaleRange(scaleRangeSpec string) (min int, max int, err error) {
 	return int(minVal), int(maxVal), nil
 }
 
-func parseTime(timeSpec string) (SimpleTime, error) {
+func parseTime(timeSpec string) (helper.SimpleTime, error) {
 
 	timeSpec = strings.TrimSpace(timeSpec)
 	if len(timeSpec) == 0 {
-		return SimpleTime{}, fmt.Errorf("Timespec (%s) is empty", timeSpec)
+		return helper.SimpleTime{}, fmt.Errorf("Timespec (%s) is empty", timeSpec)
 	}
 
 	parts := strings.Split(timeSpec, ":")
@@ -137,7 +133,7 @@ func parseTime(timeSpec string) (SimpleTime, error) {
 	case 1:
 		// wildcard --> 0:00
 		if strings.Compare(parts[0], "*") == 0 {
-			return SimpleTime{}, nil
+			return helper.SimpleTime{}, nil
 		}
 		hourStr = strings.TrimSpace(parts[0])
 		break
@@ -147,16 +143,16 @@ func parseTime(timeSpec string) (SimpleTime, error) {
 		minuteStr = strings.TrimSpace(parts[1])
 		break
 	default:
-		return SimpleTime{}, fmt.Errorf("Timespec is malformed (%s)", timeSpec)
+		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed (%s)", timeSpec)
 	}
 
 	// parse hour
 	hour, err := strconv.ParseUint(hourStr, 10, 64)
 	if err != nil {
-		return SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is unknown", hourStr)
+		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is unknown", hourStr)
 	}
 	if hour < 0 || hour > 23 {
-		return SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is not between 0 and 23", hourStr)
+		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is not between 0 and 23", hourStr)
 	}
 
 	// parse minute
@@ -165,14 +161,14 @@ func parseTime(timeSpec string) (SimpleTime, error) {
 	if len(minuteStr) > 0 {
 		minute, err = strconv.ParseUint(minuteStr, 10, 64)
 		if err != nil {
-			return SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is unknown", minuteStr)
+			return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is unknown", minuteStr)
 		}
 		if minute < 0 || minute > 59 {
-			return SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is not between 0 and 59", minuteStr)
+			return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is not between 0 and 59", minuteStr)
 		}
 	}
 
-	return SimpleTime{Hour: uint(hour), Minute: uint(minute)}, nil
+	return helper.NewTime(uint(hour), uint(minute))
 }
 
 func parseDays(daysSpec string) ([]time.Weekday, error) {

@@ -38,8 +38,8 @@ func Test_NewShouldSucceed(t *testing.T) {
 
 	// THEN
 	assert.NoError(t, err)
-	assert.Equal(t, uint(0), st.hour)
-	assert.Equal(t, uint(0), st.minute)
+	assert.Equal(t, uint(0), st.Hour)
+	assert.Equal(t, uint(0), st.Minute)
 
 	// GIVEN
 
@@ -48,8 +48,8 @@ func Test_NewShouldSucceed(t *testing.T) {
 
 	// THEN
 	assert.NoError(t, err)
-	assert.Equal(t, uint(23), st.hour)
-	assert.Equal(t, uint(59), st.minute)
+	assert.Equal(t, uint(23), st.Hour)
+	assert.Equal(t, uint(59), st.Minute)
 }
 
 func Test_NewShouldFailOnInvalidValues(t *testing.T) {

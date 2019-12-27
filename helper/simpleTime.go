@@ -4,8 +4,8 @@ import "fmt"
 
 // SimpleTime just to express hours and minutes
 type SimpleTime struct {
-	hour   uint
-	minute uint
+	Hour   uint `json:"hour,omitempty"`
+	Minute uint `json:"minute,omitempty"`
 }
 
 // NewTime creates a new SimpleTime instance based on the given parameters
@@ -23,5 +23,5 @@ func NewTime(hour, minute uint) (SimpleTime, error) {
 
 // Minutes returns the time in minutes
 func (s SimpleTime) Minutes() uint {
-	return s.hour*60 + s.minute
+	return s.Hour*60 + s.Minute
 }
