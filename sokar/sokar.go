@@ -90,4 +90,5 @@ func (sk *Sokar) Run() {
 	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 
 	go sk.scaleEventProcessor(scaleEventChannel)
+	go sk.scaleEventScheduler(scaleEventChannel)
 }

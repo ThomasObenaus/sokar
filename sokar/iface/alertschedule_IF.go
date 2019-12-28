@@ -1,4 +1,4 @@
-package alertscheduler
+package sokar
 
 import (
 	"time"
