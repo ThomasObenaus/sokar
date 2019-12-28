@@ -82,6 +82,7 @@ func main() {
 		capacityPlanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
 		capacityPlanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
 		capacityPlanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
+		capacityPlanner.Schedule(schedule),
 		mode,
 	)).(*capacityPlanner.CapacityPlanner)
 
