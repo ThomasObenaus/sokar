@@ -61,6 +61,7 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@mockgen -source=metrics/metrics.go -destination test/metrics/mock_metrics.go 
 	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
 	@mockgen -source=runnable.go -destination test/mock_runnable.go
+	@mockgen -source=alertscheduler/alertschedule_IF.go -destination test/alertscheduler/mock_alertschedule.go
 
 gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defined metrics in code.
 	@echo "--> generate Metrics.md"

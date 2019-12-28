@@ -11,3 +11,5 @@ require (
 	github.com/prometheus/procfs v0.0.2
 	github.com/stretchr/testify v1.3.0 // indirect
 )
+
+go 1.13
