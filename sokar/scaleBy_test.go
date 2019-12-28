@@ -48,10 +48,11 @@ func Test_ScaleByPercentage_HTTPHandler_InvalidParam(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -78,10 +79,11 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -114,10 +116,11 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -151,10 +154,11 @@ func Test_ScaleByValue_HTTPHandler_InvalidParam(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -182,10 +186,11 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -218,10 +223,11 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 

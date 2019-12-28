@@ -6,7 +6,7 @@ import (
 	"github.com/thomasobenaus/sokar/helper"
 )
 
-// AlertSchedule is an interface that is used to control when the AlertScheduler should issue an alert
-type AlertSchedule interface {
+// ScaleSchedule is an interface that is used to control when the ScaleScheduler should issue an alert
+type ScaleSchedule interface {
 	IsActiveAt(day time.Weekday, at helper.SimpleTime) bool
 }

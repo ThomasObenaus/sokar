@@ -55,7 +55,6 @@ func main() {
 
 	logger.Info().Msg("2. Setup: ScaleSchedule")
 	schedule := helper.Must(setupSchedule(cfg, logger)).(*scaleschedule.Schedule)
-	_ = schedule
 
 	logger.Info().Msg("3. Setup: ScaleAlertEmitters")
 	scaleAlertEmitters := helper.Must(setupScaleAlertEmitters(api, loggingFactory)).([]scaleAlertAggregator.ScaleAlertEmitter)
@@ -87,7 +86,7 @@ func main() {
 	)).(*capacityPlanner.CapacityPlanner)
 
 	logger.Info().Msg("8. Setup: Sokar")
-	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
+	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, schedule, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
@@ -192,12 +191,12 @@ func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleA
 	return scaleAlertEmitters, nil
 }
 
-func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api *api.API, logger zerolog.Logger, dryRunMode bool) (*sokar.Sokar, error) {
+func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, schedule sokarIF.ScaleSchedule, api *api.API, logger zerolog.Logger, dryRunMode bool) (*sokar.Sokar, error) {
 	cfg := sokar.Config{
 		Logger:     logger,
 		DryRunMode: dryRunMode,
 	}
-	sokarInst, err := cfg.New(scaleEventEmitter, capacityPlanner, scaler, sokar.NewMetrics())
+	sokarInst, err := cfg.New(scaleEventEmitter, capacityPlanner, scaler, schedule, sokar.NewMetrics())
 	if err != nil {
 		return nil, err
 	}

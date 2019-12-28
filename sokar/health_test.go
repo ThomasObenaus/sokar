@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/sokar"
+	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
 )
 
 func Test_Health(t *testing.T) {
@@ -20,10 +20,11 @@ func Test_Health(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 

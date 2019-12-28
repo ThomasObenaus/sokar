@@ -58,7 +58,7 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
 	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/sokar/mock_scaleEventEmitter_IF.go 
-	@mockgen -source=sokar/iface/alertschedule_IF.go -destination test/sokar/mock_alertschedule.go
+	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/sokar/mock_scaleschedule_IF.go
 	@mockgen -source=metrics/metrics.go -destination test/metrics/mock_metrics.go 
 	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
 	@mockgen -source=runnable.go -destination test/mock_runnable.go

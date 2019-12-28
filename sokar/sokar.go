@@ -3,6 +3,7 @@ package sokar
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
@@ -22,6 +23,9 @@ type Sokar struct {
 	// the needed commands to the scaling target (i.e. nomad)
 	scaler sokarIF.Scaler
 
+	// schedule is the currently active scale schedule
+	schedule sokarIF.ScaleSchedule
+
 	// metrics is a collection of metrics used by the sokar
 	metrics Metrics
 
@@ -33,6 +37,10 @@ type Sokar struct {
 	// dryRunMode is a flag that defines if sokar will execute its planned
 	// scale actions or not. If the flag is true, sokar won't do anything beside planning.
 	dryRunMode bool
+
+	// the interval in which sokar emits 'scheduled' ScaleEvents in order to
+	// force the evaluation if the current scale satisfies the given schedule
+	scheduledScaleEventCycle time.Duration
 }
 
 // Config cfg for sokar
@@ -43,7 +51,7 @@ type Config struct {
 }
 
 // New creates a new instance of sokar
-func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, metrics Metrics) (*Sokar, error) {
+func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, schedule sokarIF.ScaleSchedule, metrics Metrics) (*Sokar, error) {
 	if scaler == nil {
 		return nil, fmt.Errorf("Given Scaler is nil")
 	}
@@ -56,14 +64,20 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 		return nil, fmt.Errorf("Given ScaleEventEmitter is nil")
 	}
 
+	if schedule == nil {
+		return nil, fmt.Errorf("Given ScaleSchedule is nil")
+	}
+
 	return &Sokar{
-		scaleEventEmitter: scaleEventEmitter,
-		capacityPlanner:   capacityPlanner,
-		scaler:            scaler,
-		stopChan:          make(chan struct{}, 1),
-		metrics:           metrics,
-		logger:            cfg.Logger,
-		dryRunMode:        cfg.DryRunMode,
+		scaleEventEmitter:        scaleEventEmitter,
+		capacityPlanner:          capacityPlanner,
+		scaler:                   scaler,
+		stopChan:                 make(chan struct{}, 1),
+		metrics:                  metrics,
+		logger:                   cfg.Logger,
+		dryRunMode:               cfg.DryRunMode,
+		schedule:                 schedule,
+		scheduledScaleEventCycle: time.Second * 1,
 	}, nil
 }
 
@@ -90,5 +104,7 @@ func (sk *Sokar) Run() {
 	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 
 	go sk.scaleEventProcessor(scaleEventChannel)
+
+	// start the go routine for emitting scheduled ScaleEvents
 	go sk.scaleEventScheduler(scaleEventChannel)
 }

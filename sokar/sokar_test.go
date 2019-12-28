@@ -21,16 +21,18 @@ func Test_New(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
 	assert.NotNil(t, sokar.scaleEventEmitter)
 	assert.NotNil(t, sokar.capacityPlanner)
 	assert.NotNil(t, sokar.scaler)
+	assert.NotNil(t, sokar.schedule)
 	assert.NotNil(t, sokar.stopChan)
 	assert.NotNil(t, sokar.metrics)
 }
@@ -44,9 +46,10 @@ func Test_HandleScaleEvent(t *testing.T) {
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -77,10 +80,11 @@ func Test_Run(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, _ := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -102,10 +106,11 @@ func Test_TriggerScale_Scale(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -136,10 +141,11 @@ func Test_TriggerScale_Cooldown(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -169,10 +175,11 @@ func Test_TriggerScale_NoCooldown(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -203,10 +210,11 @@ func Test_TriggerScale_ErrGettingJobCount(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
@@ -233,10 +241,11 @@ func Test_TriggerScale_ErrScaleTo(t *testing.T) {
 	evEmitterIF := mock_sokar.NewMockScaleEventEmitter(mockCtrl)
 	scalerIF := mock_sokar.NewMockScaler(mockCtrl)
 	capaPlannerIF := mock_sokar.NewMockCapacityPlanner(mockCtrl)
+	scheduleIF := mock_sokar.NewMockScaleSchedule(mockCtrl)
 	metrics, metricMocks := NewMockedMetrics(mockCtrl)
 
 	cfg := Config{}
-	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, metrics)
+	sokar, err := cfg.New(evEmitterIF, capaPlannerIF, scalerIF, scheduleIF, metrics)
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
