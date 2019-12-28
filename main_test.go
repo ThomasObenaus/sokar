@@ -11,7 +11,6 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/helper"
-	mock_alertscheduler "github.com/thomasobenaus/sokar/test/alertscheduler"
 	mock_logging "github.com/thomasobenaus/sokar/test/logging"
 	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
 )
@@ -142,24 +141,20 @@ func Test_SetupScaleEmitters(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	logF := mock_logging.NewMockLoggerFactory(mockCtrl)
-	schedule := mock_alertscheduler.NewMockAlertSchedule(mockCtrl)
 
-	alertMng, alertSched, err := setupScaleAlertEmitters(nil, nil, nil)
+	emitters, err := setupScaleAlertEmitters(nil, nil)
 	assert.Error(t, err)
-	assert.Nil(t, alertMng)
-	assert.Nil(t, alertSched)
+	assert.Nil(t, emitters)
 
 	apiInst := api.New(12000)
-	alertMng, alertSched, err = setupScaleAlertEmitters(apiInst, nil, nil)
+	emitters, err = setupScaleAlertEmitters(apiInst, nil)
 	assert.Error(t, err)
-	assert.Nil(t, alertMng)
-	assert.Nil(t, alertSched)
+	assert.Nil(t, emitters)
 
-	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(2)
-	alertMng, alertSched, err = setupScaleAlertEmitters(apiInst, schedule, logF)
+	logF.EXPECT().NewNamedLogger(gomock.Any())
+	emitters, err = setupScaleAlertEmitters(apiInst, logF)
 	assert.NoError(t, err)
-	assert.NotNil(t, alertMng)
-	assert.NotNil(t, alertSched)
+	assert.Len(t, emitters, 1)
 }
 
 func Test_SetupScalingTarget(t *testing.T) {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
-	"github.com/thomasobenaus/sokar/alertscheduler"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/awsEc2"
 	"github.com/thomasobenaus/sokar/capacityPlanner"
@@ -56,15 +55,10 @@ func main() {
 
 	logger.Info().Msg("2. Setup: ScaleSchedule")
 	schedule := helper.Must(setupSchedule(cfg, logger)).(*scaleschedule.Schedule)
+	_ = schedule
 
 	logger.Info().Msg("3. Setup: ScaleAlertEmitters")
-	alertManager, alertScheduler, err := setupScaleAlertEmitters(api, schedule, loggingFactory)
-	if err != nil {
-		panic(err)
-	}
-	scaleAlertEmitters := make([]scaleAlertAggregator.ScaleAlertEmitter, 0, 2)
-	scaleAlertEmitters = append(scaleAlertEmitters, alertManager)
-	scaleAlertEmitters = append(scaleAlertEmitters, alertScheduler)
+	scaleAlertEmitters := helper.Must(setupScaleAlertEmitters(api, loggingFactory)).([]scaleAlertAggregator.ScaleAlertEmitter)
 
 	logger.Info().Msg("4. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
@@ -116,7 +110,6 @@ func main() {
 	orderedRunnables = append(orderedRunnables, sokarInst)
 	orderedRunnables = append(orderedRunnables, scaler)
 	orderedRunnables = append(orderedRunnables, scaAlertAggr)
-	orderedRunnables = append(orderedRunnables, alertScheduler)
 	orderedRunnables = append(orderedRunnables, api)
 
 	// Install signal handler for shutdown
@@ -179,13 +172,13 @@ func setupScaleAlertAggregator(scaleAlertEmitters []scaleAlertAggregator.ScaleAl
 	return scaAlertAggr
 }
 
-func setupScaleAlertEmitters(api *api.API, schedule alertscheduler.AlertSchedule, logF logging.LoggerFactory) (*alertmanager.Connector, *alertscheduler.AlertScheduler, error) {
+func setupScaleAlertEmitters(api *api.API, logF logging.LoggerFactory) ([]scaleAlertAggregator.ScaleAlertEmitter, error) {
 	if api == nil {
-		return nil, nil, fmt.Errorf("API is nil")
+		return nil, fmt.Errorf("API is nil")
 	}
 
 	if logF == nil {
-		return nil, nil, fmt.Errorf("LoggingFactory is nil")
+		return nil, fmt.Errorf("LoggingFactory is nil")
 	}
 	var scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter
 
@@ -196,10 +189,7 @@ func setupScaleAlertEmitters(api *api.API, schedule alertscheduler.AlertSchedule
 	logger.Info().Msgf("Connector for alerts from prometheus/alertmanager setup successfully. Will listen for alerts on %s", sokar.PathAlertmanager)
 	scaleAlertEmitters = append(scaleAlertEmitters, amConnector)
 
-	alertScheduler := alertscheduler.New(schedule, alertscheduler.WithLogger(logF.NewNamedLogger("sokar.alertscheduler")))
-	scaleAlertEmitters = append(scaleAlertEmitters, alertScheduler)
-
-	return amConnector, alertScheduler, nil
+	return scaleAlertEmitters, nil
 }
 
 func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sokarIF.CapacityPlanner, scaler sokarIF.Scaler, api *api.API, logger zerolog.Logger, dryRunMode bool) (*sokar.Sokar, error) {
