@@ -77,7 +77,7 @@ func (cfg *Config) New(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlan
 		logger:                   cfg.Logger,
 		dryRunMode:               cfg.DryRunMode,
 		schedule:                 schedule,
-		scheduledScaleEventCycle: time.Second * 1,
+		scheduledScaleEventCycle: time.Second * 30,
 	}, nil
 }
 
