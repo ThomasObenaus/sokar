@@ -56,7 +56,7 @@ func Test_HandleScaleEvent(t *testing.T) {
 	scaleTo := uint(1)
 	currentScale := uint(0)
 	scaleFactor := float32(1)
-	event := sokarIF.ScaleEvent{ScaleFactor: scaleFactor}
+	event := sokarIF.NewScaleEvent(scaleFactor)
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),

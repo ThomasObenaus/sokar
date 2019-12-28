@@ -23,8 +23,7 @@ func (sk *Sokar) scaleEventScheduler(scaleEventChannel chan sokarIF.ScaleEvent) 
 		case <-evaluationTicker.C:
 			if sk.shouldFireScaleEvent(time.Now()) {
 				sk.logger.Info().Msg("Trigger a scheduled scale event. Forces to evaluate if the current scale meets the schedule.")
-				event := sokarIF.ScaleEvent{ScaleFactor: 0}
-				scaleEventChannel <- event
+				scaleEventChannel <- sokarIF.NewScheduledScaleEvent()
 			} else {
 				sk.logger.Debug().Msg("No need to fire a scheduled scale event. Currently there is no active schedule.")
 			}

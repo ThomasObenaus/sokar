@@ -14,7 +14,7 @@ func (sc *ScaleAlertAggregator) Subscribe(subscriber chan sokar.ScaleEvent) {
 func (sc *ScaleAlertAggregator) emitScaleEvent(scaleFactor float32) {
 
 	for _, subscriber := range sc.subscriptions {
-		subscriber <- sokar.ScaleEvent{ScaleFactor: scaleFactor}
+		subscriber <- sokar.NewScaleEvent(scaleFactor)
 	}
 }
 
