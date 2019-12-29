@@ -34,6 +34,22 @@ func (m *MockScaleSchedule) EXPECT() *MockScaleScheduleMockRecorder {
 	return m.recorder
 }
 
+// ScaleRangeAt mocks base method
+func (m *MockScaleSchedule) ScaleRangeAt(day time.Weekday, at helper.SimpleTime) (uint, uint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScaleRangeAt", day, at)
+	ret0, _ := ret[0].(uint)
+	ret1, _ := ret[1].(uint)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ScaleRangeAt indicates an expected call of ScaleRangeAt
+func (mr *MockScaleScheduleMockRecorder) ScaleRangeAt(day, at interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScaleRangeAt", reflect.TypeOf((*MockScaleSchedule)(nil).ScaleRangeAt), day, at)
+}
+
 // IsActiveAt mocks base method
 func (m *MockScaleSchedule) IsActiveAt(day time.Weekday, at helper.SimpleTime) bool {
 	m.ctrl.T.Helper()

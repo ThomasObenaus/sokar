@@ -8,6 +8,7 @@ import (
 
 // Metrics represents the collection of metrics internally set by sokar.
 type Metrics struct {
+	scheduledScaleBounds              m.GaugeVec
 	scaleEventsTotal                  m.Counter
 	failedScalingTotal                m.Counter
 	skippedScalingDuringCooldownTotal m.Counter
@@ -18,6 +19,14 @@ type Metrics struct {
 
 // NewMetrics returns the metrics collection needed for the SAA.
 func NewMetrics() Metrics {
+
+	bound := []string{"bound"}
+	scheduledScaleBounds := m.NewWrappedGaugeVec(prometheus.GaugeOpts{
+		Namespace: "sokar",
+		Subsystem: "cap",
+		Name:      "scheduled_scale_bounds",
+		Help:      "Shows the min and max scale value of the currently active scale schedule. In case no schedule is active both values are 0.",
+	}, bound)
 
 	scaleEventsTotal := promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "sokar",
@@ -60,6 +69,7 @@ func NewMetrics() Metrics {
 	})
 
 	return Metrics{
+		scheduledScaleBounds:              scheduledScaleBounds,
 		scaleEventsTotal:                  scaleEventsTotal,
 		failedScalingTotal:                failedScalingTotal,
 		skippedScalingDuringCooldownTotal: skippedScalingDuringCooldownTotal,

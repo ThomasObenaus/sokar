@@ -43,5 +43,14 @@ func (sk *Sokar) shouldFireScaleEvent(now time.Time) bool {
 		return false
 	}
 
+	// Just for metrics
+	minScale, maxScale, err := sk.schedule.ScaleRangeAt(day, at)
+	if err != nil {
+		minScale = 0
+		maxScale = 0
+	}
+	sk.metrics.scheduledScaleBounds.WithLabelValues("min").Set(float64(minScale))
+	sk.metrics.scheduledScaleBounds.WithLabelValues("max").Set(float64(maxScale))
+
 	return sk.schedule.IsActiveAt(day, at)
 }

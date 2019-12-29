@@ -64,12 +64,7 @@ func Test_ShouldAdjustScale(t *testing.T) {
 
 	// WHEN
 	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
-	scheduledScaleBoundsMin := mock_metrics.NewMockGauge(mockCtrl)
-	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
-	scheduledScaleBoundsMax := mock_metrics.NewMockGauge(mockCtrl)
-	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
+
 	scaleAdjustmentsPlanned := mock_metrics.NewMockGauge(mockCtrl)
 	scaleAdjustmentsPlanned.EXPECT().Set(float64(0))
 	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
@@ -89,10 +84,6 @@ func Test_ShouldAdjustScale(t *testing.T) {
 
 	// WHEN
 	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
-	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
-	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
 	scaleAdjustmentsPlanned.EXPECT().Set(float64(11))
 	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
 	scaleAdjustmentsAdjusted.EXPECT().Set(float64(10))
@@ -119,12 +110,6 @@ func Test_ShouldNotAdjustScale(t *testing.T) {
 
 	// WHEN
 	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, err1)
-	scheduledScaleBoundsMin := mock_metrics.NewMockGauge(mockCtrl)
-	scheduledScaleBoundsMin.EXPECT().Set(float64(0))
-	scheduledScaleBoundsMax := mock_metrics.NewMockGauge(mockCtrl)
-	scheduledScaleBoundsMax.EXPECT().Set(float64(0))
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
 
 	replannedScale1 := capa.adjustPlanAccordingToSchedule(plannedScale, time.Now())
 
@@ -135,10 +120,6 @@ func Test_ShouldNotAdjustScale(t *testing.T) {
 
 	// WHEN
 	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
-	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
-	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
-	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
 	scaleAdjustmentsPlanned := mock_metrics.NewMockGauge(mockCtrl)
 	scaleAdjustmentsPlanned.EXPECT().Set(float64(5))
 	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
