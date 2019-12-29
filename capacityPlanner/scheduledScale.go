@@ -31,6 +31,8 @@ func (cp *CapacityPlanner) adjustPlanAccordingToSchedule(currentlyPlannedScale u
 	minScale, maxScale, err := cp.schedule.ScaleRangeAt(day, at)
 	if err != nil {
 		cp.logger.Debug().Msgf("No further adjustment of planned scale needed. No scaling schedule entry found at current time [%s %s].", day, at)
+		cp.metrics.scaleAdjustments.WithLabelValues(labelPlannedScale).Set(float64(currentlyPlannedScale))
+		cp.metrics.scaleAdjustments.WithLabelValues(labelAdjustedScale).Set(float64(plannedScale))
 		return plannedScale
 	}
 
