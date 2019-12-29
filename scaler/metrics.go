@@ -55,7 +55,7 @@ func NewMetrics() Metrics {
 		Namespace: "sokar",
 		Subsystem: "sca",
 		Name:      "planned_but_skipped_scaling_open",
-		Help:      "Is a helper metric which is only used in dry run mode. It is set to 1 in case there was a automatic scaling planned but not exectued due to dry-run mode. It is reset to 0 if then a scaling was applied.",
+		Help:      "Is a helper metric which is only used in dry run mode. It is set to 1 in case there was a automatic scaling planned but not executed due to dry-run mode. It is reset to 0 if then a scaling was applied.",
 	}, direction)
 
 	return Metrics{

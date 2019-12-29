@@ -35,6 +35,8 @@ type CapacityPlanner struct {
 
 	// the currently active schedule
 	schedule ScaleSchedule
+
+	metrics Metrics
 }
 
 // ConstantMode in this mode the CapacityPlanner uses a constant offset to calculate the new planned scale.
@@ -98,7 +100,7 @@ func Schedule(schedule ScaleSchedule) Option {
 
 // New creates a new instance of a CapacityPlanner using the given
 // Scaler to send scaling events to.
-func New(options ...Option) (*CapacityPlanner, error) {
+func New(metrics Metrics, options ...Option) (*CapacityPlanner, error) {
 
 	capacityPlanner := CapacityPlanner{
 		downScaleCooldownPeriod: time.Second * 80,
@@ -106,6 +108,7 @@ func New(options ...Option) (*CapacityPlanner, error) {
 		constantMode:            &ConstantMode{Offset: 1},
 		linearMode:              nil,
 		schedule:                nil,
+		metrics:                 metrics,
 	}
 
 	// apply the options

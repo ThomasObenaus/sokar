@@ -3,13 +3,21 @@ package capacityPlanner
 import (
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_PlanLinear(t *testing.T) {
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
 
-	cap, err := New(UseLinearMode(0.5))
+	// WHEN
+	cap, err := New(metrics, UseLinearMode(0.5))
+
+	// THEN
 	require.NotNil(t, cap)
 	require.NoError(t, err)
 

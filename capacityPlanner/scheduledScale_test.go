@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	mock_capacityPlanner "github.com/thomasobenaus/sokar/test/capacityPlanner"
+	//mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 )
 
 func Test_FitIntoScaleRangeShouldNotAdjustIfItIsInBounds(t *testing.T) {
@@ -54,7 +55,9 @@ func Test_ShouldAdjustScale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
-	capa, err := New(Schedule(scheduleIF))
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	capa, err := New(metrics, Schedule(scheduleIF))
 	minScale := uint(1)
 	maxScale := uint(10)
 	plannedScale1 := uint(0)
@@ -79,7 +82,8 @@ func Test_ShouldNotAdjustScale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
-	capa, err := New(Schedule(scheduleIF))
+	metrics, _ := NewMockedMetrics(mockCtrl)
+	capa, err := New(metrics, Schedule(scheduleIF))
 	plannedScale1 := uint(5)
 	minScale1 := uint(1)
 	maxScale1 := uint(10)

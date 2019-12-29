@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,38 +34,65 @@ func TestValidate(t *testing.T) {
 }
 
 func TestCooldowns(t *testing.T) {
-	capa, err := New(WithDownScaleCooldown(time.Second * 123))
+
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	// WHEN
+	capa, err := New(metrics, WithDownScaleCooldown(time.Second*123))
+
+	// THEN
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 	assert.Equal(t, time.Second*123, capa.downScaleCooldownPeriod)
 
-	capa, err = New(WithUpScaleCooldown(time.Second * 234))
+	// WHEN
+	capa, err = New(metrics, WithUpScaleCooldown(time.Second*234))
+	// THEN
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 	assert.Equal(t, time.Second*234, capa.upScaleCooldownPeriod)
 }
 
 func Test_New(t *testing.T) {
-	capa, err := New()
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	// WHEN
+	capa, err := New(metrics)
+	// THEN
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 
-	capa, err = New(UseLinearMode(0))
+	// WHEN
+	capa, err = New(metrics, UseLinearMode(0))
+	// THEN
 	assert.Error(t, err)
 	assert.Nil(t, capa)
 
-	capa, err = New(UseConstantMode(0))
+	// WHEN
+	capa, err = New(metrics, UseConstantMode(0))
+	// THEN
 	assert.Error(t, err)
 	assert.Nil(t, capa)
 }
 
 func Test_Plan_ModeLinear(t *testing.T) {
-	capa, err := New(UseLinearMode(0.5))
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+	// WHEN
+	capa, err := New(metrics, UseLinearMode(0.5))
+
+	// THEN
 	require.NoError(t, err)
 	require.NotNil(t, capa)
-
 	assert.Equal(t, uint(10), capa.Plan(0, 10))
-
 	assert.Equal(t, uint(1), capa.Plan(1, 0))
 	assert.Equal(t, uint(15), capa.Plan(1, 10))
 	assert.Equal(t, uint(2), capa.Plan(0.5, 1))
@@ -77,7 +105,14 @@ func Test_Plan_ModeLinear(t *testing.T) {
 }
 
 func Test_Plan_ModeConstant(t *testing.T) {
-	capa, err := New()
+	// GIVEN
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	// WHEN
+	capa, err := New(metrics)
+	// THEN
 	require.NotNil(t, capa)
 	require.NoError(t, err)
 	assert.Equal(t, uint(0), capa.Plan(-1, 0))
@@ -87,7 +122,7 @@ func Test_Plan_ModeConstant(t *testing.T) {
 	assert.Equal(t, uint(1), capa.Plan(1, 0))
 	assert.Equal(t, uint(2), capa.Plan(1, 1))
 
-	capa, err = New(UseConstantMode(2))
+	capa, err = New(metrics, UseConstantMode(2))
 	require.NotNil(t, capa)
 	require.NoError(t, err)
 	assert.Equal(t, uint(0), capa.Plan(-1, 1))
@@ -97,7 +132,11 @@ func Test_Plan_ModeConstant(t *testing.T) {
 }
 
 func Test_IsCoolingDown(t *testing.T) {
-	capa, err := New(WithDownScaleCooldown(time.Second*20), WithUpScaleCooldown(time.Second*10))
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	metrics, _ := NewMockedMetrics(mockCtrl)
+
+	capa, err := New(metrics, WithDownScaleCooldown(time.Second*20), WithUpScaleCooldown(time.Second*10))
 	require.NoError(t, err)
 	require.NotNil(t, capa)
 
