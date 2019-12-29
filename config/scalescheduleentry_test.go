@@ -380,6 +380,36 @@ func Test_ShouldNotParseRangeDaysSpec(t *testing.T) {
 	//THEN
 	assert.Error(t, err)
 	assert.Empty(t, days)
+
+	// GIVEN
+	daysSpec = "FRI-*"
+
+	// WHEN
+	days, err = parseDays(daysSpec)
+
+	//THEN
+	assert.Error(t, err)
+	assert.Empty(t, days)
+
+	// GIVEN
+	daysSpec = "*-*"
+
+	// WHEN
+	days, err = parseDays(daysSpec)
+
+	//THEN
+	assert.Error(t, err)
+	assert.Empty(t, days)
+
+	// GIVEN
+	daysSpec = "*-FRI"
+
+	// WHEN
+	days, err = parseDays(daysSpec)
+
+	//THEN
+	assert.Error(t, err)
+	assert.Empty(t, days)
 }
 
 func Test_ShouldParseRangeDaysSpec(t *testing.T) {

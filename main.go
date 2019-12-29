@@ -310,7 +310,7 @@ func setupSchedule(cfg *config.Config, logger zerolog.Logger) (*scaleschedule.Sc
 				maxScale = helper.MaxUint
 			}
 			if err := scaleSchedule.Insert(day, entry.StartTime, entry.EndTime, minScale, maxScale); err != nil {
-				logger.Warn().Msgf("Entry '%s' was not added to scale schedule: %s", entry, err.Error())
+				logger.Warn().Msgf("Entry '%s' was not added to scale schedule for %s: %s", entry, day, err.Error())
 			} else {
 				logger.Debug().Msgf("Entry to scale schedule added: On %s at %s to %s -> [%d,%d]", day, entry.StartTime, entry.EndTime, minScale, maxScale)
 			}
