@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	mock_capacityPlanner "github.com/thomasobenaus/sokar/test/capacityPlanner"
-	//mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 )
 
 func Test_FitIntoScaleRangeShouldNotAdjustIfItIsInBounds(t *testing.T) {
@@ -55,24 +55,52 @@ func Test_ShouldAdjustScale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	capa, err := New(metrics, Schedule(scheduleIF))
 	minScale := uint(1)
 	maxScale := uint(10)
 	plannedScale1 := uint(0)
-	plannedScale2 := uint(11)
 
 	// WHEN
 	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
+	scheduledScaleBoundsMin := mock_metrics.NewMockGauge(mockCtrl)
+	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
+	scheduledScaleBoundsMax := mock_metrics.NewMockGauge(mockCtrl)
+	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
+	scaleAdjustmentsPlanned := mock_metrics.NewMockGauge(mockCtrl)
+	scaleAdjustmentsPlanned.EXPECT().Set(float64(0))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
+	scaleAdjustmentsAdjusted := mock_metrics.NewMockGauge(mockCtrl)
+	scaleAdjustmentsAdjusted.EXPECT().Set(float64(1))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("adjusted").Return(scaleAdjustmentsAdjusted)
+
 	replannedScale1 := capa.adjustPlanAccordingToSchedule(plannedScale1, time.Now())
-	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
-	replannedScale2 := capa.adjustPlanAccordingToSchedule(plannedScale2, time.Now())
 
 	// THEN
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 	assert.Equal(t, uint(1), replannedScale1)
+
+	// GIVEN
+	plannedScale2 := uint(11)
+
+	// WHEN
+	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
+	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
+	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
+	scaleAdjustmentsPlanned.EXPECT().Set(float64(11))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
+	scaleAdjustmentsAdjusted.EXPECT().Set(float64(10))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("adjusted").Return(scaleAdjustmentsAdjusted)
+
+	replannedScale2 := capa.adjustPlanAccordingToSchedule(plannedScale2, time.Now())
+
+	// THEN
 	assert.Equal(t, uint(10), replannedScale2)
 }
 
@@ -82,21 +110,44 @@ func Test_ShouldNotAdjustScale(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
-	metrics, _ := NewMockedMetrics(mockCtrl)
+	metrics, mocks := NewMockedMetrics(mockCtrl)
 	capa, err := New(metrics, Schedule(scheduleIF))
-	plannedScale1 := uint(5)
-	minScale1 := uint(1)
-	maxScale1 := uint(10)
+	plannedScale := uint(5)
+	minScale := uint(1)
+	maxScale := uint(10)
 	err1 := fmt.Errorf("some err")
 
 	// WHEN
-	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale1, maxScale1, err1)
-	replannedScale1 := capa.adjustPlanAccordingToSchedule(plannedScale1, time.Now())
-	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale1, maxScale1, nil)
-	replannedScale2 := capa.adjustPlanAccordingToSchedule(plannedScale1, time.Now())
+	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, err1)
+	scheduledScaleBoundsMin := mock_metrics.NewMockGauge(mockCtrl)
+	scheduledScaleBoundsMin.EXPECT().Set(float64(0))
+	scheduledScaleBoundsMax := mock_metrics.NewMockGauge(mockCtrl)
+	scheduledScaleBoundsMax.EXPECT().Set(float64(0))
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
+
+	replannedScale1 := capa.adjustPlanAccordingToSchedule(plannedScale, time.Now())
+
 	// THEN
 	assert.NoError(t, err)
 	assert.NotNil(t, capa)
 	assert.Equal(t, uint(5), replannedScale1)
+
+	// WHEN
+	scheduleIF.EXPECT().ScaleRangeAt(gomock.Any(), gomock.Any()).Return(minScale, maxScale, nil)
+	scheduledScaleBoundsMin.EXPECT().Set(float64(1))
+	scheduledScaleBoundsMax.EXPECT().Set(float64(10))
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("min").Return(scheduledScaleBoundsMin)
+	mocks.scheduledScaleBounds.EXPECT().WithLabelValues("max").Return(scheduledScaleBoundsMax)
+	scaleAdjustmentsPlanned := mock_metrics.NewMockGauge(mockCtrl)
+	scaleAdjustmentsPlanned.EXPECT().Set(float64(5))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("planned").Return(scaleAdjustmentsPlanned)
+	scaleAdjustmentsAdjusted := mock_metrics.NewMockGauge(mockCtrl)
+	scaleAdjustmentsAdjusted.EXPECT().Set(float64(5))
+	mocks.scaleAdjustments.EXPECT().WithLabelValues("adjusted").Return(scaleAdjustmentsAdjusted)
+
+	replannedScale2 := capa.adjustPlanAccordingToSchedule(plannedScale, time.Now())
+
+	// THEN
 	assert.Equal(t, uint(5), replannedScale2)
 }

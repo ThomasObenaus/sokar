@@ -7,6 +7,10 @@ import (
 )
 
 func (cp *CapacityPlanner) adjustPlanAccordingToSchedule(currentlyPlannedScale uint, now time.Time) uint {
+	const labelMinBound string = "min"
+	const labelMaxBound string = "max"
+	const labelPlannedScale string = "planned"
+	const labelAdjustedScale string = "adjusted"
 
 	plannedScale := currentlyPlannedScale
 
@@ -29,6 +33,9 @@ func (cp *CapacityPlanner) adjustPlanAccordingToSchedule(currentlyPlannedScale u
 	minScale, maxScale, err := cp.schedule.ScaleRangeAt(day, at)
 	if err != nil {
 		cp.logger.Debug().Msgf("No further adjustment of planned scale needed. No scaling schedule entry found at current time [%s %s].", day, at)
+		// reset bounds metric in case no schedule is active
+		cp.metrics.scheduledScaleBounds.WithLabelValues(labelMinBound).Set(0)
+		cp.metrics.scheduledScaleBounds.WithLabelValues(labelMaxBound).Set(0)
 		return plannedScale
 	}
 
@@ -39,6 +46,10 @@ func (cp *CapacityPlanner) adjustPlanAccordingToSchedule(currentlyPlannedScale u
 		cp.logger.Debug().Msgf("No further adjustment of planned scale needed. The current scale of %d fits into the range of [%d-%d] of the currently active schedule [%s %s].", plannedScale, minScale, maxScale, day, at)
 	}
 
+	cp.metrics.scheduledScaleBounds.WithLabelValues(labelMinBound).Set(float64(minScale))
+	cp.metrics.scheduledScaleBounds.WithLabelValues(labelMaxBound).Set(float64(maxScale))
+	cp.metrics.scaleAdjustments.WithLabelValues(labelPlannedScale).Set(float64(currentlyPlannedScale))
+	cp.metrics.scaleAdjustments.WithLabelValues(labelAdjustedScale).Set(float64(plannedScale))
 	return plannedScale
 }
 
