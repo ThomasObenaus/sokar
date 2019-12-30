@@ -1,4 +1,4 @@
-package capacityPlanner
+package capacityplanner
 
 import (
 	"time"

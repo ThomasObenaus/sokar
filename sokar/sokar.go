@@ -16,7 +16,7 @@ type Sokar struct {
 	// scaleEventEmitter is the component that provides the scale alerts to sokar
 	scaleEventEmitter sokarIF.ScaleEventEmitter
 
-	// capacityPlanner is the component that plans the amount of instances to be scaled
+	// capacityplanner is the component that plans the amount of instances to be scaled
 	capacityPlanner sokarIF.CapacityPlanner
 
 	// scaler is the component that does the actual scaling by sending
