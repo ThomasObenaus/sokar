@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.0.12 (2019-??-??)
+## v0.0.12 (2019-12-31)
 
 - Capacity Planning: With [#110](https://github.com/ThomasObenaus/sokar/issues/110) the new feature **Scheduled Scaling** was added to sokar. For more details read [ScheduledScaling.md](doc/ScheduledScaling.md).
 
