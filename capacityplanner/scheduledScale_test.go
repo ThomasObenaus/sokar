@@ -1,4 +1,4 @@
-package capacityPlanner
+package capacityplanner
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	mock_capacityPlanner "github.com/thomasobenaus/sokar/test/capacityPlanner"
+	mock_capacityplanner "github.com/thomasobenaus/sokar/test/capacityplanner"
 	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 )
 
@@ -54,7 +54,7 @@ func Test_ShouldAdjustScale(t *testing.T) {
 	// GIVEN
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
+	scheduleIF := mock_capacityplanner.NewMockScaleSchedule(mockCtrl)
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 
 	capa, err := New(metrics, Schedule(scheduleIF))
@@ -100,7 +100,7 @@ func Test_ShouldNotAdjustScale(t *testing.T) {
 	// GIVEN
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	scheduleIF := mock_capacityPlanner.NewMockScaleSchedule(mockCtrl)
+	scheduleIF := mock_capacityplanner.NewMockScaleSchedule(mockCtrl)
 	metrics, mocks := NewMockedMetrics(mockCtrl)
 	capa, err := New(metrics, Schedule(scheduleIF))
 	plannedScale := uint(5)

@@ -11,7 +11,7 @@ import (
 	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/awsEc2"
-	"github.com/thomasobenaus/sokar/capacityPlanner"
+	"github.com/thomasobenaus/sokar/capacityplanner"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/helper"
 	"github.com/thomasobenaus/sokar/logging"
@@ -71,21 +71,21 @@ func main() {
 
 	logger.Info().Msg("7. Setup: CapacityPlanner")
 
-	var mode capacityPlanner.Option
+	var mode capacityplanner.Option
 	if cfg.CapacityPlanner.ConstantMode.Enable {
-		mode = capacityPlanner.UseConstantMode(cfg.CapacityPlanner.ConstantMode.Offset)
+		mode = capacityplanner.UseConstantMode(cfg.CapacityPlanner.ConstantMode.Offset)
 	} else if cfg.CapacityPlanner.LinearMode.Enable {
-		mode = capacityPlanner.UseLinearMode(float32(cfg.CapacityPlanner.LinearMode.ScaleFactorWeight))
+		mode = capacityplanner.UseLinearMode(float32(cfg.CapacityPlanner.LinearMode.ScaleFactorWeight))
 	}
 
-	capaPlanner := helper.Must(capacityPlanner.New(
-		capacityPlanner.NewMetrics(),
-		capacityPlanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
-		capacityPlanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
-		capacityPlanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
-		capacityPlanner.Schedule(schedule),
+	capaPlanner := helper.Must(capacityplanner.New(
+		capacityplanner.NewMetrics(),
+		capacityplanner.WithLogger(loggingFactory.NewNamedLogger("sokar.capaPlanner")),
+		capacityplanner.WithDownScaleCooldown(cfg.CapacityPlanner.DownScaleCooldownPeriod),
+		capacityplanner.WithUpScaleCooldown(cfg.CapacityPlanner.UpScaleCooldownPeriod),
+		capacityplanner.Schedule(schedule),
 		mode,
-	)).(*capacityPlanner.CapacityPlanner)
+	)).(*capacityplanner.CapacityPlanner)
 
 	logger.Info().Msg("8. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, schedule, api, logger, cfg.DryRunMode)).(*sokar.Sokar)

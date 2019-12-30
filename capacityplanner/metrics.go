@@ -1,4 +1,4 @@
-package capacityPlanner
+package capacityplanner
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
