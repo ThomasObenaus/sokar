@@ -1,5 +1,5 @@
 job "fail-service" {
-  datacenters = ["public-services"]
+  datacenters = ["testing"]
 
   type = "service"
 

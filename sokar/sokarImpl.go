@@ -33,7 +33,7 @@ func scaleValueToScaleDir(scaleValue float32) (scaleDown bool) {
 func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {
 	sk.logger.Info().Msgf("Scale Event received: %v", scaleEvent)
 
-	scaleFactor := scaleEvent.ScaleFactor
+	scaleFactor := scaleEvent.ScaleFactor()
 
 	sk.metrics.scaleEventsTotal.Inc()
 	sk.metrics.scaleFactor.Set(float64(scaleFactor))

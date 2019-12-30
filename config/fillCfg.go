@@ -89,7 +89,32 @@ func (cfg *Config) fillCapacityPlanner() error {
 		cfg.CapacityPlanner.ConstantMode.Enable = false
 	}
 
+	entries, err := extractScaleScheduleFromViper(cfg.viper)
+	if err != nil {
+		return err
+	}
+	cfg.CapacityPlanner.ScaleSchedule = entries
+
 	return validateCapacityPlanner(cfg.CapacityPlanner)
+}
+
+func parseScalingScheduleEntries(raw string) ([]ScaleScheduleEntry, error) {
+	parts := strings.Split(raw, "|")
+	result := make([]ScaleScheduleEntry, 0)
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if len(part) == 0 {
+			continue
+		}
+		entry, err := NewScaleScheduleEntry(part)
+		if err != nil {
+			return make([]ScaleScheduleEntry, 0), err
+		}
+		result = append(result, entry)
+	}
+
+	return result, nil
 }
 
 func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
@@ -276,4 +301,72 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
+}
+
+func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScaleScheduleEntry, error) {
+	var scaleSchedule = make([]ScaleScheduleEntry, 0)
+
+	if !vp.IsSet(capScaleSchedule.name) {
+		return nil, nil
+	}
+
+	scaleScheduleAsStr := vp.GetString(capScaleSchedule.name)
+	if len(scaleScheduleAsStr) > 0 {
+		return parseScalingScheduleEntries(scaleScheduleAsStr)
+	}
+
+	scaleScheduleAsMap := helper.CastToStringMapSlice(vp.Get(capScaleSchedule.name))
+	if scaleScheduleAsMap == nil {
+		return scaleSchedule, nil
+	}
+
+	scaleSchedule, err := scaleScheduleMapToScaleSchedule(scaleScheduleAsMap)
+	if err != nil {
+		return scaleSchedule, fmt.Errorf("Error reading scale schedule configuration: %s", err.Error())
+	}
+	return scaleSchedule, nil
+}
+
+func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]ScaleScheduleEntry, error) {
+
+	if scaleScheduleCfg == nil {
+		return nil, fmt.Errorf("Parameter is nil")
+	}
+	var scaleSchedule = make([]ScaleScheduleEntry, 0)
+
+	for _, scheduleEntry := range scaleScheduleCfg {
+		days := strings.TrimSpace(scheduleEntry["days"])
+		if len(days) == 0 {
+			return nil, fmt.Errorf("Days is missing for scale schedule entry")
+		}
+
+		startTime := strings.TrimSpace(scheduleEntry["start-time"])
+		if len(startTime) == 0 {
+			return nil, fmt.Errorf("StartTime is missing for scale schedule entry")
+		}
+
+		endTime := strings.TrimSpace(scheduleEntry["end-time"])
+		if len(endTime) == 0 {
+			return nil, fmt.Errorf("EndTime is missing for scale schedule entry")
+		}
+
+		min := strings.TrimSpace(scheduleEntry["min"])
+		if len(min) == 0 {
+			return nil, fmt.Errorf("Min is missing for scale schedule entry")
+		}
+
+		max := strings.TrimSpace(scheduleEntry["max"])
+		if len(max) == 0 {
+			return nil, fmt.Errorf("Max is missing for scale schedule entry")
+		}
+
+		spec := fmt.Sprintf("%s %s %s %s-%s", days, startTime, endTime, min, max)
+		sse, err := NewScaleScheduleEntry(spec)
+		if err != nil {
+			return nil, fmt.Errorf("ScaleScheduleSpec malformed (%s): %s", spec, err.Error())
+		}
+		scaleSchedule = append(scaleSchedule, sse)
+	}
+
+	return scaleSchedule, nil
 }

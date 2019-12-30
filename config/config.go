@@ -99,10 +99,11 @@ type Logging struct {
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
 type CapacityPlanner struct {
-	DownScaleCooldownPeriod time.Duration `json:"down_scale_cooldown_period,omitempty"`
-	UpScaleCooldownPeriod   time.Duration `json:"up_scale_cooldown_period,omitempty"`
-	ConstantMode            CAPConstMode  `json:"constant_mode,omitempty"`
-	LinearMode              CAPLinearMode `json:"linear_mode,omitempty"`
+	DownScaleCooldownPeriod time.Duration        `json:"down_scale_cooldown_period,omitempty"`
+	UpScaleCooldownPeriod   time.Duration        `json:"up_scale_cooldown_period,omitempty"`
+	ConstantMode            CAPConstMode         `json:"constant_mode,omitempty"`
+	LinearMode              CAPLinearMode        `json:"linear_mode,omitempty"`
+	ScaleSchedule           []ScaleScheduleEntry `json:"scaling_schedule,omitempty"`
 }
 
 // CAPLinearMode configuration parameters needed for linear mode of the CapacityPlanner
@@ -147,6 +148,7 @@ func NewDefaultConfig() Config {
 			UpScaleCooldownPeriod:   time.Second * 60,
 			ConstantMode:            CAPConstMode{Enable: true, Offset: 1},
 			LinearMode:              CAPLinearMode{Enable: false},
+			ScaleSchedule:           make([]ScaleScheduleEntry, 0),
 		},
 	}
 

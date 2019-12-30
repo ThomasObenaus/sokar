@@ -18,6 +18,8 @@ func (cp *CapacityPlanner) Plan(scaleFactor float32, currentScale uint) uint {
 		cp.logger.Error().Msgf("No planning mode defined")
 	}
 
+	// adjust the planned/ computed scale according to the cap schedule
+	plannedScale = cp.adjustPlanAccordingToSchedule(plannedScale, time.Now())
 	return plannedScale
 }
 

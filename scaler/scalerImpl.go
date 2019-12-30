@@ -2,6 +2,7 @@ package scaler
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	m "github.com/thomasobenaus/sokar/metrics"
@@ -113,10 +114,10 @@ func (s *Scaler) applyScaleTicket(ticket ScalingTicket) {
 	updateScaleResultMetric(result, s.metrics.scaleResultCounter)
 
 	logEvent := s.logger.Info()
-	if result.state != scaleDone {
+	if result.state != scaleDone && result.state != scaleIgnored {
 		logEvent = s.logger.Error()
 	}
-	logEvent.Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", result.state, result.stateDescription, result.newCount, dur.Seconds())
+	logEvent.Msgf("Ticket applied. Scaling was %s (%s). New count is %d. Scaling in %f .", strings.ToUpper(string(result.state)), result.stateDescription, result.newCount, dur.Seconds())
 }
 
 func (s *Scaler) scaleTo(desiredCount uint, force bool) scaleResult {

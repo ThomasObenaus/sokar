@@ -16,6 +16,17 @@ cap:
   up-scale-cooldown: 10s
   constant-mode:
     offset: 1
+  scale-schedule:
+    - days: "MON-FRI"
+      start-time: 7:30
+      end-time: 9:30
+      min: 10
+      max: 30
+    - days: "SAT-SUN"
+      start-time: 15:30
+      end-time: 17:30
+      min: 2
+      max: 5
 saa:
   no-alert-damping: 1.0
   up-thresh: 10.0

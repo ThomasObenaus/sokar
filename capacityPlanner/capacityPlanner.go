@@ -32,6 +32,11 @@ type CapacityPlanner struct {
 	// Therefore the scaleFactor is directly used to scale the number of currentScale by multiplication.
 	// It is only allowed to specify (not nil) one planning mode at the same time.
 	linearMode *LinearMode
+
+	// the currently active schedule
+	schedule ScaleSchedule
+
+	metrics Metrics
 }
 
 // ConstantMode in this mode the CapacityPlanner uses a constant offset to calculate the new planned scale.
@@ -86,15 +91,24 @@ func WithUpScaleCooldown(cooldown time.Duration) Option {
 	}
 }
 
+// Schedule sets the ScaleSchedule that should be regarded by the CapacityPlanner when he plans
+func Schedule(schedule ScaleSchedule) Option {
+	return func(cp *CapacityPlanner) {
+		cp.schedule = schedule
+	}
+}
+
 // New creates a new instance of a CapacityPlanner using the given
 // Scaler to send scaling events to.
-func New(options ...Option) (*CapacityPlanner, error) {
+func New(metrics Metrics, options ...Option) (*CapacityPlanner, error) {
 
 	capacityPlanner := CapacityPlanner{
 		downScaleCooldownPeriod: time.Second * 80,
 		upScaleCooldownPeriod:   time.Second * 60,
 		constantMode:            &ConstantMode{Offset: 1},
 		linearMode:              nil,
+		schedule:                nil,
+		metrics:                 metrics,
 	}
 
 	// apply the options

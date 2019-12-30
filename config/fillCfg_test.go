@@ -44,6 +44,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--cap.constant-mode.offset=106",
 		"--cap.linear-mode.enable=true",
 		"--cap.linear-mode.scale-factor-weight=0.107",
+		"--cap.scale-schedule=MON-FRI 7 9 10-30|WED-SAT 13:15 17:25 2-22",
 	}
 
 	err := cfg.ReadConfig(args)
@@ -82,6 +83,23 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, uint(106), cfg.CapacityPlanner.ConstantMode.Offset)
 	assert.True(t, cfg.CapacityPlanner.LinearMode.Enable)
 	assert.Equal(t, float64(0.107), cfg.CapacityPlanner.LinearMode.ScaleFactorWeight)
+
+	require.NotNil(t, cfg.CapacityPlanner.ScaleSchedule)
+	require.Len(t, cfg.CapacityPlanner.ScaleSchedule, 2)
+	assert.Len(t, cfg.CapacityPlanner.ScaleSchedule[0].Days, 5)
+	assert.Equal(t, uint(7), cfg.CapacityPlanner.ScaleSchedule[0].StartTime.Hour)
+	assert.Equal(t, uint(0), cfg.CapacityPlanner.ScaleSchedule[0].StartTime.Minute)
+	assert.Equal(t, uint(9), cfg.CapacityPlanner.ScaleSchedule[0].EndTime.Hour)
+	assert.Equal(t, uint(0), cfg.CapacityPlanner.ScaleSchedule[0].EndTime.Minute)
+	assert.Equal(t, 10, cfg.CapacityPlanner.ScaleSchedule[0].MinScale)
+	assert.Equal(t, 30, cfg.CapacityPlanner.ScaleSchedule[0].MaxScale)
+	assert.Len(t, cfg.CapacityPlanner.ScaleSchedule[1].Days, 4)
+	assert.Equal(t, uint(13), cfg.CapacityPlanner.ScaleSchedule[1].StartTime.Hour)
+	assert.Equal(t, uint(15), cfg.CapacityPlanner.ScaleSchedule[1].StartTime.Minute)
+	assert.Equal(t, uint(17), cfg.CapacityPlanner.ScaleSchedule[1].EndTime.Hour)
+	assert.Equal(t, uint(25), cfg.CapacityPlanner.ScaleSchedule[1].EndTime.Minute)
+	assert.Equal(t, 2, cfg.CapacityPlanner.ScaleSchedule[1].MinScale)
+	assert.Equal(t, 22, cfg.CapacityPlanner.ScaleSchedule[1].MaxScale)
 }
 
 func Test_ValidateScaler_NomadJob(t *testing.T) {
@@ -327,4 +345,179 @@ func Test_ValidateCapacityPlanner(t *testing.T) {
 	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 1}}
 	err = validateCapacityPlanner(capacityPlanner)
 	assert.NoError(t, err)
+
+	// success - no schedule
+	scaleSchedule := make([]ScaleScheduleEntry, 0)
+	capacityPlanner = CapacityPlanner{ConstantMode: CAPConstMode{Enable: true, Offset: 1}, ScaleSchedule: scaleSchedule}
+	err = validateCapacityPlanner(capacityPlanner)
+	assert.NoError(t, err)
+}
+
+func Test_ExtractScaleScheduleFromViper(t *testing.T) {
+
+	vp := viper.New()
+	scaleScheduleEntries, err := extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+
+	// Success - commandline
+	vp.Set(capScaleSchedule.name, "MON-FRI 7 9 10-30|WED-SAT 13:15 17:25 2-*")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.NotEmpty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+	assert.Len(t, scaleScheduleEntries, 2)
+	assert.Len(t, scaleScheduleEntries[0].Days, 5)
+	assert.Equal(t, uint(7), scaleScheduleEntries[0].StartTime.Hour)
+	assert.Equal(t, uint(0), scaleScheduleEntries[0].StartTime.Minute)
+	assert.Equal(t, uint(9), scaleScheduleEntries[0].EndTime.Hour)
+	assert.Equal(t, uint(0), scaleScheduleEntries[0].EndTime.Minute)
+	assert.Equal(t, 10, scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, 30, scaleScheduleEntries[0].MaxScale)
+	assert.Len(t, scaleScheduleEntries[1].Days, 4)
+	assert.Equal(t, uint(13), scaleScheduleEntries[1].StartTime.Hour)
+	assert.Equal(t, uint(15), scaleScheduleEntries[1].StartTime.Minute)
+	assert.Equal(t, uint(17), scaleScheduleEntries[1].EndTime.Hour)
+	assert.Equal(t, uint(25), scaleScheduleEntries[1].EndTime.Minute)
+	assert.Equal(t, 2, scaleScheduleEntries[1].MinScale)
+	assert.Equal(t, -1, scaleScheduleEntries[1].MaxScale)
+
+	// Success - config
+	entries := make([]map[string]string, 0)
+	entry := make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = "7:30"
+	entry["end-time"] = "9:30"
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+
+	entry = make(map[string]string, 0)
+	entry["days"] = "SAT-SUN"
+	entry["start-time"] = "17"
+	entry["end-time"] = "18"
+	entry["min"] = "2"
+	entry["max"] = "3"
+	entries = append(entries, entry)
+
+	vp.Set(capScaleSchedule.name, entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.NotEmpty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+	assert.Len(t, scaleScheduleEntries, 2)
+	assert.Len(t, scaleScheduleEntries[0].Days, 5)
+	assert.Equal(t, uint(7), scaleScheduleEntries[0].StartTime.Hour)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].StartTime.Minute)
+	assert.Equal(t, uint(9), scaleScheduleEntries[0].EndTime.Hour)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].EndTime.Minute)
+	assert.Equal(t, 10, scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, 30, scaleScheduleEntries[0].MaxScale)
+	assert.Len(t, scaleScheduleEntries[1].Days, 2)
+	assert.Equal(t, uint(17), scaleScheduleEntries[1].StartTime.Hour)
+	assert.Equal(t, uint(0), scaleScheduleEntries[1].StartTime.Minute)
+	assert.Equal(t, uint(18), scaleScheduleEntries[1].EndTime.Hour)
+	assert.Equal(t, uint(0), scaleScheduleEntries[1].EndTime.Minute)
+	assert.Equal(t, 2, scaleScheduleEntries[1].MinScale)
+	assert.Equal(t, 3, scaleScheduleEntries[1].MaxScale)
+
+	// Fail - config - schedule
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "invalid"
+	entries = append(entries, entry)
+	vp.Set(capScaleSchedule.name, entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+	//
+	// Success - config - empty
+	vp.Set(capScaleSchedule.name, "")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.NoError(t, err)
+}
+
+func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
+	// TODO: Reenable test
+	scaleScheduleEntries, err := scaleScheduleMapToScaleSchedule(nil)
+	assert.Nil(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Success
+	entries := make([]map[string]string, 0)
+	entry := make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = "7:30"
+	entry["end-time"] = "9:30"
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Len(t, scaleScheduleEntries[0].Days, 5)
+	assert.Equal(t, uint(7), scaleScheduleEntries[0].StartTime.Hour)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].StartTime.Minute)
+	assert.Equal(t, uint(9), scaleScheduleEntries[0].EndTime.Hour)
+	assert.Equal(t, uint(30), scaleScheduleEntries[0].EndTime.Minute)
+	assert.Equal(t, 10, scaleScheduleEntries[0].MinScale)
+	assert.Equal(t, 30, scaleScheduleEntries[0].MaxScale)
+
+	// Fail - config - days
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "invalid"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - min
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = "7:30"
+	entry["end-time"] = "9:30"
+	entry["min"] = "invalid"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - max
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = "7:30"
+	entry["end-time"] = "9:30"
+	entry["min"] = "10"
+	entry["max"] = "invalid"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - start time empty
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = ""
+	entry["end-time"] = "9:30"
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
+
+	// Fail - config - end time empty
+	entries = make([]map[string]string, 0)
+	entry = make(map[string]string, 0)
+	entry["days"] = "MON-FRI"
+	entry["start-time"] = "7:30"
+	entry["end-time"] = ""
+	entry["min"] = "10"
+	entry["max"] = "30"
+	entries = append(entries, entry)
+	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.Empty(t, scaleScheduleEntries)
+	assert.Error(t, err)
 }

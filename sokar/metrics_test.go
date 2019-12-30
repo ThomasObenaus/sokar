@@ -9,6 +9,7 @@ import (
 )
 
 type MetricsMocks struct {
+	scheduledScaleBounds              *mock_metrics.MockGaugeVec
 	scaleEventsTotal                  *mock_metrics.MockCounter
 	failedScalingTotal                *mock_metrics.MockCounter
 	skippedScalingDuringCooldownTotal *mock_metrics.MockCounter
@@ -26,6 +27,7 @@ type MetricsMocks struct {
 // 		mocks.scaleCounter.EXPECT().Set(10)
 // use metrics...
 func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
+	mScheduledScaleBounds := mock_metrics.NewMockGaugeVec(mockCtrl)
 	mScaleEventsTotal := mock_metrics.NewMockCounter(mockCtrl)
 	mFailedScalingTotal := mock_metrics.NewMockCounter(mockCtrl)
 	mSkippedScalingDuringCooldownTotal := mock_metrics.NewMockCounter(mockCtrl)
@@ -33,6 +35,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 	mPreScaleJobCount := mock_metrics.NewMockGauge(mockCtrl)
 	mScaleFactor := mock_metrics.NewMockGauge(mockCtrl)
 	metrics := Metrics{
+		scheduledScaleBounds:              mScheduledScaleBounds,
 		scaleEventsTotal:                  mScaleEventsTotal,
 		failedScalingTotal:                mFailedScalingTotal,
 		skippedScalingDuringCooldownTotal: mSkippedScalingDuringCooldownTotal,
@@ -41,6 +44,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 		scaleFactor:                       mScaleFactor,
 	}
 	mocks := MetricsMocks{
+		scheduledScaleBounds:              mScheduledScaleBounds,
 		scaleEventsTotal:                  mScaleEventsTotal,
 		failedScalingTotal:                mFailedScalingTotal,
 		skippedScalingDuringCooldownTotal: mSkippedScalingDuringCooldownTotal,
@@ -53,6 +57,7 @@ func NewMockedMetrics(mockCtrl *gomock.Controller) (Metrics, MetricsMocks) {
 
 func Test_NewMetrics(t *testing.T) {
 	metrics := NewMetrics()
+	assert.NotNil(t, metrics.scheduledScaleBounds)
 	assert.NotNil(t, metrics.scaleEventsTotal)
 	assert.NotNil(t, metrics.failedScalingTotal)
 	assert.NotNil(t, metrics.skippedScalingDuringCooldownTotal)

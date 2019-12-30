@@ -23,7 +23,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./api ./ -covermode=count -coverprofile=coverage.out
+	@go test ./scaleschedule ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityPlanner ./aws ./awsEc2 ./nomadWorker ./api ./ -covermode=count -coverprofile=coverage.out
 
 cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
 	# for this to get working you have to export the repo_token for your repo at coveralls.io
@@ -58,8 +58,10 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
 	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
 	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/sokar/mock_scaleEventEmitter_IF.go 
+	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/sokar/mock_scaleschedule_IF.go
 	@mockgen -source=metrics/metrics.go -destination test/metrics/mock_metrics.go 
 	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
+	@mockgen -source=capacityPlanner/scaleschedule_IF.go -destination test/capacityPlanner/mock_scaleschedule_IF.go
 	@mockgen -source=runnable.go -destination test/mock_runnable.go
 
 gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defined metrics in code.

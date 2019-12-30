@@ -30,6 +30,13 @@ For details about the changes see the [changelog](CHANGELOG.md).
 
 - **TODO**: Fill this
 
+## Features
+
+- [Scheduled Scaling](doc/ScheduledScaling.md)
+- [Dry Run Mode](doc/DryRunMode.md)
+- [Several Planning Modes](doc/PlanningMode.md)
+- [Several Connectors/ Scaling Targets](doc/Connectors.md)
+
 ## Links
 
 - For configuration see [Config.md](config/Config.md)

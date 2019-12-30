@@ -75,11 +75,6 @@ func checkScalingPolicy(desiredCount uint, min uint, max uint) policyCheckResult
 // If the force flag is true then even in dry-run mode the scaling will be applied.
 func (s *Scaler) scale(desiredCount uint, currentCount uint, force bool) scaleResult {
 
-	// memorize the time the scaling started
-	if isScalePermitted(s.dryRunMode, force) {
-		s.lastScaleAction = time.Now()
-	}
-
 	sObjName := s.scalingObject.Name
 	min := s.scalingObject.MinCount
 	max := s.scalingObject.MaxCount
@@ -126,6 +121,14 @@ func (s *Scaler) scale(desiredCount uint, currentCount uint, force bool) scaleRe
 		}
 	}
 
+	// memorize the time the scaling started
+	if scaleNeeded && isScalePermitted(s.dryRunMode, force) {
+		s.lastScaleAction = time.Now()
+	}
+
+	// TODO: Go in cooldown just incase the scaling was successful
+	// TODO: Split cooldown for up and downscaling
+	// See: https://github.com/ThomasObenaus/sokar/issues/111
 	return s.executeScale(currentCount, newCount, force)
 }
 
