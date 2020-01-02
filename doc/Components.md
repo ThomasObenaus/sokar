@@ -27,8 +27,8 @@ Using this input data sokar decides what to do. Based on the current situation s
 
 ## CapacityPlanner (CAP)
 
-- Responsible to plan how many instances of the scaling-object have to be started/ stopped in order to fulfill the scale decision made by the SEE.
-- The CAP incorporates a hysteresis or even pre-knowledge (ramp up/ down data) in order to optimally plan how many instances and at which point in time to scale.
+The CapacityPlanner is responsible to decide how many instances/ allocations of the scaling-object shall be deployed at a certain point in time.
+Details about the CapacityPlanner can be found [here](CapacityPlanner.md).
 
 ## Scaler (SCA)
 
