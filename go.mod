@@ -1,0 +1,65 @@
+module github.com/thomasobenaus/sokar
+
+go 1.13
+
+require (
+	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878
+	github.com/aws/aws-sdk-go v1.23.13
+	github.com/beorn7/perks v1.0.1
+	github.com/davecgh/go-spew v1.1.1
+	github.com/fsnotify/fsnotify v1.4.7
+	github.com/golang/mock v1.3.1-0.20190508161146-9fa652df1129
+	github.com/golang/protobuf v1.3.2
+	github.com/gorhill/cronexpr v0.0.0-20140423231348-a557574d6c02
+	github.com/gorilla/websocket v1.4.1
+	github.com/hashicorp/consul v1.6.0
+	github.com/hashicorp/errwrap v1.0.0
+	github.com/hashicorp/go-cleanhttp v0.5.1
+	github.com/hashicorp/go-hclog v0.9.2
+	github.com/hashicorp/go-immutable-radix v1.1.0
+	github.com/hashicorp/go-msgpack v0.5.5
+	github.com/hashicorp/go-multierror v1.0.0
+	github.com/hashicorp/go-plugin v1.0.1
+	github.com/hashicorp/go-rootcerts v1.0.1
+	github.com/hashicorp/go-version v1.2.0
+	github.com/hashicorp/golang-lru v0.5.3
+	github.com/hashicorp/hcl v1.0.0
+	github.com/hashicorp/nomad v0.9.5
+	github.com/hashicorp/raft v1.1.1
+	github.com/hashicorp/serf v0.8.3
+	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/julienschmidt/httprouter v1.2.0
+	github.com/magiconair/properties v1.8.1
+	github.com/matttproud/golang_protobuf_extensions v1.0.1
+	github.com/mitchellh/copystructure v1.0.0
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/mitchellh/go-testing-interface v1.0.0
+	github.com/mitchellh/hashstructure v1.0.0
+	github.com/mitchellh/mapstructure v1.1.2
+	github.com/mitchellh/reflectwalk v1.0.1
+	github.com/oklog/run v1.0.0
+	github.com/pelletier/go-toml v1.4.0
+	github.com/pkg/errors v0.8.1
+	github.com/pmezard/go-difflib v1.0.0
+	github.com/prometheus/client_golang v0.9.4
+	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
+	github.com/prometheus/common v0.6.0
+	github.com/prometheus/procfs v0.0.4
+	github.com/rs/zerolog v1.15.0
+	github.com/ryanuber/go-glob v1.0.0
+	github.com/spf13/afero v1.2.2
+	github.com/spf13/cast v1.3.0
+	github.com/spf13/jwalterweatherman v1.1.0
+	github.com/spf13/pflag v1.0.3
+	github.com/spf13/viper v1.4.0
+	github.com/stretchr/testify v1.4.0
+	github.com/ugorji/go v0.0.0-20170215201144-c88ee250d022
+	golang.org/x/crypto v0.0.0-20190829043050-9756ffdc2472
+	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
+	golang.org/x/sys v0.0.0-20190830142957-1e83adbbebd0
+	golang.org/x/text v0.3.2
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+	google.golang.org/grpc v1.23.0
+	gopkg.in/yaml.v2 v2.2.2
+)
