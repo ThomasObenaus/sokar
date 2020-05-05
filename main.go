@@ -31,8 +31,9 @@ var buildTime string
 var revision string
 var branch string
 
-func main() {
+const endPointKey = "end-point"
 
+func main() {
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
 
@@ -92,11 +93,11 @@ func main() {
 
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
-	logger.Info().Str("end-point", "metrics").Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
+	logger.Info().Str(endPointKey, "metrics").Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
 
 	// Register build info end-point
 	api.Router.GET(sokar.PathBuildInfo, buildInfo.BuildInfo)
-	logger.Info().Str("end-point", "build info").Msgf("Build Info end-point set up at %s", sokar.PathBuildInfo)
+	logger.Info().Str(endPointKey, "build info").Msgf("Build Info end-point set up at %s", sokar.PathBuildInfo)
 
 	// Register config end-point
 	cfgEndPoint := config.EndPoint{
@@ -104,7 +105,7 @@ func main() {
 		Logger: logger,
 	}
 	api.Router.GET(sokar.PathConfig, cfgEndPoint.ConfigEndpoint)
-	logger.Info().Str("end-point", "config").Msgf("Config end-point set up at %s", sokar.PathConfig)
+	logger.Info().Str(endPointKey, "config").Msgf("Config end-point set up at %s", sokar.PathConfig)
 
 	// Define runnables and their execution order
 	var orderedRunnables []Runnable
@@ -204,13 +205,13 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	}
 
 	api.Router.GET(sokar.PathHealth, sokarInst.Health)
-	logger.Info().Str("end-point", "health").Msgf("Health end-point set up at %s", sokar.PathHealth)
+	logger.Info().Str(endPointKey, "health").Msgf("Health end-point set up at %s", sokar.PathHealth)
 
 	api.Router.PUT(sokar.PathScaleByPercentage, sokarInst.ScaleByPercentage)
-	logger.Info().Str("end-point", "scale-by(p)").Msgf("ScaleBy end-point (percentage) set up at %s", sokar.PathScaleByPercentage)
+	logger.Info().Str(endPointKey, "scale-by(p)").Msgf("ScaleBy end-point (percentage) set up at %s", sokar.PathScaleByPercentage)
 
 	api.Router.PUT(sokar.PathScaleByValue, sokarInst.ScaleByValue)
-	logger.Info().Str("end-point", "scale-by(v)").Msgf("ScaleBy end-point (value) set up at %s", sokar.PathScaleByValue)
+	logger.Info().Str(endPointKey, "scale-by(v)").Msgf("ScaleBy end-point (value) set up at %s", sokar.PathScaleByValue)
 
 	if cfg.DryRunMode {
 		logger.Info().Msg("Dry-Run-Mode: Sokar will plan the scale actions but won't execute them. This applies only for auto scaling events.")
