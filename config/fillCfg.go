@@ -34,17 +34,18 @@ func (cfg *Config) fillScaler() error {
 }
 
 func validateScaler(scaler Scaler) error {
+	const parameterMissingErrorPattern = "The parameter '%s' is missing but this is needed in Scaler.Mode '%v'"
 
 	switch mode := scaler.Mode; mode {
 	case ScalerModeNomadJob:
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.name, mode)
 		}
 	case ScalerModeNomadDataCenter:
 		hasRegion := len(scaler.Nomad.DataCenterAWS.Region) > 0
 		hasProfile := len(scaler.Nomad.DataCenterAWS.Profile) > 0
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaNomadModeServerAddress.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.name, mode)
 		}
 		if !hasProfile && !hasRegion {
 			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.name, scaNomadDataCenterAWSRegion.name, mode)
@@ -57,10 +58,10 @@ func validateScaler(scaler Scaler) error {
 			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaAWSEC2Profile.name, scaAWSEC2Region.name, mode)
 		}
 		if len(scaler.AwsEc2.ASGTagKey) == 0 {
-			return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaAWSEC2ASGTagKey.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaAWSEC2ASGTagKey.name, mode)
 		}
 	default:
-		return fmt.Errorf("The parameter '%s' is missing but this is needed in Scaler.Mode '%v'", scaMode.name, mode)
+		return fmt.Errorf(parameterMissingErrorPattern, scaMode.name, mode)
 	}
 
 	if scaler.WatcherInterval <= time.Millisecond*500 {
