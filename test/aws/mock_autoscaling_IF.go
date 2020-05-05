@@ -9,7 +9,7 @@ import (
 	session "github.com/aws/aws-sdk-go/aws/session"
 	autoscaling "github.com/aws/aws-sdk-go/service/autoscaling"
 	gomock "github.com/golang/mock/gomock"
-	iface "github.com/thomasobenaus/sokar/aws/iface"
+	aws "github.com/thomasobenaus/sokar/aws/iface"
 	reflect "reflect"
 )
 
@@ -120,10 +120,10 @@ func (m *MockAutoScalingFactory) EXPECT() *MockAutoScalingFactoryMockRecorder {
 }
 
 // CreateAutoScaling mocks base method
-func (m *MockAutoScalingFactory) CreateAutoScaling(session *session.Session) iface.AutoScaling {
+func (m *MockAutoScalingFactory) CreateAutoScaling(session *session.Session) aws.AutoScaling {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAutoScaling", session)
-	ret0, _ := ret[0].(iface.AutoScaling)
+	ret0, _ := ret[0].(aws.AutoScaling)
 	return ret0
 }
 

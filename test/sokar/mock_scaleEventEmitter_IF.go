@@ -6,7 +6,7 @@ package mock_sokar
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	iface "github.com/thomasobenaus/sokar/sokar/iface"
+	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 	reflect "reflect"
 )
 
@@ -34,7 +34,7 @@ func (m *MockScaleEventEmitter) EXPECT() *MockScaleEventEmitterMockRecorder {
 }
 
 // Subscribe mocks base method
-func (m *MockScaleEventEmitter) Subscribe(eventChannel chan iface.ScaleEvent) {
+func (m *MockScaleEventEmitter) Subscribe(eventChannel chan sokar.ScaleEvent) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Subscribe", eventChannel)
 }

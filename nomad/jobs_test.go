@@ -7,8 +7,9 @@ import (
 
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
-	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
+
 	"github.com/stretchr/testify/assert"
+	"github.com/thomasobenaus/sokar/nomad/structs"
 	mock_nomad "github.com/thomasobenaus/sokar/test/nomad"
 )
 
@@ -87,7 +88,7 @@ func TestAdjustScalingObjectCount_Success(t *testing.T) {
 
 	// Wait for deployment confirmation
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusSuccessful}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusSuccessful}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
 	err := conn.AdjustScalingObjectCount("test", 2, 10, 4, 5)
@@ -161,7 +162,7 @@ func TestAdjustScalingObjectCount_DeploymentError(t *testing.T) {
 
 	// Wait for deployment confirmation
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusCancelled}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusCancelled}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
 	err := conn.AdjustScalingObjectCount("test", 2, 10, 4, 5)
@@ -214,7 +215,7 @@ func TestIsScalingObjectDead(t *testing.T) {
 	assert.Equal(t, false, dead)
 
 	// success
-	status := nomadstructs.JobStatusDead
+	status := structs.JobStatusDead
 	job = &nomadApi.Job{Status: &status}
 	jobsIF.EXPECT().Info("test", gomock.Any()).Return(job, nil, nil)
 

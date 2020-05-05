@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	nomadApi "github.com/hashicorp/nomad/api"
-	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
+	"github.com/thomasobenaus/sokar/nomad/structs"
 )
 
 // IsScalingObjectDead returns true if the mentioned job is in state nomad./structs/JobStatusDead, false otherwise.
@@ -20,7 +20,7 @@ func (nc *Connector) IsScalingObjectDead(jobname string) (bool, error) {
 		return false, fmt.Errorf("Given state information is nil")
 	}
 
-	return (*jobInfo.Status == nomadstructs.JobStatusDead), nil
+	return (*jobInfo.Status == structs.JobStatusDead), nil
 }
 
 // GetScalingObjectCount retunrs the actual count of the given nomad job.
