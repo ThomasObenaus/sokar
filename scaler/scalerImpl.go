@@ -66,16 +66,12 @@ func updateScaleResultMetric(result scaleResult, scaleResultCounter m.CounterVec
 	switch result.state {
 	case scaleFailed:
 		scaleResultCounter.WithLabelValues("failed").Inc()
-		break
 	case scaleDone:
 		scaleResultCounter.WithLabelValues("done").Inc()
-		break
 	case scaleIgnored:
 		scaleResultCounter.WithLabelValues("ignored").Inc()
-		break
 	default:
 		scaleResultCounter.WithLabelValues("other").Inc()
-		break
 	}
 }
 

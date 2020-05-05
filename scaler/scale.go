@@ -11,8 +11,6 @@ import (
 type scaleState string
 
 const (
-	// scaleUnknown means the scale process was completed successfully
-	scaleUnknown scaleState = "unknown"
 	// scaleDone means the scale process was completed successfully
 	scaleDone scaleState = "done"
 	// scaleRunning means the scale process is in progress

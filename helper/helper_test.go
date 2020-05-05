@@ -108,7 +108,7 @@ func Test_CastToStringMapSlice(t *testing.T) {
 	assert.Empty(t, mapStrings)
 	assert.Error(t, err)
 
-	m1 := make(map[string]string, 0)
+	m1 := make(map[string]string)
 	m1["a"] = "A"
 	mapStringList := make([]map[string]string, 0)
 	mapStringList = append(mapStringList, m1)

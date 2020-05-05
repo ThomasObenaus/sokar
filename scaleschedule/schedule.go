@@ -18,7 +18,7 @@ type Schedule struct {
 // New creates a new empty Schedule
 func New() Schedule {
 	return Schedule{
-		scheduleByDay: make(scheduleByDay, 0),
+		scheduleByDay: make(scheduleByDay),
 	}
 }
 
@@ -134,8 +134,5 @@ func (s *Schedule) ScaleRangeAt(day time.Weekday, at helper.SimpleTime) (min uin
 // IsActiveAt returns true in case there is a schedule active at the requested time, false ohterwise.
 func (s *Schedule) IsActiveAt(day time.Weekday, at helper.SimpleTime) bool {
 	_, err := s.at(day, at)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }

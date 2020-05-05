@@ -97,13 +97,13 @@ func CastToStringMapSliceE(iface interface{}) ([]map[string]string, error) {
 	}
 	result := make([]map[string]string, 0)
 
-	switch iface.(type) {
+	switch typedIface := iface.(type) {
 	case []map[string]string:
-		for _, element := range iface.([]map[string]string) {
+		for _, element := range typedIface {
 			result = append(result, cast.ToStringMapString(element))
 		}
 	case []interface{}:
-		for _, element := range iface.([]interface{}) {
+		for _, element := range typedIface {
 			result = append(result, cast.ToStringMapString(element))
 		}
 	default:

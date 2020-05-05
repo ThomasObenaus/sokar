@@ -34,9 +34,7 @@ func (cfg *Config) registerAndParseFlags(args []string) error {
 		}
 		return err
 	}
-	cfg.viper.BindPFlags(cfg.pFlagSet)
-
-	return nil
+	return cfg.viper.BindPFlags(cfg.pFlagSet)
 }
 
 func (cfg *Config) setDefaults() error {

@@ -154,7 +154,7 @@ func setupLogging(cfg *config.Config) (logging.LoggerFactory, error) {
 }
 
 func setupScaleAlertAggregator(scaleAlertEmitters []scaleAlertAggregator.ScaleAlertEmitter, cfg *config.Config, logF logging.LoggerFactory) *scaleAlertAggregator.ScaleAlertAggregator {
-	weightMap := make(scaleAlertAggregator.ScaleAlertWeightMap, 0)
+	weightMap := make(scaleAlertAggregator.ScaleAlertWeightMap)
 	for _, alertDef := range cfg.ScaleAlertAggregator.ScaleAlerts {
 		weightMap[alertDef.Name] = alertDef.Weight
 	}

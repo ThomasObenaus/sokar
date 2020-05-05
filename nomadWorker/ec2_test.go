@@ -113,7 +113,6 @@ func TestAdjustScalingObjectCount_NoScale(t *testing.T) {
 
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
 
-	key := "datacenter"
 	connector, err := New("http://nomad.io", "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -121,23 +120,7 @@ func TestAdjustScalingObjectCount_NoScale(t *testing.T) {
 	connector.autoScalingFactory = asgFactory
 
 	// no error - DownScale
-	minCount := int64(1)
-	desiredCount := int64(123)
-	maxCount := int64(3)
-	autoScalingGroups := make([]*autoscaling.Group, 0)
 	tagVal := "private-services"
-	asgName := "my-asg"
-	var tags []*autoscaling.TagDescription
-	td := autoscaling.TagDescription{Key: &key, Value: &tagVal}
-	tags = append(tags, &td)
-	asgIn := autoscaling.Group{
-		Tags:                 tags,
-		AutoScalingGroupName: &asgName,
-		MinSize:              &minCount,
-		MaxSize:              &maxCount,
-		DesiredCapacity:      &desiredCount,
-	}
-	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 4, 4)
 	assert.NoError(t, err)
 }
@@ -246,7 +229,6 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
 
-	key := "datacenter"
 	connector, err := New("http://nomad.io", "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
@@ -254,23 +236,7 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 	connector.autoScalingFactory = asgFactory
 
 	// no error - DownScale
-	minCount := int64(1)
-	desiredCount := int64(123)
-	maxCount := int64(3)
-	autoScalingGroups := make([]*autoscaling.Group, 0)
 	tagVal := "private-services"
-	asgName := "my-asg"
-	var tags []*autoscaling.TagDescription
-	td := autoscaling.TagDescription{Key: &key, Value: &tagVal}
-	tags = append(tags, &td)
-	asgIn := autoscaling.Group{
-		Tags:                 tags,
-		AutoScalingGroupName: &asgName,
-		MinSize:              &minCount,
-		MaxSize:              &maxCount,
-		DesiredCapacity:      &desiredCount,
-	}
-	autoScalingGroups = append(autoScalingGroups, &asgIn)
 	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 5, 4)
 	assert.Error(t, err)
 }

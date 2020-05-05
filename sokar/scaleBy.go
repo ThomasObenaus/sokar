@@ -39,7 +39,7 @@ func (sk *Sokar) ScaleByPercentage(w http.ResponseWriter, r *http.Request, ps ht
 	}
 
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "Scaling triggered")
+	_, _ = io.WriteString(w, "Scaling triggered")
 }
 
 // ScaleByValue is the end-point for receiving scale-by events. These are events for a relative
@@ -70,7 +70,7 @@ func (sk *Sokar) ScaleByValue(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "Scaling triggered")
+	_, _ = io.WriteString(w, "Scaling triggered")
 }
 
 // planScaleByPercentage plans the new scale based on the current scale and the given percentage.

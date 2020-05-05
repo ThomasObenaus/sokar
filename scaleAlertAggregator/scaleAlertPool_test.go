@@ -46,7 +46,7 @@ func Test_Update(t *testing.T) {
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert4", Firing: false})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
-	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap := make(ScaleAlertWeightMap)
 	weightMap["Alert1"] = 1
 	weightMap["Alert2"] = -1
 	receiver := "AM"
@@ -79,7 +79,7 @@ func Test_Update(t *testing.T) {
 func Test_Sync(t *testing.T) {
 	scap := NewScaleAlertPool(time.Second * 60)
 
-	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap := make(ScaleAlertWeightMap)
 	weightMap["Alert1"] = 1
 	weightMap["Alert2"] = -1
 	var scaleAlerts []ScaleAlert
@@ -92,8 +92,8 @@ func Test_Sync(t *testing.T) {
 
 	var wg sync.WaitGroup
 	stop := false
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		for {
 			scap.update("alertmanager", scaleAlerts, weightMap)
@@ -103,8 +103,8 @@ func Test_Sync(t *testing.T) {
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer wg.Done()
 		for {
 			scap.update("cloudwatch", scaleAlerts, weightMap)
@@ -132,7 +132,7 @@ func Test_Iterate(t *testing.T) {
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "Alert4", Firing: false})
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
-	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap := make(ScaleAlertWeightMap)
 	weightMap["Alert1"] = 1
 	weightMap["Alert2"] = -1
 	receiver := "AM"

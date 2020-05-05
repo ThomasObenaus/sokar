@@ -18,13 +18,13 @@ type BuildInfo struct {
 // Print prints the build information using the given print function
 func (bi *BuildInfo) Print(printFun func(format string, a ...interface{}) (n int, err error)) {
 	const separator = "-----------------------------------------------------------------\n"
-	printFun(separator)
-	printFun("BuildInfo\n")
-	printFun(separator)
-	printFun("\tVersion:\t%s\n", bi.Version)
-	printFun("\tBuild-Time:\t%s\n", bi.BuildTime)
-	printFun("\tRevision:\t%s on %s\n", bi.Revision, bi.Branch)
-	printFun(separator)
+	_, _ = printFun(separator)
+	_, _ = printFun("BuildInfo\n")
+	_, _ = printFun(separator)
+	_, _ = printFun("\tVersion:\t%s\n", bi.Version)
+	_, _ = printFun("\tBuild-Time:\t%s\n", bi.BuildTime)
+	_, _ = printFun("\tRevision:\t%s on %s\n", bi.Revision, bi.Branch)
+	_, _ = printFun(separator)
 }
 
 // BuildInfo represents the build-info end-point of sokar
