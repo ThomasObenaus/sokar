@@ -13,6 +13,8 @@ revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
 nomad_server := "http://${LOCAL_IP}:4646"
 
+packages := ./scaleschedule ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./
+
 all: tools test build lint finish
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
@@ -23,12 +25,7 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
-	@go test ./scaleschedule ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./ -covermode=count -coverprofile=coverage.out
-
-cover-upload: sep ## Uploads the unittest coverage to coveralls (for this the SOKAR_COVERALLS_REPO_TOKEN has to be set correctly).
-	# for this to get working you have to export the repo_token for your repo at coveralls.io
-	# i.e. export SOKAR_COVERALLS_REPO_TOKEN=<your token>
-	@${GOPATH}/bin/goveralls -coverprofile=coverage.out -service=circleci -repotoken=${SOKAR_COVERALLS_REPO_TOKEN}
+	@go test ${packages} -timeout 30s -covermode=atomic -coverprofile=coverage.out
 
 build: sep ## Builds the sokar binary.
 	@echo "--> Build the $(name) in $(build_destination)"
@@ -37,7 +34,6 @@ build: sep ## Builds the sokar binary.
 tools: sep ## Installs needed tools (i.e. mock generators).
 	@echo "--> Install needed tools."
 	@go get golang.org/x/tools/cmd/cover
-	@go get github.com/mattn/goveralls
 
 gen-mocks: sep ## Generates test doubles (mocks).
 	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
@@ -104,7 +100,7 @@ lint: ## Runs the linter to check for coding-style issues
 
 report.test: sep ## Runs all unittests and generates a coverage- and a test-report.
 	@echo "--> Run the unit-tests"	
-	@go test . ./api -timeout 30s -race -run "^Test.*[^IT]$$" -covermode=atomic -coverprofile=coverage.out -json | tee test-report.out
+	@go test ${packages} -timeout 30s -covermode=atomic -coverprofile=coverage.out -json | tee test-report.out
 
 report.lint: ## Runs the linter to check for coding-style issues and generates the report file used in the ci pipeline
 	@echo "--> Lint project + Reporting"
