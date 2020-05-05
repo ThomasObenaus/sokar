@@ -5,7 +5,7 @@ import (
 	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
-	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
+	"github.com/thomasobenaus/sokar/nomad/structs"
 )
 
 func (nc *Connector) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
@@ -61,9 +61,9 @@ func (nc *Connector) waitForDeploymentConfirmation(evalID string, timeout time.D
 			queryOpt.WaitIndex = queryMeta.LastIndex
 
 			// Check the deployment status.
-			if deployment.Status == nomadstructs.DeploymentStatusSuccessful {
+			if deployment.Status == structs.DeploymentStatusSuccessful {
 				return nil
-			} else if deployment.Status == nomadstructs.DeploymentStatusRunning {
+			} else if deployment.Status == structs.DeploymentStatusRunning {
 				nc.printDeploymentProgress(deplID, deployment)
 				continue
 			} else {

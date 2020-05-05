@@ -7,9 +7,10 @@ import (
 
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
-	nomadstructs "github.com/hashicorp/nomad/nomad/structs"
+	"github.com/thomasobenaus/sokar/nomad/structs"
+	mock_nomad "github.com/thomasobenaus/sokar/test/nomad"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/thomasobenaus/sokar/test/nomad"
 )
 
 func TestGetDeploymentID_NoIF(t *testing.T) {
@@ -41,7 +42,7 @@ func TestWaitForDeploymentConfirmation_Success(t *testing.T) {
 	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil)
 
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusSuccessful}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusSuccessful}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
 	err := conn.waitForDeploymentConfirmation(evalID, time.Millisecond*600)
@@ -65,7 +66,7 @@ func TestWaitForDeploymentConfirmation_Timeout(t *testing.T) {
 	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil)
 
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusRunning}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusRunning}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
 	err := conn.waitForDeploymentConfirmation(evalID, time.Millisecond*600)
@@ -89,7 +90,7 @@ func TestWaitForDeploymentConfirmation_Failed(t *testing.T) {
 	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil)
 
 	qmeta := nomadApi.QueryMeta{LastIndex: 1000}
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusCancelled}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusCancelled}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, &qmeta, nil)
 
 	err := conn.waitForDeploymentConfirmation(evalID, time.Millisecond*600)
@@ -112,7 +113,7 @@ func TestWaitForDeploymentConfirmation_Nil(t *testing.T) {
 	evalID := "ABCDEFG"
 	evalIF.EXPECT().Info(evalID, nil).Return(&eval, nil, nil)
 
-	depl := nomadApi.Deployment{Status: nomadstructs.DeploymentStatusCancelled}
+	depl := nomadApi.Deployment{Status: structs.DeploymentStatusCancelled}
 	deplIF.EXPECT().Info(deplID, gomock.Any()).Return(&depl, nil, nil)
 
 	err := conn.waitForDeploymentConfirmation(evalID, time.Millisecond*600)
