@@ -59,7 +59,7 @@ func (st *ScalingTicket) complete(state scaleState) {
 // ticketAge reprents the duration from issuing/ creating
 // the ticket until now.
 func (st *ScalingTicket) ticketAge() time.Duration {
-	return time.Now().Sub(st.issuedAt)
+	return time.Since(st.issuedAt)
 }
 
 // leadDuration reprents the duration from issuing/ creating

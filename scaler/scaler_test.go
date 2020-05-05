@@ -77,7 +77,8 @@ func Test_RunJoinStop(t *testing.T) {
 	time.Sleep(time.Millisecond * 100)
 	go func() {
 		time.Sleep(time.Millisecond * 100)
-		scaler.Stop()
+		err := scaler.Stop()
+		assert.NoError(t, err)
 	}()
 
 	scaler.Join()
@@ -217,7 +218,8 @@ func Test_ApplyScalingTicket_NoScaleObjectWatcherInDryRunMode(t *testing.T) {
 
 	scaler.Run()
 	defer func() {
-		scaler.Stop()
+		err := scaler.Stop()
+		assert.NoError(t, err)
 		scaler.Join()
 	}()
 

@@ -205,4 +205,5 @@ func Test_SetupScalingTarget(t *testing.T) {
 	logF.EXPECT().NewNamedLogger(gomock.Any()).Times(1)
 	scalingTarget, err = setupScalingTarget(cfg, logF)
 	assert.NoError(t, err)
+	assert.NotNil(t, scalingTarget)
 }

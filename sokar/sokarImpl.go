@@ -24,10 +24,7 @@ func (sk *Sokar) scaleEventProcessor(scaleEventChannel <-chan sokarIF.ScaleEvent
 }
 
 func scaleValueToScaleDir(scaleValue float32) (scaleDown bool) {
-	if scaleValue < 0 {
-		return true
-	}
-	return false
+	return scaleValue < 0
 }
 
 func (sk *Sokar) handleScaleEvent(scaleEvent sokarIF.ScaleEvent) {

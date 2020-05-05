@@ -174,7 +174,7 @@ func Test_AlertMapToAlerts(t *testing.T) {
 	assert.Error(t, err)
 
 	// Success
-	alert1 := make(map[string]string, 0)
+	alert1 := make(map[string]string)
 	alert1["name"] = "Alert 1"
 	alert1["weight"] = "2.0"
 	alert1["description"] = "Alert for Upscaling"
@@ -189,7 +189,7 @@ func Test_AlertMapToAlerts(t *testing.T) {
 	assert.Equal(t, float32(2), alerts[0].Weight)
 
 	// Fail - invalid weight
-	alert1 = make(map[string]string, 0)
+	alert1 = make(map[string]string)
 	alert1["name"] = "Alert 1"
 	alert1["weight"] = "invalid weight"
 	alert1["description"] = "Alert for Upscaling"
@@ -201,7 +201,7 @@ func Test_AlertMapToAlerts(t *testing.T) {
 	assert.Error(t, err)
 
 	// Fail - missing name
-	alert1 = make(map[string]string, 0)
+	alert1 = make(map[string]string)
 	alertList = make([]map[string]string, 0)
 	alertList = append(alertList, alert1)
 
@@ -270,7 +270,7 @@ func Test_ExtractAlertsFromViper(t *testing.T) {
 	assert.Equal(t, "", alerts[1].Description)
 
 	// Success - config
-	alert1 := make(map[string]string, 0)
+	alert1 := make(map[string]string)
 	alert1["name"] = "Alert 1"
 	alert1["weight"] = "2.0"
 	alert1["description"] = "Alert for Upscaling"
@@ -286,7 +286,7 @@ func Test_ExtractAlertsFromViper(t *testing.T) {
 	assert.Equal(t, "Alert for Upscaling", alerts[0].Description)
 
 	// Fail - config - weight
-	alert1 = make(map[string]string, 0)
+	alert1 = make(map[string]string)
 	alert1["name"] = "Alert 1"
 	alert1["weight"] = "qwewe"
 	alertList = make([]map[string]string, 0)
@@ -383,7 +383,7 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 
 	// Success - config
 	entries := make([]map[string]string, 0)
-	entry := make(map[string]string, 0)
+	entry := make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = "7:30"
 	entry["end-time"] = "9:30"
@@ -391,7 +391,7 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 	entry["max"] = "30"
 	entries = append(entries, entry)
 
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "SAT-SUN"
 	entry["start-time"] = "17"
 	entry["end-time"] = "18"
@@ -421,7 +421,7 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 
 	// Fail - config - schedule
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "invalid"
 	entries = append(entries, entry)
 	vp.Set(capScaleSchedule.name, entries)
@@ -444,7 +444,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Success
 	entries := make([]map[string]string, 0)
-	entry := make(map[string]string, 0)
+	entry := make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = "7:30"
 	entry["end-time"] = "9:30"
@@ -452,6 +452,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 	entry["max"] = "30"
 	entries = append(entries, entry)
 	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
+	assert.NoError(t, err)
 	assert.Len(t, scaleScheduleEntries[0].Days, 5)
 	assert.Equal(t, uint(7), scaleScheduleEntries[0].StartTime.Hour)
 	assert.Equal(t, uint(30), scaleScheduleEntries[0].StartTime.Minute)
@@ -462,7 +463,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Fail - config - days
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "invalid"
 	entries = append(entries, entry)
 	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
@@ -471,7 +472,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Fail - config - min
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = "7:30"
 	entry["end-time"] = "9:30"
@@ -484,7 +485,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Fail - config - max
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = "7:30"
 	entry["end-time"] = "9:30"
@@ -497,7 +498,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Fail - config - start time empty
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = ""
 	entry["end-time"] = "9:30"
@@ -510,7 +511,7 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 
 	// Fail - config - end time empty
 	entries = make([]map[string]string, 0)
-	entry = make(map[string]string, 0)
+	entry = make(map[string]string)
 	entry["days"] = "MON-FRI"
 	entry["start-time"] = "7:30"
 	entry["end-time"] = ""

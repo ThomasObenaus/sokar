@@ -30,7 +30,8 @@ func TestRunJoinStop(t *testing.T) {
 
 	api.Run()
 	start := time.Now()
-	api.Stop()
+	err := api.Stop()
+	require.NoError(t, err)
 	api.Join()
 
 	assert.WithinDuration(t, start.Add(time.Millisecond*500), time.Now(), time.Second*1)

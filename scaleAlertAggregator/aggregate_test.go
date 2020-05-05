@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/metrics"
+	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
 )
 
 func Test_ComputeScaleCounterDamping(t *testing.T) {
@@ -100,7 +100,7 @@ func Test_Aggregate(t *testing.T) {
 	alerts = append(alerts, ScaleAlert{Firing: true, Name: "AlertA"})
 	alerts = append(alerts, ScaleAlert{Firing: true, Name: "AlertB"})
 
-	weightMap := make(ScaleAlertWeightMap, 0)
+	weightMap := make(ScaleAlertWeightMap)
 
 	// No Scaling
 	saa.scaleCounter = 0

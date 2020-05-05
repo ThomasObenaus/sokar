@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/helper"
-	"github.com/thomasobenaus/sokar/sokar/iface"
+	sokar "github.com/thomasobenaus/sokar/sokar/iface"
 )
 
 // ScaleAlertAggregator is a component that is responsible to gather and aggregate ScaleEvents
@@ -96,7 +96,7 @@ type Config struct {
 // NewDefaultConfig creates an empty default configuration
 func NewDefaultConfig() Config {
 	return Config{
-		WeightMap:              make(ScaleAlertWeightMap, 0),
+		WeightMap:              make(ScaleAlertWeightMap),
 		NoAlertScaleDamping:    1,
 		UpScalingThreshold:     10,
 		DownScalingThreshold:   -10,

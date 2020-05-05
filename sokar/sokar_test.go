@@ -130,7 +130,8 @@ func Test_TriggerScale_Scale(t *testing.T) {
 		return scaleTo
 	}
 
-	sokar.triggerScale(false, scaleFactor, planFunc)
+	err = sokar.triggerScale(false, scaleFactor, planFunc)
+	assert.NoError(t, err)
 }
 
 func Test_TriggerScale_Cooldown(t *testing.T) {
@@ -164,7 +165,8 @@ func Test_TriggerScale_Cooldown(t *testing.T) {
 		return scaleTo
 	}
 
-	sokar.triggerScale(false, scaleFactor, planFunc)
+	err = sokar.triggerScale(false, scaleFactor, planFunc)
+	assert.NoError(t, err)
 }
 
 func Test_TriggerScale_NoCooldown(t *testing.T) {
@@ -199,7 +201,8 @@ func Test_TriggerScale_NoCooldown(t *testing.T) {
 		return scaleTo
 	}
 
-	sokar.triggerScale(false, scaleFactor, planFunc)
+	err = sokar.triggerScale(false, scaleFactor, planFunc)
+	assert.NoError(t, err)
 }
 
 func Test_TriggerScale_ErrGettingJobCount(t *testing.T) {
@@ -230,7 +233,8 @@ func Test_TriggerScale_ErrGettingJobCount(t *testing.T) {
 		return scaleTo
 	}
 
-	sokar.triggerScale(false, scaleFactor, planFunc)
+	err = sokar.triggerScale(false, scaleFactor, planFunc)
+	assert.Error(t, err)
 }
 
 func Test_TriggerScale_ErrScaleTo(t *testing.T) {
@@ -266,5 +270,6 @@ func Test_TriggerScale_ErrScaleTo(t *testing.T) {
 		return scaleTo
 	}
 
-	sokar.triggerScale(false, scaleFactor, planFunc)
+	err = sokar.triggerScale(false, scaleFactor, planFunc)
+	assert.Error(t, err)
 }

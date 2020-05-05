@@ -87,7 +87,6 @@ func parseScaleRange(scaleRangeSpec string) (min int, max int, err error) {
 	case 2:
 		minStr = strings.TrimSpace(parts[0])
 		maxStr = strings.TrimSpace(parts[1])
-		break
 	default:
 		return 0, 0, fmt.Errorf("Scalespec (%s) is malformed", scaleRangeSpec)
 	}
@@ -142,12 +141,10 @@ func parseTime(timeSpec string) (helper.SimpleTime, error) {
 			return helper.SimpleTime{}, nil
 		}
 		hourStr = strings.TrimSpace(parts[0])
-		break
 	// multiple elements --> hours and minutes
 	case 2:
 		hourStr = strings.TrimSpace(parts[0])
 		minuteStr = strings.TrimSpace(parts[1])
-		break
 	default:
 		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed (%s)", timeSpec)
 	}
@@ -157,7 +154,7 @@ func parseTime(timeSpec string) (helper.SimpleTime, error) {
 	if err != nil {
 		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is unknown", hourStr)
 	}
-	if hour < 0 || hour > 23 {
+	if hour > 23 {
 		return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Hour (%s) is not between 0 and 23", hourStr)
 	}
 
@@ -169,7 +166,7 @@ func parseTime(timeSpec string) (helper.SimpleTime, error) {
 		if err != nil {
 			return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is unknown", minuteStr)
 		}
-		if minute < 0 || minute > 59 {
+		if minute > 59 {
 			return helper.SimpleTime{}, fmt.Errorf("Timespec is malformed. Minute (%s) is not between 0 and 59", minuteStr)
 		}
 	}
@@ -243,7 +240,7 @@ func parseDays(daysSpec string) ([]time.Weekday, error) {
 
 	if dowStart < dowEnd {
 		for i := dowStart; i <= dowEnd; i++ {
-			dow, _ := dowTokens[fmt.Sprintf("%d", i)]
+			dow := dowTokens[fmt.Sprintf("%d", i)]
 			days = append(days, dow)
 		}
 		return days, nil
@@ -258,7 +255,7 @@ func parseDays(daysSpec string) ([]time.Weekday, error) {
 	// dowStart >= dowEnd
 	numDays := (6 - int(dowStart)) + int(dowEnd) + 2
 	for i := 0; i < numDays; i++ {
-		dow, _ := dowTokens[fmt.Sprintf("%d", (i+int(dowStart))%7)]
+		dow := dowTokens[fmt.Sprintf("%d", (i+int(dowStart))%7)]
 		days = append(days, dow)
 	}
 

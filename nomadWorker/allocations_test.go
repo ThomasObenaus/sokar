@@ -8,7 +8,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/nomadWorker"
 )
 
 func Test_GetNumAllocationsInStatus(t *testing.T) {
@@ -41,4 +41,7 @@ func Test_GetNumAllocationsInStatus(t *testing.T) {
 	require.NotNil(t, allocInfo)
 	assert.NoError(t, err)
 	assert.Equal(t, uint(1), allocInfo.numAllocations)
+	assert.Equal(t, 10, allocInfo.cpu)
+	assert.Equal(t, 10, allocInfo.diskMB)
+	assert.Equal(t, 10, allocInfo.memoryMB)
 }
