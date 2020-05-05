@@ -13,7 +13,7 @@ revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
 nomad_server := "http://${LOCAL_IP}:4646"
 
-all: tools test build finish
+all: tools test build lint finish
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
 # For all make targets the text after \#\# will be printed.
@@ -96,6 +96,20 @@ monitoring.down: ## Stops the monitoring setup.
 
 test.service: ## Run the service-test (integration test) for sokar
 	make -C test/service_test test.complete-setup
+
+lint: ## Runs the linter to check for coding-style issues
+	@echo "--> Lint project"
+	@echo "!!!!golangci-lint has to be installed. See: https://github.com/golangci/golangci-lint#install"
+	@golangci-lint run --fast
+
+report.test: sep ## Runs all unittests and generates a coverage- and a test-report.
+	@echo "--> Run the unit-tests"	
+	@go test . ./api -timeout 30s -race -run "^Test.*[^IT]$$" -covermode=atomic -coverprofile=coverage.out -json | tee test-report.out
+
+report.lint: ## Runs the linter to check for coding-style issues and generates the report file used in the ci pipeline
+	@echo "--> Lint project + Reporting"
+	@echo "!!!!golangci-lint has to be installed. See: https://github.com/golangci/golangci-lint#install"
+	@golangci-lint run --fast --out-format checkstyle | tee lint.out
 
 sep:
 	@echo "----------------------------------------------------------------------------------"
