@@ -8,7 +8,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_nomadWorker "github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/mocks/nomadWorker"
 )
 
 func Test_GetNumAllocationsInStatus(t *testing.T) {

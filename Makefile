@@ -39,18 +39,18 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@echo "--> generate mocks (github.com/golang/mock/gomock is required for this)"
 	@go get github.com/golang/mock/gomock
 	@go install github.com/golang/mock/mockgen
-	@mockgen -source=nomad/nomadclient_IF.go -destination test/nomad/mock_nomadclient_IF.go
-	@mockgen -source=nomadWorker/nomadclient_IF.go -destination test/nomadWorker/mock_nomadclient_IF.go
-	@mockgen -source=aws/iface/autoscaling_IF.go -destination test/aws/mock_autoscaling_IF.go 
-	@mockgen -source=scaler/scalingtarget_IF.go -destination test/scaler/mock_scalingtarget_IF.go 
-	@mockgen -source=sokar/iface/scaler_IF.go -destination test/sokar/mock_scaler_IF.go 
-	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/sokar/mock_capacity_planner_IF.go 
-	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/sokar/mock_scaleEventEmitter_IF.go 
-	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/sokar/mock_scaleschedule_IF.go
-	@mockgen -source=metrics/metrics.go -destination test/metrics/mock_metrics.go 
-	@mockgen -source=logging/loggerfactory.go -destination test/logging/mock_logging.go
-	@mockgen -source=capacityplanner/scaleschedule_IF.go -destination test/capacityplanner/mock_scaleschedule_IF.go
-	@mockgen -source=runnable.go -destination test/mock_runnable.go
+	@mockgen -source=nomad/nomadclient_IF.go -destination test/mocks/nomad/mock_nomadclient_IF.go
+	@mockgen -source=nomadWorker/nomadclient_IF.go -destination test/mocks/nomadWorker/mock_nomadclient_IF.go
+	@mockgen -source=aws/iface/autoscaling_IF.go -destination test/mocks/aws/mock_autoscaling_IF.go 
+	@mockgen -source=scaler/scalingtarget_IF.go -destination test/mocks/scaler/mock_scalingtarget_IF.go 
+	@mockgen -source=sokar/iface/scaler_IF.go -destination test/mocks/sokar/mock_scaler_IF.go 
+	@mockgen -source=sokar/iface/capacity_planner_IF.go -destination test/mocks/sokar/mock_capacity_planner_IF.go 
+	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/mocks/sokar/mock_scaleEventEmitter_IF.go 
+	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/mocks/sokar/mock_scaleschedule_IF.go
+	@mockgen -source=metrics/metrics.go -destination test/mocks/metrics/mock_metrics.go 
+	@mockgen -source=logging/loggerfactory.go -destination test/mocks/logging/mock_logging.go
+	@mockgen -source=capacityplanner/scaleschedule_IF.go -destination test/mocks/capacityplanner/mock_scaleschedule_IF.go
+	@mockgen -source=runnable.go -destination test/mocks/mock_runnable.go
 
 gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defined metrics in code.
 	@echo "--> generate Metrics.md"

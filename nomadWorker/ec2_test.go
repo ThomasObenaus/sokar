@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/aws"
-	mock_aws "github.com/thomasobenaus/sokar/test/aws"
+	mock_aws "github.com/thomasobenaus/sokar/test/mocks/aws"
 )
 
 func Test_CreateSession(t *testing.T) {

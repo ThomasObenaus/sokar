@@ -11,8 +11,8 @@ import (
 	"github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/helper"
-	mock_logging "github.com/thomasobenaus/sokar/test/logging"
-	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
+	mock_logging "github.com/thomasobenaus/sokar/test/mocks/logging"
+	mock_scaler "github.com/thomasobenaus/sokar/test/mocks/scaler"
 )
 
 func Test_SetupScaleScheduleShouldSucceed(t *testing.T) {

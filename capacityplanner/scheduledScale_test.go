@@ -7,8 +7,8 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	mock_capacityplanner "github.com/thomasobenaus/sokar/test/capacityplanner"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_capacityplanner "github.com/thomasobenaus/sokar/test/mocks/capacityplanner"
+	mock_metrics "github.com/thomasobenaus/sokar/test/mocks/metrics"
 )
 
 func Test_FitIntoScaleRangeShouldNotAdjustIfItIsInBounds(t *testing.T) {

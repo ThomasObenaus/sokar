@@ -10,7 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
-	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
+	mock_sokar "github.com/thomasobenaus/sokar/test/mocks/sokar"
 )
 
 func Test_New(t *testing.T) {

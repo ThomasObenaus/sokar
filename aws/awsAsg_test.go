@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_nomadWorker "github.com/thomasobenaus/sokar/test/aws"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/mocks/aws"
 )
 
 func Test_CreateAutoScaling(t *testing.T) {

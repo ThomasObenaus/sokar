@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
-	mock_scaler "github.com/thomasobenaus/sokar/test/scaler"
+	mock_metrics "github.com/thomasobenaus/sokar/test/mocks/metrics"
+	mock_scaler "github.com/thomasobenaus/sokar/test/mocks/scaler"
 )
 
 func Test_ExecuteScale_NoDryRun(t *testing.T) {
