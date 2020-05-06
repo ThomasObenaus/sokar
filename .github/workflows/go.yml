@@ -19,7 +19,7 @@ jobs:
 
       - name: Install linter and lint the code
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.3
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.26.0
           export PATH=$PATH:$(go env GOPATH)/bin
           golangci-lint --version
           make report.lint
