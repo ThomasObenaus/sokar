@@ -45,3 +45,18 @@ func Test_GetNumAllocationsInStatus(t *testing.T) {
 	assert.Equal(t, 10, allocInfo.diskMB)
 	assert.Equal(t, 10, allocInfo.memoryMB)
 }
+
+func TestStringer(t *testing.T) {
+	// GIVEN
+	r := resources{
+		cpu:      10,
+		diskMB:   11,
+		memoryMB: 12,
+	}
+
+	// WHEN
+	out := r.String()
+
+	// THEN
+	assert.Equal(t, "cpu=10,disk=11 MB,memory=12 MB", out)
+}

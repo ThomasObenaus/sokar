@@ -1,6 +1,10 @@
 package nomadWorker
 
-import nomadApi "github.com/hashicorp/nomad/api"
+import (
+	"fmt"
+
+	nomadApi "github.com/hashicorp/nomad/api"
+)
 
 type allocInfo struct {
 	numAllocations uint
@@ -38,4 +42,8 @@ func getNumAllocationsInStatus(nodesIF Nodes, nodeID string, status string) (*al
 		allocInformation.memoryMB += *alloc.Resources.MemoryMB
 	}
 	return allocInformation, nil
+}
+
+func (r *resources) String() string {
+	return fmt.Sprintf("cpu=%d,disk=%d MB,memory=%d MB", r.cpu, r.diskMB, r.memoryMB)
 }
