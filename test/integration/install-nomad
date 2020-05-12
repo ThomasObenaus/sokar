@@ -2,8 +2,7 @@
 # This script can be used to install Nomad and its dependencies. This script has been tested with the following
 # operating systems:
 #
-# 1. Ubuntu 16.04
-# 1. Amazon Linux
+# 1. Ubuntu 18.04
 
 set -e
 
@@ -13,16 +12,13 @@ readonly DEFAULT_NOMAD_USER="nomad"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SYSTEM_BIN_DIR="/usr/local/bin"
 
-readonly SUPERVISOR_DIR="/etc/supervisor"
-readonly SUPERVISOR_CONF_DIR="$SUPERVISOR_DIR/conf.d"
-
 readonly SCRIPT_NAME="$(basename "$0")"
 
 function print_usage {
   echo
   echo "Usage: install-nomad [OPTIONS]"
   echo
-  echo "This script can be used to install Nomad and its dependencies. This script has been tested with Ubuntu 16.04 and Amazon Linux."
+  echo "This script can be used to install Nomad and its dependencies. This script has been tested with Ubuntu 18.04 and Amazon Linux."
   echo
   echo "Options:"
   echo
@@ -32,7 +28,7 @@ function print_usage {
   echo
   echo "Example:"
   echo
-  echo "  install-nomad --version 0.5.4"
+  echo "  install-nomad --version 0.9.1"
 }
 
 function log {
@@ -68,77 +64,6 @@ function assert_not_empty {
   fi
 }
 
-# Install steps are based on: http://unix.stackexchange.com/a/291098/215969
-function install_supervisord_debian {
-  apt-get install -y supervisor
-  update-rc.d supervisor defaults
-
-  create_supervisor_config
-  systemctl enable supervisor
-}
-
-function install_systemd_nomad_amazon_linux2 {
-  log_info "Installing systemd nomad.service"
-  # TODO: Add check for systemd?
-
-  # Moving service description script to the system
-  cp "$SCRIPT_DIR/nomad.service" "/etc/systemd/system/"
-  # NOTE: Nomad is not yet configured - hence it makes no sense to try to start it!
-  systemctl enable nomad.service
-  #sudo systemctl start nomad.service
-  #sudo systemctl status nomad.service
-
-  # FIXME: Adapt run-nomad script to reflect the configuration change
-  #        Remove supervisord configration and adjust configuration file loaded in nomad.service
-}
-
-
-# Install steps are based on: http://stackoverflow.com/a/31576473/483528
-function install_supervisord_amazon_linux2 {
-  echo "[DEBUG] [install-nomad] - supervisor - installing supervisor"
-  pip install supervisor
-
-  echo "[DEBUG] [install-nomad] - supervisor - setup path"
-
-  pip install supervisor
-  # On Amazon Linux, /usr/local/bin is not in PATH for the root user, so we add symlinks to /usr/bin, which is in PATH
-  if [[ ! -f "/usr/bin/supervisorctl" ]]; then
-    ln -s /usr/local/bin/supervisorctl /usr/bin/supervisorctl
-  fi
-  if [[ ! -f "/usr/bin/supervisord" ]]; then
-    ln -s /usr/local/bin/supervisord /usr/bin/supervisord
-  fi
-
-  echo "[DEBUG] [install-nomad] - supervisor - setup systemctl"
-  ls -l "/etc/systemd/"
-  cp "$SCRIPT_DIR/supervisor.service" "/etc/systemd/system/"
-  echo "[DEBUG] [install-nomad] - supervisor - setup systemctl - enable"
-  systemctl enable supervisor.service
-
-
-  echo "[DEBUG] [install-nomad] - supervisor - create supervisor config"
-  create_supervisor_config
-  #sudo chkconfig --add supervisor
-  #sudo chkconfig supervisor on
-
-  #echo "[DEBUG] [install-nomad] - supervisor - systemctl"
-  systemctl start supervisor.service
-  # FIXME: DEBUG information
-  systemctl status supervisor.service
-
-  #echo "[DEBUG] [install-nomad] - supervisor - journald"
-  #sudo journalctrl -xe
-}
-
-function create_supervisor_config {
-  mkdir -p "$SUPERVISOR_CONF_DIR"
-  cp "$SCRIPT_DIR/supervisord.conf" "$SUPERVISOR_DIR/supervisord.conf"
-}
-
-function has_yum {
-  [ -n "$(command -v yum)" ]
-}
-
 function has_apt_get {
   [ -n "$(command -v apt-get)" ]
 }
@@ -148,15 +73,9 @@ function install_dependencies {
 
   if $(has_apt_get); then
     apt-get update -y
-    apt-get install -y awscli curl unzip jq
-    install_supervisord_debian
-  elif $(has_yum); then
-    # Amazon Linux 2 comes without pip
-    yum install -y aws curl unzip jq python2-pip
-    install_supervisord_amazon_linux2
-    install_systemd_nomad_amazon_linux2
+    apt-get install -y curl unzip jq
   else
-    log_error "Could not find apt-get or yum. Cannot install dependencies on this OS."
+    log_error "Could not find apt-get. Cannot install dependencies on this OS."
     exit 1
   fi
 }
@@ -166,7 +85,7 @@ function user_exists {
   id "$username" >/dev/null 2>&1
 }
 
-function create_nomad_user {
+function create_user {
   local readonly username="$1"
 
   if $(user_exists "$username"); then
@@ -177,7 +96,7 @@ function create_nomad_user {
   fi
 }
 
-function create_nomad_install_paths {
+function create_install_paths {
   local readonly path="$1"
   local readonly username="$2"
 
@@ -192,7 +111,7 @@ function create_nomad_install_paths {
   chown -R "$username:$username" "$path"
 }
 
-function install_binaries {
+function install_nomad_binaries {
   local readonly version="$1"
   local readonly path="$2"
   local readonly username="$3"
@@ -221,9 +140,38 @@ function install_binaries {
   fi
 
   log_info "Copying Nomad run script to $run_nomad_dest_path"
-  cp "$SCRIPT_DIR/../run-nomad/run-nomad" "$run_nomad_dest_path"
+  cp "$SCRIPT_DIR/run-nomad" "$run_nomad_dest_path"
   chown "$username:$username" "$run_nomad_dest_path"
   chmod a+x "$run_nomad_dest_path"
+}
+
+
+function install_consul_binaries {
+  local readonly version="$1"
+  local readonly path="$2"
+  local readonly username="$3"
+
+  local readonly url="https://releases.hashicorp.com/consul/${version}/consul_${version}_linux_amd64.zip"
+  local readonly download_path="/tmp/consul_${version}_linux_amd64.zip"
+  local readonly bin_dir="$path/bin"
+  local readonly consul_dest_path="$bin_dir/consul"
+
+  log_info "Downloading Consul $version from $url to $download_path"
+  curl -o "$download_path" "$url"
+  unzip -d /tmp "$download_path"
+
+  log_info "Moving Consul binary to $consul_dest_path"
+  mv "/tmp/consul" "$consul_dest_path"
+  chown "$username:$username" "$consul_dest_path"
+  chmod a+x "$consul_dest_path"
+
+  local readonly symlink_path="$SYSTEM_BIN_DIR/consul"
+  if [[ -f "$symlink_path" ]]; then
+    log_info "Symlink $symlink_path already exists. Will not add again."
+  else
+    log_info "Adding symlink to $consul_dest_path in $symlink_path"
+    ln -s "$consul_dest_path" "$symlink_path"
+  fi
 }
 
 function install {
@@ -268,9 +216,22 @@ function install {
   log_info "Starting Nomad install"
 
   install_dependencies
-  create_nomad_user "$user"
-  create_nomad_install_paths "$path" "$user"
-  install_binaries "$version" "$path" "$user"
+
+  # nomad user
+  create_user "$user"
+
+  # consul user
+  create_user "consul"
+  
+  # install paths for nomad
+  create_install_paths "$path" "$user"  
+  # install paths for consul
+  create_install_paths "/opt/consul" "consul"
+
+
+  install_nomad_binaries "$version" "/opt/consul" "consul"
+
+  install_consul_binaries "1.1.1"
 
   log_info "Nomad install complete!"
 }

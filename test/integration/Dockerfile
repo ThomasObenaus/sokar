@@ -1,12 +1,11 @@
 FROM ubuntu:19.10
 
 # This is the release of Nomad to pull in.
-ARG NOMAD_VERSION
-ENV NOMAD_VERSION=${NOMAD_VERSION}
+ARG NOMAD_VERSION=0.9.1
 
 # Create a nomad user and group first so the IDs get set the same way, even as
 # the rest of this may change over time.
-RUN adduser --disabled-login -gecos "" nomad
+#RUN adduser --disabled-login -gecos "" nomad
 #RUN addgroup nomad && \
 #    adduser -S -G nomad nomad
 #
@@ -18,6 +17,14 @@ RUN adduser --disabled-login -gecos "" nomad
 #COPY pkg/nomad /bin/nomad
 
 COPY install-nomad /install-nomad
+COPY docker-entrypoint.sh docker-entrypoint.sh
+COPY run-nomad /run-nomad
+COPY nomad.hcl /nomad.hcl
+COPY consul.hcl /consul.hcl
+
+RUN apt-get update -y && apt-get install -y dumb-init iproute2 vim
+
+RUN ./install-nomad --version ${NOMAD_VERSION}
 
 # The /nomad/data dir is used by Nomad to store state. The agent will be started
 # with /nomad/config as the configuration directory so you can add additional
@@ -37,10 +44,12 @@ EXPOSE 4648 4648/udp
 # HTTP is the primary interface that applications use to interact with Nomad.
 EXPOSE 4646
 
+# consul
+EXPOSE 8500
+
 # Nomad doesn't need root privileges so we run it as the nomad user from the
 # entry point script. The entry point script also uses dumb-init as the top-level
 # process to reap any zombie processes created by Nomad sub-processes.
-#COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 #ENTRYPOINT ["docker-entrypoint.sh"]
 
 # By default you'll get an insecure single-node development server that stores
