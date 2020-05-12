@@ -50,11 +50,11 @@ EXPOSE 8500
 # Nomad doesn't need root privileges so we run it as the nomad user from the
 # entry point script. The entry point script also uses dumb-init as the top-level
 # process to reap any zombie processes created by Nomad sub-processes.
-#ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # By default you'll get an insecure single-node development server that stores
 # everything in RAM, exposes HTTP endpoints, and bootstraps itself.  Don't use
 # this configuration for production.
 #CMD ["agent", "-dev"]
-CMD ["/bin/sh"]
+#CMD ["/bin/sh"]
 
