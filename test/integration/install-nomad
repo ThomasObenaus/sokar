@@ -176,8 +176,8 @@ function install_consul_binaries {
 
 function install {
   local version=""
-  local path="$DEFAULT_INSTALL_PATH"
-  local user="$DEFAULT_NOMAD_USER"
+  local consul_version=""
+  
 
   while [[ $# > 0 ]]; do
     local key="$1"
@@ -187,12 +187,8 @@ function install {
         version="$2"
         shift
         ;;
-      --path)
-        path="$2"
-        shift
-        ;;
-      --user)
-        user="$2"
+      --consul-version)
+        consul_version="$2"
         shift
         ;;
       --help)
@@ -210,28 +206,29 @@ function install {
   done
 
   assert_not_empty "--version" "$version"
-  assert_not_empty "--path" "$path"
-  assert_not_empty "--user" "$user"
+  assert_not_empty "--consul-version" "$consul_version"
 
-  log_info "Starting Nomad install"
+  log_info "Install nomad ($version)"
 
   install_dependencies
 
+  local nomad_user="nomad"
+
   # nomad user
-  create_user "$user"
+  create_user "$nomad_user"
 
   # consul user
   create_user "consul"
   
   # install paths for nomad
-  create_install_paths "$path" "$user"  
+  create_install_paths "/opt/nomad" "$nomad_user"
   # install paths for consul
   create_install_paths "/opt/consul" "consul"
 
 
   install_nomad_binaries "$version" "/opt/consul" "consul"
 
-  install_consul_binaries "1.1.1"
+  install_consul_binaries "$consul_version"
 
   log_info "Nomad install complete!"
 }

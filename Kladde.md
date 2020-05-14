@@ -7,3 +7,5 @@ consul agent -config-file=consul.hcl
 docker run -it -p 8500:8500 -p 4646:4646 nomad:latest
 
 ip -o -4 addr list eth0 | head -n1 | awk '{print \$4}' | cut -d/ -f1
+
+docker run --privileged -it -p 8500:8500 -p 4646:4646 nomad:latest

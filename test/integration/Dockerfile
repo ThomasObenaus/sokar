@@ -2,6 +2,7 @@ FROM ubuntu:19.10
 
 # This is the release of Nomad to pull in.
 ARG NOMAD_VERSION=0.9.1
+ARG CONSUL_VERSION=1.1.1
 
 # Create a nomad user and group first so the IDs get set the same way, even as
 # the rest of this may change over time.
@@ -42,7 +43,7 @@ RUN chmod +x /usr/local/bin/wrapdocker
 # Define additional metadata for our image.
 VOLUME /var/lib/docker
 
-RUN ./install-nomad --version ${NOMAD_VERSION}
+RUN ./install-nomad --version ${NOMAD_VERSION} --consul-version ${CONSUL_VERSION}
 
 # The /nomad/data dir is used by Nomad to store state. The agent will be started
 # with /nomad/config as the configuration directory so you can add additional
@@ -68,11 +69,11 @@ EXPOSE 8500
 # Nomad doesn't need root privileges so we run it as the nomad user from the
 # entry point script. The entry point script also uses dumb-init as the top-level
 # process to reap any zombie processes created by Nomad sub-processes.
-#ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # By default you'll get an insecure single-node development server that stores
 # everything in RAM, exposes HTTP endpoints, and bootstraps itself.  Don't use
 # this configuration for production.
 #CMD ["agent", "-dev"]
-CMD ["/bin/sh"]
+CMD [${NOMAD_VERSION},${CONSUL_VERSION}]
 
