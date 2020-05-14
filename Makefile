@@ -93,6 +93,9 @@ monitoring.down: ## Stops the monitoring setup.
 test.service: ## Run the service-test (integration test) for sokar
 	make -C test/service_test test.complete-setup
 
+test.integration: ## Run the integration-test for sokar
+	make -C test/integration test.complete-setup
+
 lint: ## Runs the linter to check for coding-style issues
 	@echo "--> Lint project"
 	@echo "!!!!golangci-lint has to be installed. See: https://github.com/golangci/golangci-lint#install"
