@@ -8,12 +8,13 @@ help: ## Prints the help
 
 test.complete-setup: ## Runs the service-test and ensures that sokar is running as well
 	@echo "--> Starting service-tests of sokar and thobe/sokar:latest as test-object"
-	@docker-compose up --build
-	# --abort-on-container-exit
-	# --exit-code-from service_test
+	@docker-compose up --build --abort-on-container-exit --exit-code-from integration_test
+	@docker-compose down
 
-############################################ TestCases ##############################################################
-#tc.endpoints: ## TestCase for sokar endpoints
-#	@echo "############# TestCase EndPoints (_EndPoints_) ........ ####################################################"
-#	go test -v -run="_EndPoints_" .
-#	@echo "############# TestCase EndPoints (_EndPoints_) Complete ####################################################"
+########################################### TestCases ##############################################################
+tc.integration: ## TestCase for sokar endpoints
+	@echo "############# TestCase EndPoints (_EndPoints_) ........ ####################################################"
+	sleep 20
+	#go test -v -run="_EndPoints_" .
+	curl -v http://sokar:11000/api/config
+	@echo "############# TestCase EndPoints (_EndPoints_) Complete ####################################################"

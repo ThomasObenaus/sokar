@@ -23,6 +23,15 @@ services:
       - integr_test
     environment:
       - SK_SCA_NOMAD_SERVER_ADDRESS=http://nomad:4646
+  integration_test:
+    build:
+      context: .
+      dockerfile: test.Dockerfile
+    command: ["make", "tc.integration"]
+    depends_on:
+      - sokar
+    networks:
+      - integr_test
 networks:
   integr_test:
     driver: bridge
