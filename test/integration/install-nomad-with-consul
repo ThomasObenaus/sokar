@@ -1,13 +1,10 @@
 #!/bin/bash
-# This script can be used to install Nomad and its dependencies. This script has been tested with the following
+# This script can be used to install nomad and consul in the specified version.
 # operating systems:
 #
-# 1. Ubuntu 18.04
+# 1. Ubuntu 19.04
 
 set -e
-
-readonly DEFAULT_INSTALL_PATH="/opt/nomad"
-readonly DEFAULT_NOMAD_USER="nomad"
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SYSTEM_BIN_DIR="/usr/local/bin"
@@ -16,19 +13,18 @@ readonly SCRIPT_NAME="$(basename "$0")"
 
 function print_usage {
   echo
-  echo "Usage: install-nomad [OPTIONS]"
+  echo "Usage: install-nomad-with-consul [OPTIONS]"
   echo
-  echo "This script can be used to install Nomad and its dependencies. This script has been tested with Ubuntu 18.04 and Amazon Linux."
+  echo "This script can be used to install nomad and consul in the specified version."
   echo
   echo "Options:"
   echo
   echo -e "  --version\t\tThe version of Nomad to install. Required."
-  echo -e "  --path\t\tThe path where Nomad should be installed. Optional. Default: $DEFAULT_INSTALL_PATH."
-  echo -e "  --user\t\tThe user who will own the Nomad install directories. Optional. Default: $DEFAULT_NOMAD_USER."
+  echo -e "  --consul-version\t\tThe version of Consul to install. Required."
   echo
   echo "Example:"
   echo
-  echo "  install-nomad --version 0.9.1"
+  echo "  install-nomad-with-consul --version 0.9.1 --consul-version 1.1.1"
 }
 
 function log {
@@ -60,22 +56,6 @@ function assert_not_empty {
   if [[ -z "$arg_value" ]]; then
     log_error "The value for '$arg_name' cannot be empty"
     print_usage
-    exit 1
-  fi
-}
-
-function has_apt_get {
-  [ -n "$(command -v apt-get)" ]
-}
-
-function install_dependencies {
-  log_info "Installing dependencies"
-
-  if $(has_apt_get); then
-    apt-get update -y
-    apt-get install -y curl unzip jq
-  else
-    log_error "Could not find apt-get. Cannot install dependencies on this OS."
     exit 1
   fi
 }
@@ -120,7 +100,6 @@ function install_nomad_binaries {
   local readonly download_path="/tmp/nomad_${version}_linux_amd64.zip"
   local readonly bin_dir="$path/bin"
   local readonly nomad_dest_path="$bin_dir/nomad"
-  local readonly run_nomad_dest_path="$bin_dir/run-nomad"
 
   log_info "Downloading Nomad $version from $url to $download_path"
   curl -o "$download_path" "$url"
@@ -138,11 +117,6 @@ function install_nomad_binaries {
     log_info "Adding symlink to $nomad_dest_path in $symlink_path"
     ln -s "$nomad_dest_path" "$symlink_path"
   fi
-
-  log_info "Copying Nomad run script to $run_nomad_dest_path"
-  cp "$SCRIPT_DIR/run-nomad" "$run_nomad_dest_path"
-  chown "$username:$username" "$run_nomad_dest_path"
-  chmod a+x "$run_nomad_dest_path"
 }
 
 
@@ -208,29 +182,41 @@ function install {
   assert_not_empty "--version" "$version"
   assert_not_empty "--consul-version" "$consul_version"
 
-  log_info "Install nomad ($version)"
-
-  install_dependencies
-
   local nomad_user="nomad"
+  local nomad_path="/opt/nomad"
+  local consul_user="consul"
+  local consul_path="/opt/consul"
 
-  # nomad user
+  log_info "############################ INSTALL NOMAD ($version) ###########################"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "############################ INSTALL NOMAD ##################################"
+
   create_user "$nomad_user"
+  create_install_paths "$nomad_path" "$nomad_user"
+  install_nomad_binaries "$version" "$nomad_path" $nomad_user
+  # write version file
+  echo "$version" > nomad.version
 
-  # consul user
-  create_user "consul"
-  
-  # install paths for nomad
-  create_install_paths "/opt/nomad" "$nomad_user"
-  # install paths for consul
-  create_install_paths "/opt/consul" "consul"
+  log_info "Install nomad complete!"
 
+  log_info "############################ INSTALL CONSUL ($consul_version) ###########################"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "#                                                                           #"
+  log_info "############################ INSTALL CONSUL ##################################"
+  log_info "Install consul ($consul_version)"
 
-  install_nomad_binaries "$version" "/opt/consul" "consul"
-
+  create_user "$consul_user"
+  create_install_paths "$consul_path" "$consul_user"
   install_consul_binaries "$consul_version"
+  # write version file
+  echo "$consul_version" > consul.version
 
-  log_info "Nomad install complete!"
+  log_info "Install consul complete!"
 }
 
 install "$@"

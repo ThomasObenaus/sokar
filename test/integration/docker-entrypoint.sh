@@ -1,8 +1,8 @@
 #!/usr/bin/dumb-init /bin/bash
 set -o errexit
 
-NOMAD_VERSION=$1
-CONSUL_VERSION=$2
+NOMAD_VERSION=$(cat nomad.version)
+CONSUL_VERSION=$(cat consul.version)
 
 # Taken from https://github.com/jpetazzo/dind in order to support docker in docker
 echo "############################ START WRAPDOCKER #########################"

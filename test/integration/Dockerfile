@@ -1,28 +1,21 @@
 FROM ubuntu:19.10
+LABEL maintainer="Thomas Obenaus"
 
 # This is the release of Nomad to pull in.
 ARG NOMAD_VERSION=0.9.1
+# This is the release of Consul to pull in.
 ARG CONSUL_VERSION=1.1.1
 
-# Create a nomad user and group first so the IDs get set the same way, even as
-# the rest of this may change over time.
-#RUN adduser --disabled-login -gecos "" nomad
-#RUN addgroup nomad && \
-#    adduser -S -G nomad nomad
-#
-## Set up certificates and our base tools
-#RUN apk add --no-cache ca-certificates curl dumb-init libcap su-exec
+# To build this image one can call
+# docker build -t nomad-consul -f Dockerfile --build-arg NOMAD_VERSION=0.9.1 --build-arg CONSUL_VERSION=1.1.1 .
 
-# We use a pre-staged static Nomad binary as upstream binaries are linked
-# against only LXC or glibc. The Dockerfile expects this at pkg/nomad.
-#COPY pkg/nomad /bin/nomad
-
-COPY install-nomad /install-nomad
+# Copy needed install scripts and configuration files
+COPY install-nomad-with-consul /install-nomad-with-consul
 COPY docker-entrypoint.sh docker-entrypoint.sh
-COPY run-nomad /run-nomad
 COPY nomad.hcl /nomad.hcl
 COPY consul.hcl /consul.hcl
 
+# Install needed dependencies
 RUN apt-get update -y && apt-get install -y \
     dumb-init \
     iproute2 \
@@ -30,27 +23,21 @@ RUN apt-get update -y && apt-get install -y \
     curl \
     lxc \
     iptables \
-    vim
-
+    unzip
 
 # Install Docker from Docker Inc. repositories.
 RUN curl -sSL https://get.docker.com/ | sh
 
-# Install the magic wrapper.
+# Install the magic wrapper which enableds docker in docker
+# Taken from https://github.com/jpetazzo/dind
 ADD ./wrapdocker /usr/local/bin/wrapdocker
 RUN chmod +x /usr/local/bin/wrapdocker
 
-# Define additional metadata for our image.
+# A volume is needed since each nomad job needs at least some disk space
 VOLUME /var/lib/docker
 
-RUN ./install-nomad --version ${NOMAD_VERSION} --consul-version ${CONSUL_VERSION}
-
-# The /nomad/data dir is used by Nomad to store state. The agent will be started
-# with /nomad/config as the configuration directory so you can add additional
-# config files in that location.
-#RUN mkdir -p /nomad/data && \
-#    mkdir -p /nomad/config && \
-#    chown -R nomad:nomad /nomad
+# Install consul and nomad in the specified versions
+RUN ./install-nomad-with-consul --version ${NOMAD_VERSION} --consul-version ${CONSUL_VERSION}
 
 # Server RPC is used for internal RPC communication between agents and servers,
 # and for inter-server traffic for the consensus algorithm (raft).
@@ -63,17 +50,10 @@ EXPOSE 4648 4648/udp
 # HTTP is the primary interface that applications use to interact with Nomad.
 EXPOSE 4646
 
-# consul
+# Consul HTTP (ui) port (tcp)
 EXPOSE 8500
 
-# Nomad doesn't need root privileges so we run it as the nomad user from the
-# entry point script. The entry point script also uses dumb-init as the top-level
-# process to reap any zombie processes created by Nomad sub-processes.
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-# By default you'll get an insecure single-node development server that stores
-# everything in RAM, exposes HTTP endpoints, and bootstraps itself.  Don't use
-# this configuration for production.
-#CMD ["agent", "-dev"]
-CMD [${NOMAD_VERSION},${CONSUL_VERSION}]
+CMD []
 
