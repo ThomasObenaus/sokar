@@ -55,5 +55,5 @@ EXPOSE 8500
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-CMD []
+CMD ["bin/sh"]
 

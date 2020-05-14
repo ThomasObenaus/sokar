@@ -9,7 +9,7 @@ bind_addr = "0.0.0.0"
 
 client {
   enabled = true
-  servers = ["172.17.0.2:4647"]
+  servers = ["{{host_ip_address}}:4647"]
   options = {
     "driver.raw_exec.enable" = "1"
   }
@@ -22,5 +22,5 @@ server {
 }
 
 consul {
-  address = "172.17.0.2:8500"
+  address = "{{host_ip_address}}:8500"
 }

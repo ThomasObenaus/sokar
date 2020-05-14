@@ -1,6 +1,6 @@
 {
-  "bind_addr": "172.17.0.2",
-  "client_addr": "172.17.0.2",
+  "bind_addr": "{{host_ip_address}}",
+  "client_addr": "{{host_ip_address}}",
   "datacenter": "dev-datacenter",
   "data_dir": "/tmp/consul",
   "log_level": "DEBUG",
