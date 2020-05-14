@@ -1,0 +1,28 @@
+version: "3"
+services:
+  nomad:
+    image: thobe/nomad:0.9.1
+    ports:
+      - 8500:8500
+      - 4646:4646
+      - 4647:4648
+    networks:
+      - integr_test
+    privileged: true
+  sokar:
+    build:
+      context: .
+      dockerfile: sokar.Dockerfile
+      args:
+        config_file: config.yaml
+    ports:
+      - 11000:11000
+    depends_on:
+      - nomad
+    networks:
+      - integr_test
+    environment:
+      - SK_SCA_NOMAD_SERVER_ADDRESS=http://nomad:4646
+networks:
+  integr_test:
+    driver: bridge
