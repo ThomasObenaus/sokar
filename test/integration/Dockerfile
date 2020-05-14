@@ -22,7 +22,25 @@ COPY run-nomad /run-nomad
 COPY nomad.hcl /nomad.hcl
 COPY consul.hcl /consul.hcl
 
-RUN apt-get update -y && apt-get install -y dumb-init iproute2 vim
+RUN apt-get update -y && apt-get install -y \
+    dumb-init \
+    iproute2 \
+    ca-certificates \
+    curl \
+    lxc \
+    iptables \
+    vim
+
+
+# Install Docker from Docker Inc. repositories.
+RUN curl -sSL https://get.docker.com/ | sh
+
+# Install the magic wrapper.
+ADD ./wrapdocker /usr/local/bin/wrapdocker
+RUN chmod +x /usr/local/bin/wrapdocker
+
+# Define additional metadata for our image.
+VOLUME /var/lib/docker
 
 RUN ./install-nomad --version ${NOMAD_VERSION}
 
@@ -50,11 +68,11 @@ EXPOSE 8500
 # Nomad doesn't need root privileges so we run it as the nomad user from the
 # entry point script. The entry point script also uses dumb-init as the top-level
 # process to reap any zombie processes created by Nomad sub-processes.
-ENTRYPOINT ["./docker-entrypoint.sh"]
+#ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # By default you'll get an insecure single-node development server that stores
 # everything in RAM, exposes HTTP endpoints, and bootstraps itself.  Don't use
 # this configuration for production.
 #CMD ["agent", "-dev"]
-#CMD ["/bin/sh"]
+CMD ["/bin/sh"]
 

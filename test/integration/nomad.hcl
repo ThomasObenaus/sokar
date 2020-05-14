@@ -1,6 +1,6 @@
 log_level = "DEBUG"
 enable_debug = true
-datacenter = "nomad-datacenter"
+datacenter = "testing"
 data_dir = "/tmp/nomad-devagent"
 
 name = "nomad-devagent"
