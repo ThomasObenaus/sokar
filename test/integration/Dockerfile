@@ -4,10 +4,10 @@ LABEL maintainer="Thomas Obenaus"
 # This is the release of Nomad to pull in.
 ARG NOMAD_VERSION=0.9.1
 # This is the release of Consul to pull in.
-ARG CONSUL_VERSION=1.1.1
+ARG CONSUL_VERSION=1.5.0
 
 # To build this image one can call
-# docker build -t nomad-consul -f Dockerfile --build-arg NOMAD_VERSION=0.9.1 --build-arg CONSUL_VERSION=1.1.1 .
+# docker build -t nomad-consul -f Dockerfile --build-arg NOMAD_VERSION=0.9.1 --build-arg CONSUL_VERSION=1.5.0 .
 
 # Copy needed install scripts and configuration files
 COPY install-nomad-with-consul /install-nomad-with-consul
@@ -15,7 +15,7 @@ COPY docker-entrypoint.sh docker-entrypoint.sh
 COPY nomad.hcl /nomad.hcl
 COPY consul.hcl /consul.hcl
 
-# Install needed dependencies
+# Install needed dependencies.
 RUN apt-get update -y && apt-get install -y \
     dumb-init \
     iproute2 \
