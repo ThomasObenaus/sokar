@@ -21,6 +21,8 @@ function replace_template_var_in_files {
   done
 }
 
+# patches the nomad.hcl and consul.hcl to use the local docker ip address
+# usually its 172.17.0.2 but not in each case since it depends on the local docker configuration.
 function patch_config_files {
     echo "[PATCHING CONFIG FILES] (with correct ip address) ######################"
 

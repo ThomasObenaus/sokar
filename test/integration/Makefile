@@ -11,10 +11,10 @@ build.0.9.1: ## builds and tags nomad in version 0.9.1 with consul in version 1.
 	@echo "--> tag image as thobe/nomad:0.9.1"
 	@docker tag thobe/nomad:latest thobe/nomad:0.9.1
 
-push.0.9.1:
+push.0.9.1: build.0.9.1 ## pushes the nomad in version 0.9.1 with consul in version 1.5.0 to docker hub
 	@echo "--> push image thobe/nomad:0.9.1"
 	@docker push thobe/nomad:0.9.1
 
-run.0.9.1: ## run nomad in version 0.9.1 with consul in version 1.5.0
+run.0.9.1: build.0.9.1 ## run nomad in version 0.9.1 with consul in version 1.5.0
 	@echo "--> run nomad-consul container (nomad 0.9.1, consul 1.5.0)"
 	@docker run --privileged -it -p 8500:8500 -p 4646:4646 thobe/nomad:0.9.1
