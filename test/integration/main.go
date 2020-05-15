@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	sokarAddr := "http://localhost:11000"
 	nomadAddr := "http://localhost:4646"
 
 	fmt.Printf("Start waiting for nomad (%s)....\n", nomadAddr)
@@ -16,12 +17,30 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed while waiting for nomad: %s\n", err.Error())
 	}
-
 	fmt.Printf("Nomad up and running (internal-ip=%s)\n", internalIP)
+
+	fmt.Printf("Start waiting for sokar (%s)....\n", sokarAddr)
+	err = waitForSokar(sokarAddr, time.Second*2, 20)
+	if err != nil {
+		log.Fatalf("Failed while waiting for sokar: %s\n", err.Error())
+	}
+	fmt.Printf("Sokar up and running\n")
 }
 
 func waitForNomad(nomadAddr string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
+	queryPath := "/v1/status/leader"
+	logPrefix := "wait for nomad"
+	return waitForService(nomadAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
+}
 
+func waitForSokar(serviceAddr string, timeoutBetweenTries time.Duration, numTries int) error {
+	queryPath := "/health"
+	logPrefix := "wait for sokar"
+	_, err := waitForService(serviceAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
+	return err
+}
+
+func waitForService(serviceAddr, queryPath, logPrefix string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
 	client := http.Client{
 		Timeout: time.Millisecond * 500,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -29,36 +48,36 @@ func waitForNomad(nomadAddr string, timeoutBetweenTries time.Duration, numTries 
 		},
 	}
 
-	statusURL := fmt.Sprintf("%s/v1/status/leader", nomadAddr)
+	queryURL := fmt.Sprintf("%s%s", serviceAddr, queryPath)
 	for i := 0; i < numTries; i++ {
-		fmt.Printf("[wait for nomad] %d/%d\n", i+1, numTries)
+		fmt.Printf("[%s] %d/%d\n", logPrefix, i+1, numTries)
 		if i > 0 {
 			time.Sleep(timeoutBetweenTries)
 		}
-		resp, err := client.Get(statusURL)
+		resp, err := client.Get(queryURL)
 		if err != nil {
-			fmt.Printf("[wait for nomad] %s\n", err.Error())
+			fmt.Printf("[%s] %s\n", logPrefix, err.Error())
 			continue
 		}
 
 		if resp == nil {
-			fmt.Println("[wait for nomad] Response is nil")
+			fmt.Printf("[%s] Response is nil\n", logPrefix)
 			continue
 		}
 
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Printf("[wait for nomad] Error reading response %s\n", err.Error())
+			fmt.Printf("[%s] Error reading response %s\n", logPrefix, err.Error())
 			continue
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			fmt.Printf("[wait for nomad] Error querying nomad at '%s' got response [%d] '%s'", nomadAddr, resp.StatusCode, string(bodyBytes))
+			fmt.Printf("[%s] Error querying service at '%s' got response [%d] '%s'", logPrefix, serviceAddr, resp.StatusCode, string(bodyBytes))
 			continue
 		}
 
 		return string(bodyBytes), nil
 	}
 
-	return "", fmt.Errorf("nomad not running at %s (timeoutBetweenTries=%s, numTries=%d)", nomadAddr, timeoutBetweenTries, numTries)
+	return "", fmt.Errorf("[%s] service not running at %s (timeoutBetweenTries=%s, numTries=%d)", logPrefix, serviceAddr, timeoutBetweenTries, numTries)
 }
