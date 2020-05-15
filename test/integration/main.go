@@ -25,6 +25,19 @@ func main() {
 		log.Fatalf("Failed while waiting for sokar: %s\n", err.Error())
 	}
 	fmt.Printf("Sokar up and running\n")
+
+	fmt.Printf("Deploy Job\n")
+	d, err := NewDeployer(nomadAddr)
+	if err != nil {
+		log.Fatalf("Failed to create deployer: %s\n", err.Error())
+	}
+
+	err = d.Deploy()
+	if err != nil {
+		log.Fatalf("Failed to deploy job: %s\n", err.Error())
+	}
+
+	fmt.Printf("Deploy Job succeeded\n")
 }
 
 func waitForNomad(nomadAddr string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
