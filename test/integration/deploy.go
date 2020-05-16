@@ -37,13 +37,78 @@ func NewDeployer(nomadServerAddress string) (*deployerImpl, error) {
 	}, nil
 }
 
+func strToPtr(v string) *string {
+	return &v
+}
+
+func intToPtr(v int) *int {
+	return &v
+}
+
+func durToPtr(v time.Duration) *time.Duration {
+	return &v
+}
+
 func (d *deployerImpl) Deploy() error {
-	id := "test-service"
-	jobInfo := &nomadApi.Job{
-		ID: &id,
+
+	nwResource := nomadApi.NetworkResource{
+		MBits:        intToPtr(10),
+		DynamicPorts: []nomadApi.Port{nomadApi.Port{Label: "http"}},
+	}
+	resources := nomadApi.Resources{
+		CPU:      intToPtr(100),
+		MemoryMB: intToPtr(128),
+		Networks: []*nomadApi.NetworkResource{&nwResource},
 	}
 
+	service1 := nomadApi.Service{
+		Name:      "fail-service",
+		PortLabel: "http",
+		Checks: []nomadApi.ServiceCheck{nomadApi.ServiceCheck{
+			PortLabel: "http",
+			Type:      "http",
+			Path:      "/health",
+			Method:    "GET",
+			Interval:  time.Second * 10,
+			Timeout:   time.Second * 2,
+		}},
+	}
+
+	task1 := nomadApi.Task{
+		Name:   "fail-service",
+		Driver: "docker",
+		Config: map[string]interface{}{
+			"image":    "thobe/fail_service:v0.1.0",
+			"port_map": []map[string]int{map[string]int{"http": 8080}},
+		},
+		Resources: &resources,
+		Services:  []*nomadApi.Service{&service1},
+		Env:       map[string]string{"HEALTHY_FOR": "-1"},
+	}
+
+	tasks1 := []*nomadApi.Task{&task1}
+	taskGroup1 := nomadApi.TaskGroup{
+		Name:  strToPtr("fail-service-grp-A"),
+		Tasks: tasks1,
+		Count: intToPtr(2),
+	}
+	taskGroups1 := []*nomadApi.TaskGroup{&taskGroup1}
+
+	updateStrategy := nomadApi.UpdateStrategy{
+		Stagger:     durToPtr(time.Second * 5),
+		MaxParallel: intToPtr(1),
+	}
+	jobInfo := &nomadApi.Job{
+		ID:          strToPtr("fail-service"),
+		Datacenters: []string{"testing"},
+		TaskGroups:  taskGroups1,
+		Type:        strToPtr("service"),
+		Update:      &updateStrategy,
+	}
+
+	fmt.Printf("[deploy] Register job\n")
 	jobRegisterResponse, _, err := d.jobsIF.Register(jobInfo, &nomadApi.WriteOptions{})
+	fmt.Printf("[deploy] Job registered resp='%v'\n", jobRegisterResponse)
 
 	if err != nil {
 		return errors.Wrap(err, "Failed to register job for deployment")
@@ -61,11 +126,13 @@ func (d *deployerImpl) Deploy() error {
 
 // waitForDeploymentConfirmation checks if the deployment forced by the scale-event was successful or not.
 func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
+	fmt.Printf("[deploy] Get deployment id for evailid=%s\n", evalID)
 
 	deplID, err := d.getDeploymentID(evalID, d.evaluationTimeOut)
 	if err != nil {
 		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s: %s", evalID, err.Error())
 	}
+	fmt.Printf("[deploy] Got deployment id=%s\n", deplID)
 
 	// Retry/ poll nomad each 500ms
 	pollTicker := time.NewTicker(500 * time.Millisecond)
@@ -89,6 +156,7 @@ func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time
 			if err != nil {
 				return err
 			}
+			fmt.Printf("[deploy] Pending deployment: %v\n", *deployment)
 
 			if deployment == nil || queryMeta == nil {
 				return fmt.Errorf("Got nil while querying for deployment %s", deplID)
