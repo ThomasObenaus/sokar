@@ -13,6 +13,13 @@ saa:
   eval-cycle: 15s
   eval-period-factor: 25
   cleanup-cycle: 260s
+  scale-alerts:
+    - name: "AlertA"
+      weight: 1.5
+      description: "Up alert"
+    - name: "AlertB"
+      weight: -1.5
+      description: "Down alert"
 logging:
   structured: false
   unix-ts: false

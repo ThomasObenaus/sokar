@@ -1,6 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"log"
+	"net/http"
 	"testing"
 	"time"
 
@@ -39,4 +43,61 @@ func TestSimple(t *testing.T) {
 	require.Equal(t, 2, count, "Job count not as expected after initial deployment")
 
 	t.Logf("Deploy Job succeeded\n")
+
+	sendScaleAlert()
+}
+
+func sendScaleAlert() {
+	client := http.Client{
+		Timeout: time.Millisecond * 500,
+	}
+
+	bodybytes := []byte(`{
+		"receiver": "PM",
+		"status": "firing",
+		"alerts": [
+		  {
+			"status": "firing",
+			"labels": {
+			  "alertname": "AlertA",
+			  "alert-type": "scaling",
+			  "scale-type": "up"
+			},
+			"annotations": {
+			  "description": "Scales the component XYZ UP"
+			},
+			"startsAt": "2019-02-23T12:00:00.000+01:00",
+			"endsAt": "2019-02-23T12:05:00.000+01:00",
+			"generatorURL": "http://generator_url"
+		  },
+		  {
+			"status": "firings",
+			"labels": {
+			  "alertname": "AlertB",
+			  "alert-type": "scaling",
+			  "scale-type": "down"
+			},
+			"annotations": {
+			  "description": "Scales the component XYZ DOWN"
+			},
+			"startsAt": "2019-02-23T12:00:00.000+01:00",
+			"endsAt": "2019-02-23T12:05:00.000+01:00",
+			"generatorURL": "http://generatorURL"
+		  }
+		],
+		"groupLabels": {},
+		"commonLabels": { "alertname": "AlertA" },
+		"commonAnnotations": {},
+		"externalURL": "http://externalURL",
+		"version": "4",
+		"groupKey": "{}:{}"
+	  }`)
+	body := bytes.NewReader(bodybytes)
+	resp, err := client.Post("http://localhost:11000/api/alerts", "application/json", body)
+
+	if err != nil {
+		log.Fatalf("Error sending request: %s\n", err.Error())
+	}
+
+	fmt.Printf("Request send, response: %v\n", resp)
 }
