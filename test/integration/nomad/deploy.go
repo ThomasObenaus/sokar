@@ -105,9 +105,9 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 
 func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 
-	fmt.Printf("[deploy] Register job\n")
+	d.tstCtx.Logf("[deploy] Register job\n")
 	jobRegisterResponse, _, err := d.jobsIF.Register(job, &nomadApi.WriteOptions{})
-	fmt.Printf("[deploy] Job registered resp='%v'\n", jobRegisterResponse)
+	d.tstCtx.Logf("[deploy] Job registered resp='%v'\n", jobRegisterResponse)
 
 	if err != nil {
 		return errors.Wrap(err, "Failed to register job for deployment")
@@ -119,19 +119,19 @@ func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 		return errors.Wrap(err, "Deployment failed")
 	}
 
-	fmt.Printf("[deploy] Deployment done\n")
+	d.tstCtx.Logf("[deploy] Deployment done\n")
 	return nil
 }
 
 // waitForDeploymentConfirmation checks if the deployment forced by the scale-event was successful or not.
 func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time.Duration) error {
-	fmt.Printf("[deploy] Get deployment id for evailid=%s\n", evalID)
+	d.tstCtx.Logf("[deploy] Get deployment id for evailid=%s\n", evalID)
 
 	deplID, err := d.getDeploymentID(evalID, d.evaluationTimeOut)
 	if err != nil {
 		return fmt.Errorf("Failed to retrieve deployment ID for evaluation %s: %s", evalID, err.Error())
 	}
-	fmt.Printf("[deploy] Got deployment id=%s\n", deplID)
+	d.tstCtx.Logf("[deploy] Got deployment id=%s\n", deplID)
 
 	// Retry/ poll nomad each 500ms
 	pollTicker := time.NewTicker(500 * time.Millisecond)
@@ -165,7 +165,7 @@ func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time
 			// Wait/ redo until the waitIndex was transcended
 			// It makes no sense to evaluate results earlier
 			if queryMeta.LastIndex <= queryOpt.WaitIndex {
-				fmt.Printf("[deploy][WARN] Waitindex not exceeded yet (lastIdx=%d, waitIdx=%d). Probably resources are exhausted.", queryMeta.LastIndex, queryOpt.WaitIndex)
+				d.tstCtx.Logf("[deploy][WARN] Waitindex not exceeded yet (lastIdx=%d, waitIdx=%d). Probably resources are exhausted.", queryMeta.LastIndex, queryOpt.WaitIndex)
 				d.printDeploymentProgress(deplID, deployment)
 				continue
 			}
@@ -186,10 +186,10 @@ func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time
 }
 
 func (d *deployerImpl) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
-	fmt.Printf("[deploy] Deployment progress info (%s)\n", deployment.StatusDescription)
+	d.tstCtx.Logf("[deploy] Deployment progress info (%s)\n", deployment.StatusDescription)
 	for tgName, deplState := range deployment.TaskGroups {
 		perc := (float32(deplState.HealthyAllocs) / float32(deplState.DesiredTotal)) * 100.0
-		fmt.Printf("[deploy] taskGroup=%s, depl=%.2f%%, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d\n", tgName, perc, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
+		d.tstCtx.Logf("[deploy] taskGroup=%s, depl=%.2f%%, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d\n", tgName, perc, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
 	}
 }
 
@@ -223,7 +223,7 @@ func (d *deployerImpl) getDeploymentID(evalID string, timeout time.Duration) (de
 			evaluation, _, err := evalIf.Info(evalID, nil)
 
 			if err != nil {
-				fmt.Printf("[deploy][ERR] Error while retrieving the deployment ID: %s", err.Error())
+				d.tstCtx.Logf("[deploy][ERR] Error while retrieving the deployment ID: %s", err.Error())
 				continue
 			}
 
