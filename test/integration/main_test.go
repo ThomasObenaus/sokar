@@ -13,6 +13,7 @@ import (
 func TestSimple(t *testing.T) {
 	sokarAddr := "http://localhost:11000"
 	nomadAddr := "http://localhost:4646"
+	jobName := "fail-service"
 
 	t.Logf("Start waiting for nomad (%s)....\n", nomadAddr)
 	internalIP, err := helper.WaitForNomad(t, nomadAddr, time.Second*2, 20)
@@ -29,9 +30,13 @@ func TestSimple(t *testing.T) {
 	d, err := nomad.NewDeployer(t, nomadAddr)
 	require.NoError(t, err, "Failed to create deployer")
 
-	job := nomad.NewJobDescription("fail-service", "testing", "thobe/fail_service:v0.1.0", 2, map[string]string{"HEALTHY_FOR": "-1"})
+	job := nomad.NewJobDescription(jobName, "testing", "thobe/fail_service:v0.1.0", 2, map[string]string{"HEALTHY_FOR": "-1"})
 	err = d.Deploy(job)
 	require.NoError(t, err, "Failed to deploy job")
+
+	count, err := d.GetJobCount(jobName)
+	require.NoError(t, err, "Failed to obtain job count")
+	require.Equal(t, 2, count, "Job count not as expected after initial deployment")
 
 	t.Logf("Deploy Job succeeded\n")
 }

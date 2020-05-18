@@ -103,6 +103,25 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 	return jobInfo
 }
 
+func (d *deployerImpl) GetJobCount(jobName string) (int, error) {
+
+	jobInfo, _, err := d.jobsIF.Info(jobName, &nomadApi.QueryOptions{AllowStale: true})
+
+	if err != nil {
+		return 0, errors.Wrap(err, "Unable to determine job info")
+	}
+
+	// HACK: To unify the multiple groups with we take the job with max count.
+	var count int
+	for _, taskGroup := range jobInfo.TaskGroups {
+		if *taskGroup.Count > count {
+			count = *taskGroup.Count
+		}
+	}
+
+	return count, nil
+}
+
 func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 
 	d.tstCtx.Logf("[deploy] Register job\n")
