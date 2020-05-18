@@ -37,28 +37,28 @@ func NewDeployer(nomadServerAddress string) (*deployerImpl, error) {
 	}, nil
 }
 
-func strToPtr(v string) *string {
+func StrToPtr(v string) *string {
 	return &v
 }
 
-func intToPtr(v int) *int {
+func IntToPtr(v int) *int {
 	return &v
 }
 
-func durToPtr(v time.Duration) *time.Duration {
+func DurToPtr(v time.Duration) *time.Duration {
 	return &v
 }
 
 // NewJobDescription creates a new default job description that can be used to deploy a nomad job.
 // Per default the type of that job is 'service'.
-func NewJobDescription(jobName, datacenter, dockerImage string, count int) *nomadApi.Job {
+func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVars map[string]string) *nomadApi.Job {
 	nwResource := nomadApi.NetworkResource{
-		MBits:        intToPtr(10),
+		MBits:        IntToPtr(10),
 		DynamicPorts: []nomadApi.Port{nomadApi.Port{Label: "http"}},
 	}
 	resources := nomadApi.Resources{
-		CPU:      intToPtr(100),
-		MemoryMB: intToPtr(128),
+		CPU:      IntToPtr(100),
+		MemoryMB: IntToPtr(128),
 		Networks: []*nomadApi.NetworkResource{&nwResource},
 	}
 
@@ -84,26 +84,26 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int) *noma
 		},
 		Resources: &resources,
 		Services:  []*nomadApi.Service{&service},
-		Env:       map[string]string{"HEALTHY_FOR": "-1"},
+		Env:       envVars,
 	}
 
 	tasks := []*nomadApi.Task{&task}
 	taskGroup := nomadApi.TaskGroup{
-		Name:  strToPtr(fmt.Sprintf("%s-grp", jobName)),
+		Name:  StrToPtr(fmt.Sprintf("%s-grp", jobName)),
 		Tasks: tasks,
-		Count: intToPtr(count),
+		Count: IntToPtr(count),
 	}
 	taskGroups := []*nomadApi.TaskGroup{&taskGroup}
 
 	updateStrategy := nomadApi.UpdateStrategy{
-		Stagger:     durToPtr(time.Second * 5),
-		MaxParallel: intToPtr(1),
+		Stagger:     DurToPtr(time.Second * 5),
+		MaxParallel: IntToPtr(1),
 	}
 	jobInfo := &nomadApi.Job{
-		ID:          strToPtr(jobName),
+		ID:          StrToPtr(jobName),
 		Datacenters: []string{datacenter},
 		TaskGroups:  taskGroups,
-		Type:        strToPtr("service"),
+		Type:        StrToPtr("service"),
 		Update:      &updateStrategy,
 	}
 	return jobInfo
@@ -125,7 +125,7 @@ func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 		return errors.Wrap(err, "Deployment failed")
 	}
 
-	//nc.log.Info().Str("job", jobname).Msg("Deployment issued, waiting for completion ... done")
+	fmt.Printf("[deploy] Deployment done\n")
 	return nil
 }
 
@@ -161,17 +161,18 @@ func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time
 			if err != nil {
 				return err
 			}
-			fmt.Printf("[deploy] Pending deployment: %v\n", *deployment)
 
 			if deployment == nil || queryMeta == nil {
 				return fmt.Errorf("Got nil while querying for deployment %s", deplID)
 			}
 
+			d.printDeploymentProgress(deplID, deployment)
+
 			// Wait/ redo until the waitIndex was transcended
 			// It makes no sense to evaluate results earlier
 			if queryMeta.LastIndex <= queryOpt.WaitIndex {
-				//nc.log.Warn().Str("DeplID", deplID).Msgf("Waitindex not exceeded yet (lastIdx=%d, waitIdx=%d). Probably resources are exhausted.", queryMeta.LastIndex, queryOpt.WaitIndex)
-				//nc.printDeploymentProgress(deplID, deployment)
+				fmt.Printf("[deploy][WARN] Waitindex not exceeded yet (lastIdx=%d, waitIdx=%d). Probably resources are exhausted.", queryMeta.LastIndex, queryOpt.WaitIndex)
+				d.printDeploymentProgress(deplID, deployment)
 				continue
 			}
 
@@ -181,12 +182,20 @@ func (d *deployerImpl) waitForDeploymentConfirmation(evalID string, timeout time
 			if deployment.Status == structs.DeploymentStatusSuccessful {
 				return nil
 			} else if deployment.Status == structs.DeploymentStatusRunning {
-				//nc.printDeploymentProgress(deplID, deployment)
+				d.printDeploymentProgress(deplID, deployment)
 				continue
 			} else {
 				return fmt.Errorf("Deployment (%s) failed with status %s (%s)", deplID, deployment.Status, deployment.StatusDescription)
 			}
 		}
+	}
+}
+
+func (d *deployerImpl) printDeploymentProgress(deplID string, deployment *nomadApi.Deployment) {
+	fmt.Printf("[deploy] Deployment progress info (%s)\n", deployment.StatusDescription)
+	for tgName, deplState := range deployment.TaskGroups {
+		perc := (float32(deplState.HealthyAllocs) / float32(deplState.DesiredTotal)) * 100.0
+		fmt.Printf("[deploy] taskGroup=%s, depl=%.2f%%, Allocs: desired=%d,placed=%d,healthy=%d,unhealthy=%d\n", tgName, perc, deplState.DesiredTotal, deplState.PlacedAllocs, deplState.HealthyAllocs, deplState.UnhealthyAllocs)
 	}
 }
 
@@ -220,17 +229,13 @@ func (d *deployerImpl) getDeploymentID(evalID string, timeout time.Duration) (de
 			evaluation, _, err := evalIf.Info(evalID, nil)
 
 			if err != nil {
-				//nc.log.Error().Str("EvalID", evalID).Err(err).Msg("Error while retrieving the deployment ID")
+				fmt.Printf("[deploy][ERR] Error while retrieving the deployment ID: %s", err.Error())
 				continue
 			}
 
 			if evaluation.DeploymentID == "" {
-				//nc.log.Debug().Str("EvalID", evalID).Msg("Received deployment ID was empty. Will retry.")
 				continue
 			}
-
-			//nc.log.Debug().Str("EvalID", evalID).Str("DeplID", evaluation.DeploymentID).Msg("Received deployment ID.")
-
 			return evaluation.DeploymentID, nil
 		}
 	}

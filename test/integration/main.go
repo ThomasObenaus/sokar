@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("Failed to create deployer: %s\n", err.Error())
 	}
 
-	job := NewJobDescription("fail-service", "testing", "thobe/fail_service:v0.1.0", 2)
+	job := NewJobDescription("fail-service", "testing", "thobe/fail_service:v0.1.0", 2, map[string]string{"HEALTHY_FOR": "-1"})
 	err = d.Deploy(job)
 	if err != nil {
 		log.Fatalf("Failed to deploy job: %s\n", err.Error())
