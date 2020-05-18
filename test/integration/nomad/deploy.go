@@ -2,6 +2,7 @@ package nomad
 
 import (
 	"fmt"
+	"testing"
 	"time"
 
 	nomadApi "github.com/hashicorp/nomad/api"
@@ -19,9 +20,12 @@ type deployerImpl struct {
 
 	deploymentTimeout time.Duration
 	evaluationTimeOut time.Duration
+
+	// tstCtx is the testing context
+	tstCtx *testing.T
 }
 
-func NewDeployer(nomadServerAddress string) (*deployerImpl, error) {
+func NewDeployer(t *testing.T, nomadServerAddress string) (*deployerImpl, error) {
 
 	config := nomadApi.DefaultConfig()
 	config.Address = nomadServerAddress
@@ -35,6 +39,7 @@ func NewDeployer(nomadServerAddress string) (*deployerImpl, error) {
 		evalIF:            client.Evaluations(),
 		deploymentTimeout: time.Second * 30,
 		evaluationTimeOut: time.Second * 15,
+		tstCtx:            t,
 	}, nil
 }
 
