@@ -1,4 +1,4 @@
-package main
+package nomad
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/pkg/errors"
 	"github.com/thomasobenaus/sokar/nomad/structs"
+	"github.com/thomasobenaus/sokar/test/integration/helper"
 )
 
 type deployerImpl struct {
@@ -37,28 +38,16 @@ func NewDeployer(nomadServerAddress string) (*deployerImpl, error) {
 	}, nil
 }
 
-func StrToPtr(v string) *string {
-	return &v
-}
-
-func IntToPtr(v int) *int {
-	return &v
-}
-
-func DurToPtr(v time.Duration) *time.Duration {
-	return &v
-}
-
 // NewJobDescription creates a new default job description that can be used to deploy a nomad job.
 // Per default the type of that job is 'service'.
 func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVars map[string]string) *nomadApi.Job {
 	nwResource := nomadApi.NetworkResource{
-		MBits:        IntToPtr(10),
+		MBits:        helper.IntToPtr(10),
 		DynamicPorts: []nomadApi.Port{nomadApi.Port{Label: "http"}},
 	}
 	resources := nomadApi.Resources{
-		CPU:      IntToPtr(100),
-		MemoryMB: IntToPtr(128),
+		CPU:      helper.IntToPtr(100),
+		MemoryMB: helper.IntToPtr(128),
 		Networks: []*nomadApi.NetworkResource{&nwResource},
 	}
 
@@ -89,21 +78,21 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 
 	tasks := []*nomadApi.Task{&task}
 	taskGroup := nomadApi.TaskGroup{
-		Name:  StrToPtr(fmt.Sprintf("%s-grp", jobName)),
+		Name:  helper.StrToPtr(fmt.Sprintf("%s-grp", jobName)),
 		Tasks: tasks,
-		Count: IntToPtr(count),
+		Count: helper.IntToPtr(count),
 	}
 	taskGroups := []*nomadApi.TaskGroup{&taskGroup}
 
 	updateStrategy := nomadApi.UpdateStrategy{
-		Stagger:     DurToPtr(time.Second * 5),
-		MaxParallel: IntToPtr(1),
+		Stagger:     helper.DurToPtr(time.Second * 5),
+		MaxParallel: helper.IntToPtr(1),
 	}
 	jobInfo := &nomadApi.Job{
-		ID:          StrToPtr(jobName),
+		ID:          helper.StrToPtr(jobName),
 		Datacenters: []string{datacenter},
 		TaskGroups:  taskGroups,
-		Type:        StrToPtr("service"),
+		Type:        helper.StrToPtr("service"),
 		Update:      &updateStrategy,
 	}
 	return jobInfo

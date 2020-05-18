@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/thomasobenaus/sokar/test/integration/nomad"
 )
 
 func main() {
@@ -27,12 +29,12 @@ func main() {
 	fmt.Printf("Sokar up and running\n")
 
 	fmt.Printf("Deploy Job\n")
-	d, err := NewDeployer(nomadAddr)
+	d, err := nomad.NewDeployer(nomadAddr)
 	if err != nil {
 		log.Fatalf("Failed to create deployer: %s\n", err.Error())
 	}
 
-	job := NewJobDescription("fail-service", "testing", "thobe/fail_service:v0.1.0", 2, map[string]string{"HEALTHY_FOR": "-1"})
+	job := nomad.NewJobDescription("fail-service", "testing", "thobe/fail_service:v0.1.0", 2, map[string]string{"HEALTHY_FOR": "-1"})
 	err = d.Deploy(job)
 	if err != nil {
 		log.Fatalf("Failed to deploy job: %s\n", err.Error())
