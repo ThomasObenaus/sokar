@@ -49,8 +49,9 @@ func durToPtr(v time.Duration) *time.Duration {
 	return &v
 }
 
-func (d *deployerImpl) Deploy() error {
-
+// NewJobDescription creates a new default job description that can be used to deploy a nomad job.
+// Per default the type of that job is 'service'.
+func NewJobDescription(jobName, datacenter, dockerImage string, count int) *nomadApi.Job {
 	nwResource := nomadApi.NetworkResource{
 		MBits:        intToPtr(10),
 		DynamicPorts: []nomadApi.Port{nomadApi.Port{Label: "http"}},
@@ -61,8 +62,8 @@ func (d *deployerImpl) Deploy() error {
 		Networks: []*nomadApi.NetworkResource{&nwResource},
 	}
 
-	service1 := nomadApi.Service{
-		Name:      "fail-service",
+	service := nomadApi.Service{
+		Name:      fmt.Sprintf("%s-service", jobName),
 		PortLabel: "http",
 		Checks: []nomadApi.ServiceCheck{nomadApi.ServiceCheck{
 			PortLabel: "http",
@@ -74,40 +75,44 @@ func (d *deployerImpl) Deploy() error {
 		}},
 	}
 
-	task1 := nomadApi.Task{
-		Name:   "fail-service",
+	task := nomadApi.Task{
+		Name:   fmt.Sprintf("%s-task", jobName),
 		Driver: "docker",
 		Config: map[string]interface{}{
-			"image":    "thobe/fail_service:v0.1.0",
+			"image":    dockerImage,
 			"port_map": []map[string]int{map[string]int{"http": 8080}},
 		},
 		Resources: &resources,
-		Services:  []*nomadApi.Service{&service1},
+		Services:  []*nomadApi.Service{&service},
 		Env:       map[string]string{"HEALTHY_FOR": "-1"},
 	}
 
-	tasks1 := []*nomadApi.Task{&task1}
-	taskGroup1 := nomadApi.TaskGroup{
-		Name:  strToPtr("fail-service-grp-A"),
-		Tasks: tasks1,
-		Count: intToPtr(2),
+	tasks := []*nomadApi.Task{&task}
+	taskGroup := nomadApi.TaskGroup{
+		Name:  strToPtr(fmt.Sprintf("%s-grp", jobName)),
+		Tasks: tasks,
+		Count: intToPtr(count),
 	}
-	taskGroups1 := []*nomadApi.TaskGroup{&taskGroup1}
+	taskGroups := []*nomadApi.TaskGroup{&taskGroup}
 
 	updateStrategy := nomadApi.UpdateStrategy{
 		Stagger:     durToPtr(time.Second * 5),
 		MaxParallel: intToPtr(1),
 	}
 	jobInfo := &nomadApi.Job{
-		ID:          strToPtr("fail-service"),
-		Datacenters: []string{"testing"},
-		TaskGroups:  taskGroups1,
+		ID:          strToPtr(jobName),
+		Datacenters: []string{datacenter},
+		TaskGroups:  taskGroups,
 		Type:        strToPtr("service"),
 		Update:      &updateStrategy,
 	}
+	return jobInfo
+}
+
+func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 
 	fmt.Printf("[deploy] Register job\n")
-	jobRegisterResponse, _, err := d.jobsIF.Register(jobInfo, &nomadApi.WriteOptions{})
+	jobRegisterResponse, _, err := d.jobsIF.Register(job, &nomadApi.WriteOptions{})
 	fmt.Printf("[deploy] Job registered resp='%v'\n", jobRegisterResponse)
 
 	if err != nil {
