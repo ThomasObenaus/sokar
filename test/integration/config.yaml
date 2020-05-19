@@ -15,10 +15,10 @@ saa:
   eval-period-factor: 25
   cleanup-cycle: 260s
   scale-alerts:
-    - name: "AlertA"
+    - name: "AlertUp"
       weight: 10
       description: "Up alert"
-    - name: "AlertB"
+    - name: "AlertDown"
       weight: -10
       description: "Down alert"
 logging:
