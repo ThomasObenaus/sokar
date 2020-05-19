@@ -11,4 +11,4 @@ scrape_configs:
     scrape_interval: 5s
 
     static_configs:
-      - targets: ["localhost:11000"]
+      - targets: ["host.docker.internal:11000"]
