@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"flag"
+	"os"
 	"sync"
 )
 
@@ -12,8 +12,14 @@ var obtainedNomadAddress string
 func ServerAddresses() (sokarAddr string, nomadAddr string) {
 
 	doObtainServerAddresses.Do(func() {
-		flag.StringVar(&obtainedSokarAddress, "sokar-addr", "http://localhost:11000", "Address of sokar (e.g. http://localhost:11000)")
-		flag.StringVar(&obtainedNomadAddress, "nomad-addr", "http://localhost:4646", "Address of nomad (e.g. http://localhost:4646)")
+		obtainedSokarAddress = os.Getenv("SOKAR_ADDR")
+		if len(obtainedSokarAddress) == 0 {
+			obtainedSokarAddress = "http://localhost:11000"
+		}
+		obtainedNomadAddress = os.Getenv("NOMAD_ADDR")
+		if len(obtainedNomadAddress) == 0 {
+			obtainedNomadAddress = "http://localhost:4646"
+		}
 	})
 
 	return obtainedSokarAddress, obtainedNomadAddress

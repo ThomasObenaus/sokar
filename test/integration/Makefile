@@ -12,9 +12,7 @@ test.complete-setup: ## Runs the service-test and ensures that sokar is running 
 	@docker-compose down
 
 ########################################### TestCases ##############################################################
-tc.integration: ## TestCase for sokar endpoints
-	@echo "############# TestCase EndPoints (_EndPoints_) ........ ####################################################"
-	sleep 20
-	#go test -v -run="_EndPoints_" .
-	curl -v http://sokar:11000/api/config
-	@echo "############# TestCase EndPoints (_EndPoints_) Complete ####################################################"
+tc.integration: ## Run integration-test test-cases endpoints
+	@echo "############# Run Integration Tests ........ ####################################################"
+	SOKAR_ADDR=http://sokar:11000 NOMAD_ADDR=http://nomad:4646 go test -v -count=1 .
+	@echo "############# Run Integration Tests ........ ####################################################"

@@ -38,7 +38,7 @@ func NewDeployer(t *testing.T, nomadServerAddress string) (*deployerImpl, error)
 		jobsIF:            client.Jobs(),
 		deploymentIF:      client.Deployments(),
 		evalIF:            client.Evaluations(),
-		deploymentTimeout: time.Second * 30,
+		deploymentTimeout: time.Second * 60,
 		evaluationTimeOut: time.Second * 15,
 		tstCtx:            t,
 	}, nil
