@@ -12,8 +12,7 @@ import (
 
 func TestScaleUp(t *testing.T) {
 	testCase := "ScaleUp"
-	sokarAddr := helper.SokarAddr
-	nomadAddr := helper.NomadAddr
+	sokarAddr, nomadAddr := helper.ServerAddresses()
 	jobName := "fail-service"
 
 	helper.PrintCheckPoint(testCase, "Start waiting for nomad (%s)....\n", nomadAddr)
@@ -42,21 +41,20 @@ func TestScaleUp(t *testing.T) {
 	helper.PrintCheckPoint(testCase, "Deploy Job succeeded\n")
 
 	helper.PrintCheckPoint(testCase, "Sending scale alert\n")
-	err = helper.SendScaleAlert("AlertUp", true)
+	err = helper.SendScaleAlert(sokarAddr, "AlertUp", true)
 	require.NoError(t, err)
 	helper.PrintCheckPoint(testCase, "Scale alert sent\n")
 
 	// ensure to disable the alert from firing
-	defer helper.SendScaleAlert("AlertUp", false)
+	defer helper.SendScaleAlert(sokarAddr, "AlertUp", false)
 
 	helper.PrintCheckPoint(testCase, "Check if job was scaled to the expected count\n")
-	helper.NewJobAsserter(t, jobName, time.Millisecond*500, 50).AssertJobCount(3, jobName, d.GetJobCount)
+	helper.NewJobAsserter(t, jobName, time.Millisecond*500, 100).AssertJobCount(3, jobName, d.GetJobCount)
 }
 
 func TestScaleDown(t *testing.T) {
 	testCase := "ScaleDown"
-	sokarAddr := helper.SokarAddr
-	nomadAddr := helper.NomadAddr
+	sokarAddr, nomadAddr := helper.ServerAddresses()
 	jobName := "fail-service"
 
 	helper.PrintCheckPoint(testCase, "Start waiting for nomad (%s)....\n", nomadAddr)
@@ -85,13 +83,13 @@ func TestScaleDown(t *testing.T) {
 	helper.PrintCheckPoint(testCase, "Deploy Job succeeded\n")
 
 	helper.PrintCheckPoint(testCase, "Sending scale alert\n")
-	err = helper.SendScaleAlert("AlertDown", true)
+	err = helper.SendScaleAlert(sokarAddr, "AlertDown", true)
 	require.NoError(t, err)
 	helper.PrintCheckPoint(testCase, "Scale alert sent\n")
 
 	// ensure to disable the alert from firing
-	defer helper.SendScaleAlert("AlertDown", false)
+	defer helper.SendScaleAlert(sokarAddr, "AlertDown", false)
 
 	helper.PrintCheckPoint(testCase, "Check if job was scaled to the expected count\n")
-	helper.NewJobAsserter(t, jobName, time.Millisecond*500, 50).AssertJobCount(1, jobName, d.GetJobCount)
+	helper.NewJobAsserter(t, jobName, time.Millisecond*500, 100).AssertJobCount(1, jobName, d.GetJobCount)
 }
