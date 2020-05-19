@@ -15,22 +15,23 @@ import (
 )
 
 func TestSimple(t *testing.T) {
+	testCase := "Simple"
 	sokarAddr := "http://localhost:11000"
 	nomadAddr := "http://localhost:4646"
 	jobName := "fail-service"
 
-	t.Logf("Start waiting for nomad (%s)....\n", nomadAddr)
+	helper.PrintCheckPoint(testCase, "Start waiting for nomad (%s)....\n", nomadAddr)
 	internalIP, err := helper.WaitForNomad(t, nomadAddr, time.Second*2, 20)
 	require.NoError(t, err, "Failed while waiting for nomad")
 
-	t.Logf("Nomad up and running (internal-ip=%s)\n", internalIP)
+	helper.PrintCheckPoint(testCase, "Nomad up and running (internal-ip=%s)\n", internalIP)
 
-	t.Logf("Start waiting for sokar (%s)....\n", sokarAddr)
+	helper.PrintCheckPoint(testCase, "Start waiting for sokar (%s)....\n", sokarAddr)
 	err = helper.WaitForSokar(t, sokarAddr, time.Second*2, 20)
 	require.NoError(t, err, "Failed while waiting for sokar")
-	t.Logf("Sokar up and running\n")
+	helper.PrintCheckPoint(testCase, "Sokar up and running\n")
 
-	t.Logf("Deploy Job\n")
+	helper.PrintCheckPoint(testCase, "Deploy Job\n")
 	d, err := nomad.NewDeployer(t, nomadAddr)
 	require.NoError(t, err, "Failed to create deployer")
 
@@ -42,8 +43,9 @@ func TestSimple(t *testing.T) {
 	require.NoError(t, err, "Failed to obtain job count")
 	require.Equal(t, 2, count, "Job count not as expected after initial deployment")
 
-	t.Logf("Deploy Job succeeded\n")
+	helper.PrintCheckPoint(testCase, "Deploy Job succeeded\n")
 
+	helper.PrintCheckPoint(testCase, "Sending scale alert\n")
 	sendScaleAlert()
 }
 
