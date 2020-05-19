@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/test"
+	"github.com/thomasobenaus/sokar/test/mocks"
 )
 
 func Test_Run(t *testing.T) {

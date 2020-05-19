@@ -1,0 +1,30 @@
+dry-run: false
+port: 11000
+sca:
+  nomad:
+    server-address: "Is specified via env in docker-compose file"
+  watcher-interval: 2h
+cap:
+  down-scale-cooldown: 1s
+  up-scale-cooldown: 1s
+saa:
+  no-alert-damping: 2.0
+  up-thresh: 10.0
+  down-thresh: -10.0
+  eval-cycle: 15s
+  eval-period-factor: 25
+  cleanup-cycle: 260s
+  scale-alerts:
+    - name: "AlertUp"
+      weight: 10
+      description: "Up alert"
+    - name: "AlertDown"
+      weight: -10
+      description: "Down alert"
+logging:
+  structured: false
+  unix-ts: false
+scale-object:
+  name: "fail-service"
+  min: 1
+  max: 10

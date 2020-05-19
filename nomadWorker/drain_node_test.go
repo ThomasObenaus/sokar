@@ -9,7 +9,7 @@ import (
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
-	mock_nomadWorker "github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/mocks/nomadWorker"
 )
 
 func TestDrainNode(t *testing.T) {

@@ -301,7 +301,7 @@ var saaScaleAlerts = configEntry{
 	bindEnv:      true,
 	bindFlag:     true,
 	defaultValue: "",
-	usage:        "Cycle/ frequency the ScaleAlertAggregator removes expired alerts.",
+	usage:        "The alerts that should be used for scaling (up/down) the scale-object.",
 }
 
 var configEntries = []configEntry{

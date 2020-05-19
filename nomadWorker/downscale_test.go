@@ -11,8 +11,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_aws "github.com/thomasobenaus/sokar/test/aws"
-	"github.com/thomasobenaus/sokar/test/nomadWorker"
+	mock_aws "github.com/thomasobenaus/sokar/test/mocks/aws"
+	"github.com/thomasobenaus/sokar/test/mocks/nomadWorker"
 )
 
 func TestSelectCandidateForDownscaling_Errors(t *testing.T) {

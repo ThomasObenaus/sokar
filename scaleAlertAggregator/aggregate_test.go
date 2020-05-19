@@ -7,7 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_metrics "github.com/thomasobenaus/sokar/test/mocks/metrics"
 )
 
 func Test_ComputeScaleCounterDamping(t *testing.T) {

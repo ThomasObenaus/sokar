@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
+	mock_metrics "github.com/thomasobenaus/sokar/test/mocks/metrics"
 )
 
 type MetricsMocks struct {

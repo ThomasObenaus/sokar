@@ -394,7 +394,7 @@ The order they are applied is:
 |         |                                                                                                                                          |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | name    | scale-alerts                                                                                                                             |
-| usage   | Cycle/ frequency the ScaleAlertAggregator removes expired alerts.                                                                        |
+| usage   | The alerts that should be used for scaling (up/down) the scale-object.                                                                   |
 | type    | List of value triplets (alert-name:alert-weight:alert-description). List elements are separated by a ';' and values are separated by '.' |
 | default | ""                                                                                                                                       |
 | example | --saa.scale-alerts="AlertA:1.0:An upscaling alert;AlertB:-1.5:A downscaling alert"                                                       |

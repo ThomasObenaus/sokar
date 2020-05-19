@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
+	mock_sokar "github.com/thomasobenaus/sokar/test/mocks/sokar"
 )
 
 func Test_Health(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/thomasobenaus/sokar/nomad/structs"
-	mock_nomad "github.com/thomasobenaus/sokar/test/nomad"
+	mock_nomad "github.com/thomasobenaus/sokar/test/mocks/nomad"
 
 	"github.com/stretchr/testify/assert"
 )

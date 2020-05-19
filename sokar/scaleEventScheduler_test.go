@@ -8,8 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mock_metrics "github.com/thomasobenaus/sokar/test/metrics"
-	mock_sokar "github.com/thomasobenaus/sokar/test/sokar"
+	mock_metrics "github.com/thomasobenaus/sokar/test/mocks/metrics"
+	mock_sokar "github.com/thomasobenaus/sokar/test/mocks/sokar"
 )
 
 func Test_ShouldFireScaleEvent(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/thomasobenaus/sokar/nomad/structs"
-	mock_nomad "github.com/thomasobenaus/sokar/test/nomad"
+	mock_nomad "github.com/thomasobenaus/sokar/test/mocks/nomad"
 )
 
 func minimalConnectorImpl() Connector {
