@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"log"
-	"net/http"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/thomasobenaus/sokar/test/integration/helper"
@@ -46,60 +43,44 @@ func TestSimple(t *testing.T) {
 	helper.PrintCheckPoint(testCase, "Deploy Job succeeded\n")
 
 	helper.PrintCheckPoint(testCase, "Sending scale alert\n")
-	sendScaleAlert()
+	err = helper.SendScaleAlert("AlertA", true)
+	require.NoError(t, err)
+	helper.PrintCheckPoint(testCase, "Scale alert sent\n")
+
+	// ensure to disable the alert from firing
+	//defer helper.SendScaleAlert("AlertA", false)
+	NewJobAsserter(t, jobName, time.Millisecond*500, 30).AssertJobCount(34, jobName, d.GetJobCount)
+
 }
 
-func sendScaleAlert() {
-	client := http.Client{
-		Timeout: time.Millisecond * 500,
+type JobAsserter struct {
+	t        *testing.T
+	jobName  string
+	waitTime time.Duration
+	maxTries int
+}
+
+func NewJobAsserter(t *testing.T, jobName string, waitTime time.Duration, maxTries int) *JobAsserter {
+	return &JobAsserter{
+		t:        t,
+		jobName:  jobName,
+		waitTime: waitTime,
+		maxTries: maxTries,
+	}
+}
+
+func (ja *JobAsserter) AssertJobCount(expectedJobCount int, jobName string, obtainJobCountFunc func(jobName string) (int, error)) {
+	count := 0
+	for i := 0; i < ja.maxTries; i++ {
+		var err error
+		count, err = obtainJobCountFunc(ja.jobName)
+		require.NoError(ja.t, err, "Failed to obtain job count")
+		if count == expectedJobCount {
+			return // success case -> no assert, just return
+		}
+		ja.t.Logf("Jobcount not as expected (%d), but was %d. Recheck in %s\n", expectedJobCount, count, ja.waitTime)
+		time.Sleep(ja.waitTime)
 	}
 
-	bodybytes := []byte(`{
-		"receiver": "PM",
-		"status": "firing",
-		"alerts": [
-		  {
-			"status": "firing",
-			"labels": {
-			  "alertname": "AlertA",
-			  "alert-type": "scaling",
-			  "scale-type": "up"
-			},
-			"annotations": {
-			  "description": "Scales the component XYZ UP"
-			},
-			"startsAt": "2019-02-23T12:00:00.000+01:00",
-			"endsAt": "2019-02-23T12:05:00.000+01:00",
-			"generatorURL": "http://generator_url"
-		  },
-		  {
-			"status": "firings",
-			"labels": {
-			  "alertname": "AlertB",
-			  "alert-type": "scaling",
-			  "scale-type": "down"
-			},
-			"annotations": {
-			  "description": "Scales the component XYZ DOWN"
-			},
-			"startsAt": "2019-02-23T12:00:00.000+01:00",
-			"endsAt": "2019-02-23T12:05:00.000+01:00",
-			"generatorURL": "http://generatorURL"
-		  }
-		],
-		"groupLabels": {},
-		"commonLabels": { "alertname": "AlertA" },
-		"commonAnnotations": {},
-		"externalURL": "http://externalURL",
-		"version": "4",
-		"groupKey": "{}:{}"
-	  }`)
-	body := bytes.NewReader(bodybytes)
-	resp, err := client.Post("http://localhost:11000/api/alerts", "application/json", body)
-
-	if err != nil {
-		log.Fatalf("Error sending request: %s\n", err.Error())
-	}
-
-	fmt.Printf("Request send, response: %v\n", resp)
+	assert.Failf(ja.t, "Jobcount invalid", "Jobcount is not %d as expected but was %d at last try (#tries=%d).", expectedJobCount, count, ja.maxTries)
 }
