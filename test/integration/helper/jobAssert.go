@@ -8,13 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// JobAsserter helps on different assertion tasks. Especially those where multiple retries have to be done before
+// considering a test as failed.
 type JobAsserter struct {
 	t        *testing.T
 	jobName  string
-	waitTime time.Duration
-	maxTries int
+	waitTime time.Duration // time to wait between the tries
+	maxTries int           // max number of tries to get the assertion true
 }
 
+// NewJobAsserter creates a new JobAsserter
 func NewJobAsserter(t *testing.T, jobName string, waitTime time.Duration, maxTries int) *JobAsserter {
 	return &JobAsserter{
 		t:        t,
@@ -24,6 +27,7 @@ func NewJobAsserter(t *testing.T, jobName string, waitTime time.Duration, maxTri
 	}
 }
 
+// AssertJobCount asserts that the count of the nomad job is as expected
 func (ja *JobAsserter) AssertJobCount(expectedJobCount int, jobName string, obtainJobCountFunc func(jobName string) (int, error)) {
 	count := 0
 	for i := 0; i < ja.maxTries; i++ {

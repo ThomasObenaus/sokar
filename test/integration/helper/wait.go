@@ -8,20 +8,22 @@ import (
 	"time"
 )
 
+// WaitForNomad wait until nomad is up and running
 func WaitForNomad(t *testing.T, nomadAddr string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
 	queryPath := "/v1/status/leader"
 	logPrefix := "wait for nomad"
-	return WaitForService(t, nomadAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
+	return waitForService(t, nomadAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
 }
 
+// WaitForSokar wait until sokar is up and running
 func WaitForSokar(t *testing.T, serviceAddr string, timeoutBetweenTries time.Duration, numTries int) error {
 	queryPath := "/health"
 	logPrefix := "wait for sokar"
-	_, err := WaitForService(t, serviceAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
+	_, err := waitForService(t, serviceAddr, queryPath, logPrefix, timeoutBetweenTries, numTries)
 	return err
 }
 
-func WaitForService(t *testing.T, serviceAddr, queryPath, logPrefix string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
+func waitForService(t *testing.T, serviceAddr, queryPath, logPrefix string, timeoutBetweenTries time.Duration, numTries int) (string, error) {
 	client := http.Client{
 		Timeout: time.Millisecond * 500,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {

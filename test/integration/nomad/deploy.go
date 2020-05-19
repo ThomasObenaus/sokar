@@ -25,6 +25,7 @@ type deployerImpl struct {
 	tstCtx *testing.T
 }
 
+// NewDeployer creates a new instance of a helper that can deploy nomad jobs
 func NewDeployer(t *testing.T, nomadServerAddress string) (*deployerImpl, error) {
 
 	config := nomadApi.DefaultConfig()
@@ -103,6 +104,7 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 	return jobInfo
 }
 
+// GetJobCount obtain the current count of a nomad job
 func (d *deployerImpl) GetJobCount(jobName string) (int, error) {
 
 	jobInfo, _, err := d.jobsIF.Info(jobName, &nomadApi.QueryOptions{AllowStale: true})
@@ -122,6 +124,7 @@ func (d *deployerImpl) GetJobCount(jobName string) (int, error) {
 	return count, nil
 }
 
+// Deploy the given nomad job
 func (d *deployerImpl) Deploy(job *nomadApi.Job) error {
 
 	d.tstCtx.Logf("[deploy] Register job\n")

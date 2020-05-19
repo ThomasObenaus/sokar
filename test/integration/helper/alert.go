@@ -9,7 +9,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func SendScaleAlert(alertName string, fire bool) error {
+// SendScaleAlert sends a alert with the given name to sokar. Either the alert is firing (fire == true)
+// or is expired (fire == false).
+func SendScaleAlert(sokarAddr, alertName string, fire bool) error {
 	client := http.Client{
 		Timeout: time.Millisecond * 500,
 	}
@@ -48,7 +50,8 @@ func SendScaleAlert(alertName string, fire bool) error {
 
 	bodybytes := []byte(bodyStr)
 	body := bytes.NewReader(bodybytes)
-	resp, err := client.Post("http://localhost:11000/api/alerts", "application/json", body)
+	url := fmt.Sprintf("%s/api/alerts", sokarAddr)
+	resp, err := client.Post(url, "application/json", body)
 
 	if err != nil {
 		return errors.Wrap(err, "Error sending request to sokar.")
