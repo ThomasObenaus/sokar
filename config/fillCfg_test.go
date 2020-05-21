@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	cfg "github.com/ThomasObenaus/go-base/config"
+	cfglib "github.com/ThomasObenaus/go-base/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -250,7 +250,7 @@ func Test_AlertStrToAlerts(t *testing.T) {
 
 func Test_ExtractAlertsFromViper(t *testing.T) {
 	serviceAbbreviation := "SK"
-	provider := cfg.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
+	provider := cfglib.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
 
 	alerts, err := extractAlertsFromViper(provider)
 	assert.Empty(t, alerts)
@@ -355,7 +355,7 @@ func Test_ValidateCapacityPlanner(t *testing.T) {
 
 func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 	serviceAbbreviation := "SK"
-	provider := cfg.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
+	provider := cfglib.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
 
 	scaleScheduleEntries, err := extractScaleScheduleFromViper(provider)
 	assert.Empty(t, scaleScheduleEntries)
