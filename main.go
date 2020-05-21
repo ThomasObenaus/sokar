@@ -134,8 +134,7 @@ func cliAndConfig(args []string) (*config.Config, error) {
 
 	// parse commandline args and consume environment variables
 	// and read config
-	cfg := config.NewDefaultConfig()
-	err := cfg.ReadConfig(args)
+	cfg, err := config.New(args, "SK")
 	if err != nil {
 		return nil, err
 	}

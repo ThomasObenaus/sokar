@@ -3,8 +3,7 @@ package config
 import (
 	"time"
 
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
+	cfg "github.com/ThomasObenaus/go-base/config"
 )
 
 // ScalerMode represents the mode the Scaler can be set to
@@ -28,11 +27,6 @@ type Config struct {
 	ScaleObject          ScaleObject          `json:"scale_object,omitempty"`
 	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator,omitempty"`
 	CapacityPlanner      CapacityPlanner      `json:"capacity_planner,omitempty"`
-
-	configEntries []configEntry
-
-	pFlagSet *pflag.FlagSet
-	viper    *viper.Viper
 }
 
 // Scaler represents the config for the scaler/ ScalingTarget
@@ -152,9 +146,21 @@ func NewDefaultConfig() Config {
 		},
 	}
 
-	cfg.pFlagSet = pflag.NewFlagSet("sokar-config", pflag.ContinueOnError)
-	cfg.viper = viper.New()
-	cfg.configEntries = configEntries
-
 	return cfg
+}
+
+// New creates a new Config instance based on the given cli args
+func New(args []string, serviceAbbreviation string) (Config, error) {
+	provider := cfg.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
+	err := provider.ReadConfig(args)
+	if err != nil {
+		return Config{}, err
+	}
+
+	config := Config{}
+	if err := config.fillCfgValues(provider); err != nil {
+		return Config{}, err
+	}
+
+	return config, nil
 }

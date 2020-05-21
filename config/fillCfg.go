@@ -5,15 +5,15 @@ import (
 	"strings"
 	"time"
 
+	cfglib "github.com/ThomasObenaus/go-base/config"
 	"github.com/spf13/cast"
-	"github.com/spf13/viper"
 	"github.com/thomasobenaus/sokar/helper"
 )
 
-func (cfg *Config) fillScaler() error {
-	cfg.Scaler.WatcherInterval = cfg.viper.GetDuration(scaWatcherInterval.name)
+func (cfg *Config) fillScaler(provider cfglib.Provider) error {
+	cfg.Scaler.WatcherInterval = provider.GetDuration(scaWatcherInterval.Name())
 
-	scaModeStr := cfg.viper.GetString(scaMode.name)
+	scaModeStr := provider.GetString(scaMode.Name())
 	scaMode, err := strToScalerMode(scaModeStr)
 	if err != nil {
 		return err
@@ -21,14 +21,14 @@ func (cfg *Config) fillScaler() error {
 	cfg.Scaler.Mode = scaMode
 
 	// Context: Scaler - AWS EC2
-	cfg.Scaler.AwsEc2.Profile = cfg.viper.GetString(scaAWSEC2Profile.name)
-	cfg.Scaler.AwsEc2.Region = cfg.viper.GetString(scaAWSEC2Region.name)
-	cfg.Scaler.AwsEc2.ASGTagKey = cfg.viper.GetString(scaAWSEC2ASGTagKey.name)
+	cfg.Scaler.AwsEc2.Profile = provider.GetString(scaAWSEC2Profile.Name())
+	cfg.Scaler.AwsEc2.Region = provider.GetString(scaAWSEC2Region.Name())
+	cfg.Scaler.AwsEc2.ASGTagKey = provider.GetString(scaAWSEC2ASGTagKey.Name())
 	// Context: Scaler - Nomad
-	cfg.Scaler.Nomad.ServerAddr = cfg.viper.GetString(scaNomadModeServerAddress.name)
-	cfg.Scaler.Nomad.DataCenterAWS.Profile = cfg.viper.GetString(scaNomadDataCenterAWSProfile.name)
-	cfg.Scaler.Nomad.DataCenterAWS.Region = cfg.viper.GetString(scaNomadDataCenterAWSRegion.name)
-	cfg.Scaler.Nomad.DataCenterAWS.InstanceTerminationTimeout = cfg.viper.GetDuration(scaNomadDataCenterAWSInstanceTerminationTimeout.name)
+	cfg.Scaler.Nomad.ServerAddr = provider.GetString(scaNomadModeServerAddress.Name())
+	cfg.Scaler.Nomad.DataCenterAWS.Profile = provider.GetString(scaNomadDataCenterAWSProfile.Name())
+	cfg.Scaler.Nomad.DataCenterAWS.Region = provider.GetString(scaNomadDataCenterAWSRegion.Name())
+	cfg.Scaler.Nomad.DataCenterAWS.InstanceTerminationTimeout = provider.GetDuration(scaNomadDataCenterAWSInstanceTerminationTimeout.Name())
 
 	return validateScaler(cfg.Scaler)
 }
@@ -39,58 +39,58 @@ func validateScaler(scaler Scaler) error {
 	switch mode := scaler.Mode; mode {
 	case ScalerModeNomadJob:
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.Name(), mode)
 		}
 	case ScalerModeNomadDataCenter:
 		hasRegion := len(scaler.Nomad.DataCenterAWS.Region) > 0
 		hasProfile := len(scaler.Nomad.DataCenterAWS.Profile) > 0
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.Name(), mode)
 		}
 		if !hasProfile && !hasRegion {
-			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.name, scaNomadDataCenterAWSRegion.name, mode)
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.Name(), scaNomadDataCenterAWSRegion.Name(), mode)
 		}
 	case ScalerModeAwsEc2:
 		hasRegion := len(scaler.AwsEc2.Region) > 0
 		hasProfile := len(scaler.AwsEc2.Profile) > 0
 
 		if !hasProfile && !hasRegion {
-			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaAWSEC2Profile.name, scaAWSEC2Region.name, mode)
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaAWSEC2Profile.Name(), scaAWSEC2Region.Name(), mode)
 		}
 		if len(scaler.AwsEc2.ASGTagKey) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaAWSEC2ASGTagKey.name, mode)
+			return fmt.Errorf(parameterMissingErrorPattern, scaAWSEC2ASGTagKey.Name(), mode)
 		}
 	default:
-		return fmt.Errorf(parameterMissingErrorPattern, scaMode.name, mode)
+		return fmt.Errorf(parameterMissingErrorPattern, scaMode.Name(), mode)
 	}
 
 	if scaler.WatcherInterval <= time.Millisecond*500 {
-		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.name)
+		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.Name())
 	}
 
 	return nil
 }
 
-func (cfg *Config) fillCapacityPlanner() error {
+func (cfg *Config) fillCapacityPlanner(provider cfglib.Provider) error {
 
 	// Context: CapacityPlanner
-	cfg.CapacityPlanner.DownScaleCooldownPeriod = cfg.viper.GetDuration(capDownScaleCoolDown.name)
-	cfg.CapacityPlanner.UpScaleCooldownPeriod = cfg.viper.GetDuration(capUpScaleCoolDown.name)
+	cfg.CapacityPlanner.DownScaleCooldownPeriod = provider.GetDuration(capDownScaleCoolDown.Name())
+	cfg.CapacityPlanner.UpScaleCooldownPeriod = provider.GetDuration(capUpScaleCoolDown.Name())
 
-	cfg.CapacityPlanner.ConstantMode.Enable = cfg.viper.GetBool(capConstantModeEnable.name)
-	constModeOffset := cfg.viper.GetInt(capConstantModeOffset.name)
+	cfg.CapacityPlanner.ConstantMode.Enable = provider.GetBool(capConstantModeEnable.Name())
+	constModeOffset := provider.GetInt(capConstantModeOffset.Name())
 	if constModeOffset <= 0 {
 		constModeOffset = 1
 	}
 	cfg.CapacityPlanner.ConstantMode.Offset = uint(constModeOffset)
-	cfg.CapacityPlanner.LinearMode.Enable = cfg.viper.GetBool(capLinearModeEnable.name)
-	cfg.CapacityPlanner.LinearMode.ScaleFactorWeight = cfg.viper.GetFloat64(capLinearModeScaleFactorWeight.name)
+	cfg.CapacityPlanner.LinearMode.Enable = provider.GetBool(capLinearModeEnable.Name())
+	cfg.CapacityPlanner.LinearMode.ScaleFactorWeight = provider.GetFloat64(capLinearModeScaleFactorWeight.Name())
 
 	if cfg.CapacityPlanner.LinearMode.Enable {
 		cfg.CapacityPlanner.ConstantMode.Enable = false
 	}
 
-	entries, err := extractScaleScheduleFromViper(cfg.viper)
+	entries, err := extractScaleScheduleFromViper(provider)
 	if err != nil {
 		return err
 	}
@@ -139,78 +139,78 @@ func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
 	return nil
 }
 
-func (cfg *Config) fillCfgValues() error {
+func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 	// Context: main
-	cfg.DryRunMode = cfg.viper.GetBool(dryRun.name)
-	cfg.Port = cfg.viper.GetInt(port.name)
+	cfg.DryRunMode = provider.GetBool(dryRun.Name())
+	cfg.Port = provider.GetInt(port.Name())
 
 	// Context: Scaler
-	err := cfg.fillScaler()
+	err := cfg.fillScaler(provider)
 	if err != nil {
 		return err
 	}
 
 	// Context: scale object
-	cfg.ScaleObject.Name = cfg.viper.GetString(scaleObjectName.name)
-	min := cfg.viper.GetInt(scaleObjectMin.name)
+	cfg.ScaleObject.Name = provider.GetString(scaleObjectName.Name())
+	min := provider.GetInt(scaleObjectMin.Name())
 	if min < 0 {
 		min = 0
 	}
 	cfg.ScaleObject.MinCount = uint(min)
 
-	max := cfg.viper.GetInt(scaleObjectMax.name)
+	max := provider.GetInt(scaleObjectMax.Name())
 	if max < 0 {
 		max = 0
 	}
 	cfg.ScaleObject.MaxCount = uint(max)
 
 	// Context: CapacityPlanner
-	err = cfg.fillCapacityPlanner()
+	err = cfg.fillCapacityPlanner(provider)
 	if err != nil {
 		return err
 	}
 	// Context: Logging
-	cfg.Logging.Structured = cfg.viper.GetBool(loggingStructured.name)
-	cfg.Logging.UxTimestamp = cfg.viper.GetBool(loggingUXTS.name)
-	cfg.Logging.NoColoredLogOutput = cfg.viper.GetBool(loggingNoColor.name)
+	cfg.Logging.Structured = provider.GetBool(loggingStructured.Name())
+	cfg.Logging.UxTimestamp = provider.GetBool(loggingUXTS.Name())
+	cfg.Logging.NoColoredLogOutput = provider.GetBool(loggingNoColor.Name())
 
 	// Context: ScaleAlertAggregator
-	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(cfg.viper.GetFloat64(saaNoAlertDamping.name))
-	cfg.ScaleAlertAggregator.UpScaleThreshold = float32(cfg.viper.GetFloat64(saaUpThresh.name))
-	cfg.ScaleAlertAggregator.DownScaleThreshold = float32(cfg.viper.GetFloat64(saaDownThresh.name))
-	cfg.ScaleAlertAggregator.EvaluationCycle = cfg.viper.GetDuration(saaEvalCylce.name)
+	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(provider.GetFloat64(saaNoAlertDamping.Name()))
+	cfg.ScaleAlertAggregator.UpScaleThreshold = float32(provider.GetFloat64(saaUpThresh.Name()))
+	cfg.ScaleAlertAggregator.DownScaleThreshold = float32(provider.GetFloat64(saaDownThresh.Name()))
+	cfg.ScaleAlertAggregator.EvaluationCycle = provider.GetDuration(saaEvalCylce.Name())
 
-	evalPeriodFactor := cfg.viper.GetInt(saaEvalPeriodFactor.name)
+	evalPeriodFactor := provider.GetInt(saaEvalPeriodFactor.Name())
 	if evalPeriodFactor < 0 {
 		evalPeriodFactor = 1
 	}
 	cfg.ScaleAlertAggregator.EvaluationPeriodFactor = uint(evalPeriodFactor)
-	cfg.ScaleAlertAggregator.CleanupCycle = cfg.viper.GetDuration(saaCleanupCylce.name)
+	cfg.ScaleAlertAggregator.CleanupCycle = provider.GetDuration(saaCleanupCylce.Name())
 
-	alerts, err := extractAlertsFromViper(cfg.viper)
+	alerts, err := extractAlertsFromViper(provider)
 	if err != nil {
 		return err
 	}
 	cfg.ScaleAlertAggregator.ScaleAlerts = alerts
-	cfg.ScaleAlertAggregator.AlertExpirationTime = cfg.viper.GetDuration(saaAlertExpirationTime.name)
+	cfg.ScaleAlertAggregator.AlertExpirationTime = provider.GetDuration(saaAlertExpirationTime.Name())
 
 	return nil
 }
 
-func extractAlertsFromViper(vp *viper.Viper) ([]Alert, error) {
+func extractAlertsFromViper(provider cfglib.Provider) ([]Alert, error) {
 	var alerts = make([]Alert, 0)
 
-	if !vp.IsSet(saaScaleAlerts.name) {
+	if !provider.IsSet(saaScaleAlerts.Name()) {
 		return nil, nil
 	}
 
-	alertsAsStr := vp.GetString(saaScaleAlerts.name)
+	alertsAsStr := provider.GetString(saaScaleAlerts.Name())
 
 	if len(alertsAsStr) > 0 {
 		return alertStrToAlerts(alertsAsStr)
 	}
 
-	alertsAsMap := helper.CastToStringMapSlice(vp.Get(saaScaleAlerts.name))
+	alertsAsMap := helper.CastToStringMapSlice(provider.Get(saaScaleAlerts.Name()))
 	if alertsAsMap == nil {
 		return alerts, nil
 	}
@@ -304,19 +304,19 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
 }
 
-func extractScaleScheduleFromViper(vp *viper.Viper) ([]ScaleScheduleEntry, error) {
+func extractScaleScheduleFromViper(provider cfglib.Provider) ([]ScaleScheduleEntry, error) {
 	var scaleSchedule = make([]ScaleScheduleEntry, 0)
 
-	if !vp.IsSet(capScaleSchedule.name) {
+	if !provider.IsSet(capScaleSchedule.Name()) {
 		return nil, nil
 	}
 
-	scaleScheduleAsStr := vp.GetString(capScaleSchedule.name)
+	scaleScheduleAsStr := provider.GetString(capScaleSchedule.Name())
 	if len(scaleScheduleAsStr) > 0 {
 		return parseScalingScheduleEntries(scaleScheduleAsStr)
 	}
 
-	scaleScheduleAsMap := helper.CastToStringMapSlice(vp.Get(capScaleSchedule.name))
+	scaleScheduleAsMap := helper.CastToStringMapSlice(provider.Get(capScaleSchedule.Name()))
 	if scaleScheduleAsMap == nil {
 		return scaleSchedule, nil
 	}

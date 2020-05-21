@@ -4,14 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/viper"
+	cfglib "github.com/ThomasObenaus/go-base/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_FillCfg_Flags(t *testing.T) {
 
-	cfg := NewDefaultConfig()
 	args := []string{
 		"--dry-run",
 		"--port=1000",
@@ -47,8 +46,8 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--cap.scale-schedule=MON-FRI 7 9 10-30|WED-SAT 13:15 17:25 2-22",
 	}
 
-	err := cfg.ReadConfig(args)
-	assert.NoError(t, err)
+	cfg, err := New(args, "SK")
+	require.NoError(t, err)
 	assert.Equal(t, ScalerModeAwsEc2, cfg.Scaler.Mode)
 	assert.Equal(t, "profile-test", cfg.Scaler.Nomad.DataCenterAWS.Profile)
 	assert.Equal(t, "region-test", cfg.Scaler.Nomad.DataCenterAWS.Region)
@@ -250,15 +249,16 @@ func Test_AlertStrToAlerts(t *testing.T) {
 }
 
 func Test_ExtractAlertsFromViper(t *testing.T) {
+	serviceAbbreviation := "SK"
+	provider := cfglib.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
 
-	vp := viper.New()
-	alerts, err := extractAlertsFromViper(vp)
+	alerts, err := extractAlertsFromViper(provider)
 	assert.Empty(t, alerts)
 	assert.NoError(t, err)
 
 	// Success - commandline
-	vp.Set(saaScaleAlerts.name, "alert 1:1.2:This is an upscaling alert;alert 2:-1.2")
-	alerts, err = extractAlertsFromViper(vp)
+	provider.Set(saaScaleAlerts.Name(), "alert 1:1.2:This is an upscaling alert;alert 2:-1.2")
+	alerts, err = extractAlertsFromViper(provider)
 	assert.NotEmpty(t, alerts)
 	assert.NoError(t, err)
 	assert.Len(t, alerts, 2)
@@ -276,8 +276,8 @@ func Test_ExtractAlertsFromViper(t *testing.T) {
 	alert1["description"] = "Alert for Upscaling"
 	alertList := make([]map[string]string, 0)
 	alertList = append(alertList, alert1)
-	vp.Set(saaScaleAlerts.name, alertList)
-	alerts, err = extractAlertsFromViper(vp)
+	provider.Set(saaScaleAlerts.Name(), alertList)
+	alerts, err = extractAlertsFromViper(provider)
 	assert.NotEmpty(t, alerts)
 	assert.NoError(t, err)
 	assert.Len(t, alerts, 1)
@@ -291,14 +291,14 @@ func Test_ExtractAlertsFromViper(t *testing.T) {
 	alert1["weight"] = "qwewe"
 	alertList = make([]map[string]string, 0)
 	alertList = append(alertList, alert1)
-	vp.Set(saaScaleAlerts.name, alertList)
-	alerts, err = extractAlertsFromViper(vp)
+	provider.Set(saaScaleAlerts.Name(), alertList)
+	alerts, err = extractAlertsFromViper(provider)
 	assert.Empty(t, alerts)
 	assert.Error(t, err)
 
 	// Success - config - empty
-	vp.Set(saaScaleAlerts.name, "")
-	alerts, err = extractAlertsFromViper(vp)
+	provider.Set(saaScaleAlerts.Name(), "")
+	alerts, err = extractAlertsFromViper(provider)
 	assert.Empty(t, alerts)
 	assert.NoError(t, err)
 }
@@ -354,15 +354,16 @@ func Test_ValidateCapacityPlanner(t *testing.T) {
 }
 
 func Test_ExtractScaleScheduleFromViper(t *testing.T) {
+	serviceAbbreviation := "SK"
+	provider := cfglib.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
 
-	vp := viper.New()
-	scaleScheduleEntries, err := extractScaleScheduleFromViper(vp)
+	scaleScheduleEntries, err := extractScaleScheduleFromViper(provider)
 	assert.Empty(t, scaleScheduleEntries)
 	assert.NoError(t, err)
 
 	// Success - commandline
-	vp.Set(capScaleSchedule.name, "MON-FRI 7 9 10-30|WED-SAT 13:15 17:25 2-*")
-	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	provider.Set(capScaleSchedule.Name(), "MON-FRI 7 9 10-30|WED-SAT 13:15 17:25 2-*")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(provider)
 	assert.NotEmpty(t, scaleScheduleEntries)
 	assert.NoError(t, err)
 	assert.Len(t, scaleScheduleEntries, 2)
@@ -399,8 +400,8 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 	entry["max"] = "3"
 	entries = append(entries, entry)
 
-	vp.Set(capScaleSchedule.name, entries)
-	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	provider.Set(capScaleSchedule.Name(), entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(provider)
 	assert.NotEmpty(t, scaleScheduleEntries)
 	assert.NoError(t, err)
 	assert.Len(t, scaleScheduleEntries, 2)
@@ -424,14 +425,14 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 	entry = make(map[string]string)
 	entry["days"] = "invalid"
 	entries = append(entries, entry)
-	vp.Set(capScaleSchedule.name, entries)
-	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	provider.Set(capScaleSchedule.Name(), entries)
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(provider)
 	assert.Empty(t, scaleScheduleEntries)
 	assert.Error(t, err)
 	//
 	// Success - config - empty
-	vp.Set(capScaleSchedule.name, "")
-	scaleScheduleEntries, err = extractScaleScheduleFromViper(vp)
+	provider.Set(capScaleSchedule.Name(), "")
+	scaleScheduleEntries, err = extractScaleScheduleFromViper(provider)
 	assert.Empty(t, scaleScheduleEntries)
 	assert.NoError(t, err)
 }
