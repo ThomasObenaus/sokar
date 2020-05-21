@@ -23,7 +23,7 @@ COPY ${SRC_DIR} /work/src/${PROJECT_PATH}
 WORKDIR /work/src/${PROJECT_PATH}
 
 # Test
-RUN make tools test
+RUN make tools test.no-race
 
 # Build
 RUN make build build_destination=/work name=${BINARY_NAME}

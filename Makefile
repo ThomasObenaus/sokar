@@ -27,6 +27,11 @@ test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
 	@go test ${packages} -race -timeout 30s -covermode=atomic -coverprofile=coverage.out
 
+# TODO: This make target can be removed as soon as https://github.com/ThomasObenaus/sokar/issues/138 is fixed
+test.no-race: sep gen-mocks ## Runs all unittests and generates a coverage report.
+	@echo "--> Run the unit-tests"
+	@go test ${packages} -timeout 30s -covermode=atomic -coverprofile=coverage.out
+
 build: sep ## Builds the sokar binary.
 	@echo "--> Build the $(name) in $(build_destination)"
 	@go build -v -ldflags "-X main.version=$(tag) -X main.buildTime=$(build_time) -X main.revision=$(revision) -X main.branch=$(branch)" -o $(sokar_file_name) .
