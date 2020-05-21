@@ -7,7 +7,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.4 // indirect
-	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75 // indirect
 	github.com/hashicorp/nomad/api v0.0.0-20200519162023-99f117a28892
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/kr/pretty v0.2.0 // indirect
