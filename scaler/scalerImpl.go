@@ -35,7 +35,7 @@ func (s *Scaler) scalingObjectWatcher(cycle time.Duration) {
 // scaleTicketProcessor listens on the given channel for incoming
 // ScalingTickets to be processed.
 func (s *Scaler) scaleTicketProcessor(ticketChan <-chan ScalingTicket) {
-	s.wg.Add(1)
+
 	defer s.wg.Done()
 	s.logger.Info().Msg("ScaleTicketProcessor started.")
 

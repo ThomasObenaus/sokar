@@ -2,6 +2,7 @@ package scaleAlertAggregator
 
 import (
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -91,13 +92,15 @@ func Test_Sync(t *testing.T) {
 	scaleAlerts = append(scaleAlerts, ScaleAlert{Name: "", Firing: true})
 
 	var wg sync.WaitGroup
-	stop := false
+	var stop int32
+	atomic.StoreInt32(&stop, 0)
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for {
 			scap.update("alertmanager", scaleAlerts, weightMap)
-			if stop {
+			if atomic.LoadInt32(&stop) == 1 {
 				break
 			}
 		}
@@ -108,14 +111,14 @@ func Test_Sync(t *testing.T) {
 		defer wg.Done()
 		for {
 			scap.update("cloudwatch", scaleAlerts, weightMap)
-			if stop {
+			if atomic.LoadInt32(&stop) == 1 {
 				break
 			}
 		}
 	}()
 
 	time.Sleep(time.Second * 2)
-	stop = true
+	atomic.StoreInt32(&stop, 1)
 	wg.Wait()
 
 	assert.Len(t, scap.entries, 4)
