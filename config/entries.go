@@ -7,7 +7,6 @@ import (
 )
 
 // ###################### Context: main ####################################################
-var configFile = cfg.NewEntry("config-file", "Specifies the full path and name of the configuration file for sokar.", cfg.Default(""), cfg.ShortName("f"))
 var dryRun = cfg.NewEntry("dry-run", "If true, then sokar won't execute the planned scaling action. Only scaling\n"+
 	"actions triggered via ScaleBy end-point will be executed.", cfg.Default(false))
 
@@ -103,7 +102,6 @@ var saaCleanupCylce = cfg.NewEntry("saa.cleanup-cycle", "Cycle/ frequency the Sc
 var saaScaleAlerts = cfg.NewEntry("saa.scale-alerts", "The alerts that should be used for scaling (up/down) the scale-object.", cfg.Default(""))
 
 var configEntries = []cfg.Entry{
-	configFile,
 	port,
 	dryRun,
 	scaleObjectName,
