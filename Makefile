@@ -25,6 +25,11 @@ help: ## Prints the help
 .PHONY: test
 test: sep gen-mocks ## Runs all unittests and generates a coverage report.
 	@echo "--> Run the unit-tests"
+	@go test ${packages} -race -timeout 30s -covermode=atomic -coverprofile=coverage.out
+
+# TODO: This make target can be removed as soon as https://github.com/ThomasObenaus/sokar/issues/138 is fixed
+test.no-race: sep gen-mocks ## Runs all unittests and generates a coverage report.
+	@echo "--> Run the unit-tests"
 	@go test ${packages} -timeout 30s -covermode=atomic -coverprofile=coverage.out
 
 build: sep ## Builds the sokar binary.

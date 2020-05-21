@@ -151,6 +151,7 @@ func (s *Scaler) GetName() string {
 // Run starts/ runs the scaler
 func (s *Scaler) Run() {
 	// handler that processes incoming scaling tickets
+	s.wg.Add(1)
 	go s.scaleTicketProcessor(s.scaleTicketChan)
 
 	if s.dryRunMode {
