@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
+	apipkg "github.com/thomasobenaus/sokar/api"
 	"github.com/thomasobenaus/sokar/awsEc2"
 	"github.com/thomasobenaus/sokar/capacityplanner"
 	"github.com/thomasobenaus/sokar/config"
@@ -26,24 +27,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var version string
-var buildTime string
-var revision string
-var branch string
-
 const endPointKey = "end-point"
 
 func main() {
+	// Print the build information as soon as possible to get at least some information on crashes
+	buildinfo.Print(fmt.Printf)
+
 	// read config
 	cfg := helper.Must(cliAndConfig(os.Args)).(*config.Config)
-
-	buildInfo := BuildInfo{
-		Version:   version,
-		BuildTime: buildTime,
-		Revision:  revision,
-		Branch:    branch,
-	}
-	buildInfo.Print(fmt.Printf)
 
 	// set up logging
 	loggingFactory := helper.Must(setupLogging(cfg)).(logging.LoggerFactory)
@@ -52,7 +43,7 @@ func main() {
 	logger.Info().Msg("Connecting components and setting up sokar")
 
 	logger.Info().Msg("1. Setup: API")
-	api := api.New(cfg.Port, api.WithLogger(loggingFactory.NewNamedLogger("sokar.api")))
+	api := apipkg.New(cfg.Port, apipkg.WithLogger(loggingFactory.NewNamedLogger("sokar.api")))
 
 	logger.Info().Msg("2. Setup: ScaleSchedule")
 	schedule := helper.Must(setupSchedule(cfg, logger)).(*scaleschedule.Schedule)
@@ -96,7 +87,7 @@ func main() {
 	logger.Info().Str(endPointKey, "metrics").Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
 
 	// Register build info end-point
-	api.Router.GET(sokar.PathBuildInfo, buildInfo.BuildInfo)
+	api.Router.GET(sokar.PathBuildInfo, apipkg.WrappedHandleFunc(buildinfo.BuildInfo))
 	logger.Info().Str(endPointKey, "build info").Msgf("Build Info end-point set up at %s", sokar.PathBuildInfo)
 
 	// Register config end-point

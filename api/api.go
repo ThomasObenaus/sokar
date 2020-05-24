@@ -88,3 +88,10 @@ func (api *API) Run() {
 func (api *API) Join() {
 	<-api.stopChan
 }
+
+// WrappedHandleFunc wraps the usual http handler function into a function as expected by httprouter
+func WrappedHandleFunc(fun func(w http.ResponseWriter, r *http.Request)) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		fun(w, r)
+	}
+}
