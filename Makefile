@@ -13,7 +13,7 @@ revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
 nomad_server := "http://${LOCAL_IP}:4646"
 
-packages := ./scaleschedule ./config ./alertmanager ./nomad ./logging ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./
+packages := ./scaleschedule ./config ./alertmanager ./nomad ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./
 
 all: tools test build lint finish
 
@@ -53,7 +53,6 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@mockgen -source=sokar/iface/scaleEventEmitter_IF.go -destination test/mocks/sokar/mock_scaleEventEmitter_IF.go 
 	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/mocks/sokar/mock_scaleschedule_IF.go
 	@mockgen -source=metrics/metrics.go -destination test/mocks/metrics/mock_metrics.go 
-	@mockgen -source=logging/loggerfactory.go -destination test/mocks/logging/mock_logging.go
 	@mockgen -source=capacityplanner/scaleschedule_IF.go -destination test/mocks/capacityplanner/mock_scaleschedule_IF.go
 	@mockgen -source=runnable.go -destination test/mocks/mock_runnable.go
 

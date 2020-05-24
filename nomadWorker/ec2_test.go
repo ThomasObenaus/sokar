@@ -3,12 +3,15 @@ package nomadWorker
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/mock/gomock"
+	nomadApi "github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thomasobenaus/sokar/aws"
 	mock_aws "github.com/thomasobenaus/sokar/test/mocks/aws"
+	mock_nomadWorker "github.com/thomasobenaus/sokar/test/mocks/nomadWorker"
 )
 
 func Test_CreateSession(t *testing.T) {
@@ -228,15 +231,69 @@ func TestAdjustScalingObjectCount_Downscale(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	asgFactory := mock_aws.NewMockAutoScalingFactory(mockCtrl)
+	nodesIF := mock_nomadWorker.NewMockNodes(mockCtrl)
+	asgIF := mock_aws.NewMockAutoScaling(mockCtrl)
 
+	tagVal := "private-services"
 	connector, err := New("http://nomad.io", "profile")
 	require.NotNil(t, connector)
 	require.NoError(t, err)
 
 	connector.autoScalingFactory = asgFactory
+	connector.nodesIF = nodesIF
+
+	nodeID := "NODEABC"
+	nodeList := make([]*nomadApi.NodeListStub, 0)
+	nodeListElement := nomadApi.NodeListStub{
+		Datacenter: tagVal,
+		Drain:      false,
+		Status:     nomadApi.NodeStatusReady,
+		ID:         nodeID,
+		Name:       "InstanceID_ABCDE",
+	}
+	nodeList = append(nodeList, &nodeListElement)
+	nodesIF.EXPECT().List(nil).Return(nodeList, nil, nil)
+
+	allocations := make([]*nomadApi.Allocation, 0)
+	nodesIF.EXPECT().Allocations(nodeID, nil).Return(allocations, nil, nil)
+
+	var nodeModifyIndex uint64 = 1234
+	resp := nomadApi.NodeDrainUpdateResponse{
+		NodeModifyIndex: nodeModifyIndex,
+	}
+	nodesIF.EXPECT().UpdateDrain(nodeID, gomock.Any(), false, nil).Return(&resp, nil)
+
+	events := make(chan *nomadApi.MonitorMessage, 1)
+	event := nomadApi.MonitorMessage{}
+	events <- &event
+	close(events)
+	nodesIF.EXPECT().MonitorDrain(gomock.Any(), nodeID, nodeModifyIndex, false).Return(events)
+
+	req := request.Request{}
+	var progress int64 = 100
+	activityID := "ACTIVITY_ABCDE"
+	statusCode := "running"
+	activity := autoscaling.Activity{
+		AutoScalingGroupName: &tagVal,
+		ActivityId:           &activityID,
+		Progress:             &progress,
+		StatusCode:           &statusCode,
+	}
+	output := autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+		Activity: &activity,
+	}
+	asgFactory.EXPECT().CreateAutoScaling(gomock.Any()).Return(asgIF)
+	asgIF.EXPECT().TerminateInstanceInAutoScalingGroupRequest(gomock.Any()).Return(&req, &output)
+
+	// if len(output.Activities) == 0 || output.Activities[0].StatusCode == nil || output.Activities[0].Progress == nil {
+	reqScaling := request.Request{}
+
+	outputScaling := autoscaling.DescribeScalingActivitiesOutput{
+		Activities: []*autoscaling.Activity{&activity},
+	}
+	asgIF.EXPECT().DescribeScalingActivitiesRequest(gomock.Any()).Return(&reqScaling, &outputScaling)
 
 	// no error - DownScale
-	tagVal := "private-services"
 	err = connector.AdjustScalingObjectCount(tagVal, 2, 10, 5, 4)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }

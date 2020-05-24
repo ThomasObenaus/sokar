@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ThomasObenaus/go-base/logging"
 	"github.com/rs/zerolog"
 	"github.com/thomasobenaus/sokar/alertmanager"
 	"github.com/thomasobenaus/sokar/api"
@@ -14,7 +15,6 @@ import (
 	"github.com/thomasobenaus/sokar/capacityplanner"
 	"github.com/thomasobenaus/sokar/config"
 	"github.com/thomasobenaus/sokar/helper"
-	"github.com/thomasobenaus/sokar/logging"
 	"github.com/thomasobenaus/sokar/nomad"
 	"github.com/thomasobenaus/sokar/nomadWorker"
 	"github.com/thomasobenaus/sokar/scaleAlertAggregator"
