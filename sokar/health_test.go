@@ -1,18 +1,15 @@
 package sokar
 
 import (
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	mock_sokar "github.com/thomasobenaus/sokar/test/mocks/sokar"
 )
 
-func Test_Health(t *testing.T) {
+func Test_IsHealthy(t *testing.T) {
 
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
@@ -28,10 +25,6 @@ func Test_Health(t *testing.T) {
 	require.NotNil(t, sokar)
 	require.NoError(t, err)
 
-	req := httptest.NewRequest("GET", "http://example.com/foo", nil)
-	w := httptest.NewRecorder()
-	sokar.Health(w, req, httprouter.Params{})
-
-	resp := w.Result()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	err = sokar.IsHealthy()
+	assert.NoError(t, err)
 }

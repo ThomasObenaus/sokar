@@ -89,7 +89,7 @@ func Test_Run(t *testing.T) {
 	require.NoError(t, err)
 
 	evEmitterIF.EXPECT().Subscribe(gomock.Any())
-	sokar.Run()
+	sokar.Start()
 }
 
 func Test_ScaleValueToScaleDir(t *testing.T) {

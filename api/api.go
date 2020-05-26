@@ -45,8 +45,8 @@ func New(port int, options ...Option) *API {
 	return &api
 }
 
-// GetName returns the name of this component
-func (api *API) GetName() string {
+// String returns the name of this component
+func (api *API) String() string {
 	return "api"
 }
 
@@ -64,8 +64,8 @@ func (api *API) Stop() error {
 	return nil
 }
 
-// Run starts the api server for sokar
-func (api *API) Run() {
+// Start the api server for sokar
+func (api *API) Start() {
 	api.srv = &http.Server{Addr: ":" + strconv.Itoa(api.port), Handler: api.Router}
 
 	// Run listening for messages in background

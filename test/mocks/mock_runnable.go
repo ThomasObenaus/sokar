@@ -32,16 +32,16 @@ func (m *MockRunnable) EXPECT() *MockRunnableMockRecorder {
 	return m.recorder
 }
 
-// Run mocks base method
-func (m *MockRunnable) Run() {
+// Start mocks base method
+func (m *MockRunnable) Start() {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Run")
+	m.ctrl.Call(m, "Start")
 }
 
-// Run indicates an expected call of Run
-func (mr *MockRunnableMockRecorder) Run() *gomock.Call {
+// Start indicates an expected call of Start
+func (mr *MockRunnableMockRecorder) Start() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockRunnable)(nil).Run))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockRunnable)(nil).Start))
 }
 
 // Join mocks base method
@@ -70,16 +70,16 @@ func (mr *MockRunnableMockRecorder) Stop() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockRunnable)(nil).Stop))
 }
 
-// GetName mocks base method
-func (m *MockRunnable) GetName() string {
+// String mocks base method
+func (m *MockRunnable) String() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetName")
+	ret := m.ctrl.Call(m, "String")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// GetName indicates an expected call of GetName
-func (mr *MockRunnableMockRecorder) GetName() *gomock.Call {
+// String indicates an expected call of String
+func (mr *MockRunnableMockRecorder) String() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetName", reflect.TypeOf((*MockRunnable)(nil).GetName))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "String", reflect.TypeOf((*MockRunnable)(nil).String))
 }

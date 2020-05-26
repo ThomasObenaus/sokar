@@ -24,6 +24,7 @@ import (
 	"github.com/thomasobenaus/sokar/sokar"
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
+	"github.com/ThomasObenaus/go-base/health"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -82,6 +83,17 @@ func main() {
 	logger.Info().Msg("8. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, schedule, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
 
+	// Setup health endpoint
+	logger.Info().Msg("9. Setup: Health-Endpoint")
+	loggerHealth := loggingFactory.NewNamedLogger("sokar.health")
+	healthMonitor := helper.Must(health.NewMonitor(health.WithLogger(loggerHealth))).(*health.Monitor)
+	healthMonitor.Start()
+	if err := healthMonitor.Register(sokarInst); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to register health check for sokar")
+	}
+	api.Router.GET(sokar.PathHealth, apipkg.WrappedHandleFunc(healthMonitor.Health))
+	logger.Info().Str(endPointKey, "health").Msgf("Health end-point set up at %s", sokar.PathHealth)
+
 	// Register metrics handler
 	api.Router.Handler("GET", sokar.PathMetrics, promhttp.Handler())
 	logger.Info().Str(endPointKey, "metrics").Msgf("Metrics end-point set up at %s", sokar.PathMetrics)
@@ -104,6 +116,7 @@ func main() {
 	orderedRunnables = append(orderedRunnables, scaler)
 	orderedRunnables = append(orderedRunnables, scaAlertAggr)
 	orderedRunnables = append(orderedRunnables, api)
+	orderedRunnables = append(orderedRunnables, healthMonitor)
 
 	// Install signal handler for shutdown
 	shutDownChan := make(chan os.Signal, 1)
@@ -193,9 +206,6 @@ func setupSokar(scaleEventEmitter sokarIF.ScaleEventEmitter, capacityPlanner sok
 	if err != nil {
 		return nil, err
 	}
-
-	api.Router.GET(sokar.PathHealth, sokarInst.Health)
-	logger.Info().Str(endPointKey, "health").Msgf("Health end-point set up at %s", sokar.PathHealth)
 
 	api.Router.PUT(sokar.PathScaleByPercentage, sokarInst.ScaleByPercentage)
 	logger.Info().Str(endPointKey, "scale-by(p)").Msgf("ScaleBy end-point (percentage) set up at %s", sokar.PathScaleByPercentage)

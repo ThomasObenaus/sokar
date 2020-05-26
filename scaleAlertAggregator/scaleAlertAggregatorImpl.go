@@ -18,13 +18,13 @@ func (sc *ScaleAlertAggregator) emitScaleEvent(scaleFactor float32) {
 	}
 }
 
-// GetName returns the name of this component
-func (sc *ScaleAlertAggregator) GetName() string {
+// String returns the name of this component
+func (sc *ScaleAlertAggregator) String() string {
 	return "scaleAlertAggregator"
 }
 
-// Run starts the ScaleAlertAggregator
-func (sc *ScaleAlertAggregator) Run() {
+// Start the ScaleAlertAggregator
+func (sc *ScaleAlertAggregator) Start() {
 
 	sc.logger.Info().Msg("Register at scale alert emitters")
 	for _, emitter := range sc.emitters {

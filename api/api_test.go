@@ -28,7 +28,7 @@ func TestRunJoinStop(t *testing.T) {
 	api := New(1234)
 	require.NotNil(t, api)
 
-	api.Run()
+	api.Start()
 	start := time.Now()
 	err := api.Stop()
 	require.NoError(t, err)

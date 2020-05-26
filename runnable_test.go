@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
-	"github.com/thomasobenaus/sokar/test/mocks"
+	mock_main "github.com/thomasobenaus/sokar/test/mocks"
 )
 
 func Test_Run(t *testing.T) {
@@ -21,10 +21,10 @@ func Test_Run(t *testing.T) {
 	runnable2 := mock_main.NewMockRunnable(mockCtrl)
 
 	gomock.InOrder(
-		runnable1.EXPECT().GetName().Times(1),
-		runnable1.EXPECT().Run().Times(1),
-		runnable2.EXPECT().GetName().Times(1),
-		runnable2.EXPECT().Run().Times(1),
+		runnable1.EXPECT().String().Times(1),
+		runnable1.EXPECT().Start().Times(1),
+		runnable2.EXPECT().String().Times(1),
+		runnable2.EXPECT().Start().Times(1),
 	)
 
 	runnables = append(runnables, runnable1)
@@ -43,9 +43,9 @@ func Test_Join(t *testing.T) {
 	runnable2 := mock_main.NewMockRunnable(mockCtrl)
 
 	gomock.InOrder(
-		runnable1.EXPECT().GetName().Times(1),
+		runnable1.EXPECT().String().Times(1),
 		runnable1.EXPECT().Join().Times(1),
-		runnable2.EXPECT().GetName().Times(1),
+		runnable2.EXPECT().String().Times(1),
 		runnable2.EXPECT().Join().Times(1),
 	)
 
@@ -65,9 +65,9 @@ func Test_Stop(t *testing.T) {
 	runnable2 := mock_main.NewMockRunnable(mockCtrl)
 
 	gomock.InOrder(
-		runnable2.EXPECT().GetName().Times(1),
+		runnable2.EXPECT().String().Times(1),
 		runnable2.EXPECT().Stop().Times(1),
-		runnable1.EXPECT().GetName().Times(1),
+		runnable1.EXPECT().String().Times(1),
 		runnable1.EXPECT().Stop().Times(1),
 	)
 
@@ -97,9 +97,9 @@ func Test_Shutdown(t *testing.T) {
 	runnable2 := mock_main.NewMockRunnable(mockCtrl)
 
 	gomock.InOrder(
-		runnable2.EXPECT().GetName().Times(1),
+		runnable2.EXPECT().String().Times(1),
 		runnable2.EXPECT().Stop().Times(1),
-		runnable1.EXPECT().GetName().Times(1),
+		runnable1.EXPECT().String().Times(1),
 		runnable1.EXPECT().Stop().Times(1),
 	)
 

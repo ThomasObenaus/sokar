@@ -93,13 +93,13 @@ func (sk *Sokar) Join() {
 	sk.wg.Wait()
 }
 
-// GetName returns the name of this component
-func (sk *Sokar) GetName() string {
+// String returns the name of this component
+func (sk *Sokar) String() string {
 	return "sokar"
 }
 
-// Run starts sokar
-func (sk *Sokar) Run() {
+// Start sokar
+func (sk *Sokar) Start() {
 	scaleEventChannel := make(chan sokarIF.ScaleEvent, 10)
 	sk.scaleEventEmitter.Subscribe(scaleEventChannel)
 

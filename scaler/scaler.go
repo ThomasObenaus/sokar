@@ -143,13 +143,13 @@ func (s *Scaler) ScaleTo(desiredCount uint, force bool) error {
 	return s.openScalingTicket(desiredCount, force)
 }
 
-// GetName returns the name of this component
-func (s *Scaler) GetName() string {
+// String returns the name of this component
+func (s *Scaler) String() string {
 	return "scaler"
 }
 
-// Run starts/ runs the scaler
-func (s *Scaler) Run() {
+// Start runs the scaler
+func (s *Scaler) Start() {
 	// handler that processes incoming scaling tickets
 	s.wg.Add(1)
 	go s.scaleTicketProcessor(s.scaleTicketChan)
