@@ -15,3 +15,8 @@ func (sk *Sokar) Health(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	w.WriteHeader(code)
 	_, _ = io.WriteString(w, "Sokar is Healthy")
 }
+
+// IsHealthy returns nil in case sokar is healthy
+func (sk *Sokar) IsHealthy() error {
+	return nil
+}
