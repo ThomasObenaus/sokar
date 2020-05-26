@@ -54,7 +54,6 @@ gen-mocks: sep ## Generates test doubles (mocks).
 	@mockgen -source=sokar/iface/scaleschedule_IF.go -destination test/mocks/sokar/mock_scaleschedule_IF.go
 	@mockgen -source=metrics/metrics.go -destination test/mocks/metrics/mock_metrics.go 
 	@mockgen -source=capacityplanner/scaleschedule_IF.go -destination test/mocks/capacityplanner/mock_scaleschedule_IF.go
-	@mockgen -source=runnable.go -destination test/mocks/mock_runnable.go
 
 gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defined metrics in code.
 	@echo "--> generate Metrics.md"
