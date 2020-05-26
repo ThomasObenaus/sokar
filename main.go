@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/ThomasObenaus/go-base/logging"
@@ -25,6 +23,7 @@ import (
 	sokarIF "github.com/thomasobenaus/sokar/sokar/iface"
 
 	"github.com/ThomasObenaus/go-base/health"
+	"github.com/ThomasObenaus/go-base/shutdown"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -45,6 +44,7 @@ func main() {
 
 	logger.Info().Msg("1. Setup: API")
 	api := apipkg.New(cfg.Port, apipkg.WithLogger(loggingFactory.NewNamedLogger("sokar.api")))
+	api.Start()
 
 	logger.Info().Msg("2. Setup: ScaleSchedule")
 	schedule := helper.Must(setupSchedule(cfg, logger)).(*scaleschedule.Schedule)
@@ -54,6 +54,7 @@ func main() {
 
 	logger.Info().Msg("4. Setup: ScaleAlertAggregator")
 	scaAlertAggr := setupScaleAlertAggregator(scaleAlertEmitters, cfg, loggingFactory)
+	scaAlertAggr.Start()
 
 	logger.Info().Msg("5. Setup: Scaling Target")
 	scalingTarget := helper.Must(setupScalingTarget(cfg.Scaler, loggingFactory)).(scaler.ScalingTarget)
@@ -61,6 +62,7 @@ func main() {
 
 	logger.Info().Msg("6. Setup: Scaler")
 	scaler := helper.Must(setupScaler(cfg.ScaleObject.Name, cfg.ScaleObject.MinCount, cfg.ScaleObject.MaxCount, cfg.Scaler.WatcherInterval, scalingTarget, loggingFactory, cfg.DryRunMode)).(*scaler.Scaler)
+	scaler.Start()
 
 	logger.Info().Msg("7. Setup: CapacityPlanner")
 
@@ -82,6 +84,7 @@ func main() {
 
 	logger.Info().Msg("8. Setup: Sokar")
 	sokarInst := helper.Must(setupSokar(scaAlertAggr, capaPlanner, scaler, schedule, api, logger, cfg.DryRunMode)).(*sokar.Sokar)
+	sokarInst.Start()
 
 	// Setup health endpoint
 	logger.Info().Msg("9. Setup: Health-Endpoint")
@@ -111,24 +114,21 @@ func main() {
 	logger.Info().Str(endPointKey, "config").Msgf("Config end-point set up at %s", sokar.PathConfig)
 
 	// Define runnables and their execution order
-	var orderedRunnables []Runnable
-	orderedRunnables = append(orderedRunnables, sokarInst)
-	orderedRunnables = append(orderedRunnables, scaler)
-	orderedRunnables = append(orderedRunnables, scaAlertAggr)
-	orderedRunnables = append(orderedRunnables, api)
-	orderedRunnables = append(orderedRunnables, healthMonitor)
+	var orderedStopables []shutdown.Stopable
+	orderedStopables = append(orderedStopables, sokarInst)
+	orderedStopables = append(orderedStopables, scaler)
+	orderedStopables = append(orderedStopables, scaAlertAggr)
+	orderedStopables = append(orderedStopables, api)
+	orderedStopables = append(orderedStopables, healthMonitor)
 
-	// Install signal handler for shutdown
-	shutDownChan := make(chan os.Signal, 1)
-	signal.Notify(shutDownChan, syscall.SIGINT, syscall.SIGTERM)
-	go shutdownHandler(shutDownChan, orderedRunnables, logger)
+	// Install shutdown handler
+	logger.Info().Msg("10. Install shutdown handler")
+	shutdownHandler := shutdown.InstallHandler(orderedStopables, loggerHealth)
+	if err := healthMonitor.Register(shutdownHandler); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to register health check for shutdown handler")
+	}
 
-	// Run all components
-	Run(orderedRunnables, logger)
-
-	// Wait till completion
-	Join(orderedRunnables, logger)
-
+	shutdownHandler.WaitUntilSignal()
 	logger.Info().Msg("Shutdown successfully completed")
 	os.Exit(0)
 }
