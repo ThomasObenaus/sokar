@@ -73,7 +73,7 @@ func Test_RunJoinStop(t *testing.T) {
 	require.NotNil(t, scaler)
 
 	// Ensure that the run, join stop does not block forever
-	scaler.Run()
+	scaler.Start()
 	time.Sleep(time.Millisecond * 100)
 	go func() {
 		time.Sleep(time.Millisecond * 100)
@@ -216,7 +216,7 @@ func Test_ApplyScalingTicket_NoScaleObjectWatcherInDryRunMode(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, scaler)
 
-	scaler.Run()
+	scaler.Start()
 	defer func() {
 		err := scaler.Stop()
 		assert.NoError(t, err)
