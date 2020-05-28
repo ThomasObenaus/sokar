@@ -81,6 +81,7 @@ var capLinearModeScaleFactorWeight = cfg.NewEntry("cap.linear-mode.scale-factor-
 var loggingStructured = cfg.NewEntry("logging.structured", "Use structured logging or not.", cfg.Default(false))
 var loggingUXTS = cfg.NewEntry("logging.unix-ts", "Use Unix-Timestamp representation for log entries.", cfg.Default(false))
 var loggingNoColor = cfg.NewEntry("logging.no-color", "If true colors in log out-put will be disabled.", cfg.Default(false))
+var loggingLevel = cfg.NewEntry("logging.level", "The level that should be used for logs. Valid entries are debug, info, warn, error, fatal and off.", cfg.Default("info"))
 
 // ###################### Context: ScaleAlertAggregator ###################################
 var saaAlertExpirationTime = cfg.NewEntry("saa.alert-expiration-time", "Defines after which time an alert will be pruned if he did not get updated\n"+
@@ -113,6 +114,7 @@ var configEntries = []cfg.Entry{
 	loggingStructured,
 	loggingUXTS,
 	loggingNoColor,
+	loggingLevel,
 	saaNoAlertDamping,
 	saaUpThresh,
 	saaDownThresh,

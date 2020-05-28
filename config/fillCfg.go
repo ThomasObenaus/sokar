@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	cfglib "github.com/ThomasObenaus/go-base/config"
 	"github.com/spf13/cast"
 	"github.com/thomasobenaus/sokar/helper"
@@ -170,9 +172,10 @@ func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 		return err
 	}
 	// Context: Logging
-	cfg.Logging.Structured = provider.GetBool(loggingStructured.Name())
-	cfg.Logging.UxTimestamp = provider.GetBool(loggingUXTS.Name())
-	cfg.Logging.NoColoredLogOutput = provider.GetBool(loggingNoColor.Name())
+	err = cfg.fillLoggingContext(provider)
+	if err != nil {
+		return err
+	}
 
 	// Context: ScaleAlertAggregator
 	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(provider.GetFloat64(saaNoAlertDamping.Name()))
@@ -195,6 +198,39 @@ func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 	cfg.ScaleAlertAggregator.AlertExpirationTime = provider.GetDuration(saaAlertExpirationTime.Name())
 
 	return nil
+}
+
+func (cfg *Config) fillLoggingContext(provider cfglib.Provider) error {
+	cfg.Logging.Structured = provider.GetBool(loggingStructured.Name())
+	cfg.Logging.UxTimestamp = provider.GetBool(loggingUXTS.Name())
+	cfg.Logging.NoColoredLogOutput = provider.GetBool(loggingNoColor.Name())
+
+	level, err := strToLogLevel(provider.GetString(loggingLevel.Name()))
+	cfg.Logging.Level = level
+	return err
+}
+
+func strToLogLevel(v string) (zerolog.Level, error) {
+
+	v = strings.TrimSpace(v)
+	v = strings.ToLower(v)
+
+	switch v {
+	case "debug":
+		return zerolog.DebugLevel, nil
+	case "info":
+		return zerolog.InfoLevel, nil
+	case "warn":
+		return zerolog.WarnLevel, nil
+	case "error":
+		return zerolog.ErrorLevel, nil
+	case "fatal":
+		return zerolog.FatalLevel, nil
+	case "off":
+		return zerolog.Disabled, nil
+	}
+
+	return zerolog.NoLevel, fmt.Errorf("Invalid loglevel '%s'. Only debug, info, warn, error, fatal and off is supported", v)
 }
 
 func extractAlertsFromViper(provider cfglib.Provider) ([]Alert, error) {

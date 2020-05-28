@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	"github.com/rs/zerolog"
+
 	cfg "github.com/ThomasObenaus/go-base/config"
 )
 
@@ -86,9 +88,10 @@ type Alert struct {
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured         bool `json:"structured,omitempty"`
-	UxTimestamp        bool `json:"ux_timestamp,omitempty"`
-	NoColoredLogOutput bool `json:"no_colored_log_output,omitempty"`
+	Structured         bool          `json:"structured,omitempty"`
+	UxTimestamp        bool          `json:"ux_timestamp,omitempty"`
+	NoColoredLogOutput bool          `json:"no_colored_log_output,omitempty"`
+	Level              zerolog.Level `json:"level,omitempty"`
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
@@ -119,7 +122,7 @@ func NewDefaultConfig() Config {
 	cfg := Config{
 		Port:        11000,
 		DryRunMode:  false,
-		Logging:     Logging{Structured: false, UxTimestamp: false},
+		Logging:     Logging{Structured: false, UxTimestamp: false, Level: zerolog.InfoLevel},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
 			Mode:            ScalerModeNomadJob,

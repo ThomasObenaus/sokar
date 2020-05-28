@@ -6,7 +6,7 @@ import (
 
 // aggregate all ScaleAlerts available and updates internally the scaleCounter.
 func (sc *ScaleAlertAggregator) aggregate() {
-	sc.logger.Info().Msg("Aggregation")
+	sc.logger.Debug().Msg("Aggregation")
 	sc.logPool()
 
 	// collect all alerts from ScaleAlertPool
@@ -61,10 +61,10 @@ func computeScaleCounterDamping(scaleCounter float32, dampingFactor float32) flo
 }
 
 func (sc *ScaleAlertAggregator) logPool() {
-	sc.logger.Debug().Int("num-entries", sc.scaleAlertPool.size()).Msg("ScaleAlertPool:")
+	sc.logger.Info().Int("num-alerts", sc.scaleAlertPool.size()).Msg("ScaleAlertPool:")
 
 	sc.scaleAlertPool.iterate(func(key uint32, entry ScaleAlertPoolEntry) {
-		sc.logger.Debug().Str("name", entry.scaleAlert.Name).Str("receiver", entry.receiver).Msgf("[%d] fire=%t,start=%s,exp=%s", key, entry.scaleAlert.Firing, entry.scaleAlert.StartedAt.String(), entry.expiresAt.String())
+		sc.logger.Info().Str("name", entry.scaleAlert.Name).Str("receiver", entry.receiver).Msgf("[%d] fire=%t,start=%s,exp=%s", key, entry.scaleAlert.Firing, entry.scaleAlert.StartedAt.String(), entry.expiresAt.String())
 	})
 }
 
