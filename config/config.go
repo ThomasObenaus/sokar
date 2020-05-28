@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	"github.com/rs/zerolog"
+
 	cfg "github.com/ThomasObenaus/go-base/config"
 )
 
@@ -20,96 +22,97 @@ const (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port                 int                  `json:"port,omitempty"`
-	Scaler               Scaler               `json:"scaler,omitempty"`
-	DryRunMode           bool                 `json:"dry_run_mode,omitempty"`
-	Logging              Logging              `json:"logging,omitempty"`
-	ScaleObject          ScaleObject          `json:"scale_object,omitempty"`
-	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator,omitempty"`
-	CapacityPlanner      CapacityPlanner      `json:"capacity_planner,omitempty"`
+	Port                 int                  `json:"port"`
+	Scaler               Scaler               `json:"scaler"`
+	DryRunMode           bool                 `json:"dry_run_mode"`
+	Logging              Logging              `json:"logging"`
+	ScaleObject          ScaleObject          `json:"scale_object"`
+	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator"`
+	CapacityPlanner      CapacityPlanner      `json:"capacity_planner"`
 }
 
 // Scaler represents the config for the scaler/ ScalingTarget
 type Scaler struct {
-	Mode            ScalerMode    `json:"mode,omitempty"`
-	Nomad           SCANomad      `json:"nomad,omitempty"`
-	AwsEc2          SCAAwsEc2     `json:"aws_ec2,omitempty"`
-	WatcherInterval time.Duration `json:"watcher_interval,omitempty"`
+	Mode            ScalerMode    `json:"mode"`
+	Nomad           SCANomad      `json:"nomad"`
+	AwsEc2          SCAAwsEc2     `json:"aws_ec2"`
+	WatcherInterval time.Duration `json:"watcher_interval"`
 }
 
 // SCAAwsEc2 represents the parameters for a AWS EC2 based scaler.
 type SCAAwsEc2 struct {
-	Profile   string `json:"profile,omitempty"`
-	Region    string `json:"region,omitempty"`
-	ASGTagKey string `json:"asg_tag_key,omitempty"`
+	Profile   string `json:"profile"`
+	Region    string `json:"region"`
+	ASGTagKey string `json:"asg_tag_key"`
 }
 
 // SCANomad represents the parameters for a nomad based scaler (job or data-center).
 type SCANomad struct {
-	ServerAddr    string                `json:"server_addr,omitempty"`
-	DataCenterAWS SCANomadDataCenterAWS `json:"datacenter_aws,omitempty"`
+	ServerAddr    string                `json:"server_addr"`
+	DataCenterAWS SCANomadDataCenterAWS `json:"datacenter_aws"`
 }
 
 // SCANomadDataCenterAWS represents the parameters needed for the nomad based scaler for mode data-center running on AWS.
 type SCANomadDataCenterAWS struct {
-	Profile                    string        `json:"profile,omitempty"`
-	Region                     string        `json:"region,omitempty"`
-	ASGTagKey                  string        `json:"asg_tag_key,omitempty"`
-	InstanceTerminationTimeout time.Duration `json:"instance_termination_timeout,omitempty"`
+	Profile                    string        `json:"profile"`
+	Region                     string        `json:"region"`
+	ASGTagKey                  string        `json:"asg_tag_key"`
+	InstanceTerminationTimeout time.Duration `json:"instance_termination_timeout"`
 }
 
 // ScaleObject represents the definition for the object that should be scaled.
 type ScaleObject struct {
-	Name     string `json:"name,omitempty"`
-	MinCount uint   `json:"min_count,omitempty"`
-	MaxCount uint   `json:"max_count,omitempty"`
+	Name     string `json:"name"`
+	MinCount uint   `json:"min_count"`
+	MaxCount uint   `json:"max_count"`
 }
 
 // ScaleAlertAggregator is the configuration part for the ScaleAlertAggregator
 type ScaleAlertAggregator struct {
-	NoAlertScaleDamping    float32       `json:"no_alert_scale_damping,omitempty"`
-	UpScaleThreshold       float32       `json:"up_scale_threshold,omitempty"`
-	DownScaleThreshold     float32       `json:"down_scale_threshold,omitempty"`
-	ScaleAlerts            []Alert       `json:"scale_alerts,omitempty"`
-	EvaluationCycle        time.Duration `json:"evaluation_cycle,omitempty"`
-	EvaluationPeriodFactor uint          `json:"evaluation_period_factor,omitempty"`
-	CleanupCycle           time.Duration `json:"cleanup_cycle,omitempty"`
-	AlertExpirationTime    time.Duration `json:"alert_expiration_time,omitempty"`
+	NoAlertScaleDamping    float32       `json:"no_alert_scale_damping"`
+	UpScaleThreshold       float32       `json:"up_scale_threshold"`
+	DownScaleThreshold     float32       `json:"down_scale_threshold"`
+	ScaleAlerts            []Alert       `json:"scale_alerts"`
+	EvaluationCycle        time.Duration `json:"evaluation_cycle"`
+	EvaluationPeriodFactor uint          `json:"evaluation_period_factor"`
+	CleanupCycle           time.Duration `json:"cleanup_cycle"`
+	AlertExpirationTime    time.Duration `json:"alert_expiration_time"`
 }
 
 // Alert represents an alert defined by its name and weight
 type Alert struct {
-	Name        string  `json:"name,omitempty"`
-	Weight      float32 `json:"weight,omitempty"`
-	Description string  `json:"description,omitempty"`
+	Name        string  `json:"name"`
+	Weight      float32 `json:"weight"`
+	Description string  `json:"description"`
 }
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured         bool `json:"structured,omitempty"`
-	UxTimestamp        bool `json:"ux_timestamp,omitempty"`
-	NoColoredLogOutput bool `json:"no_colored_log_output,omitempty"`
+	Structured         bool          `json:"structured"`
+	UxTimestamp        bool          `json:"ux_timestamp"`
+	NoColoredLogOutput bool          `json:"no_colored_log_output"`
+	Level              zerolog.Level `json:"level"`
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
 type CapacityPlanner struct {
-	DownScaleCooldownPeriod time.Duration        `json:"down_scale_cooldown_period,omitempty"`
-	UpScaleCooldownPeriod   time.Duration        `json:"up_scale_cooldown_period,omitempty"`
-	ConstantMode            CAPConstMode         `json:"constant_mode,omitempty"`
-	LinearMode              CAPLinearMode        `json:"linear_mode,omitempty"`
-	ScaleSchedule           []ScaleScheduleEntry `json:"scaling_schedule,omitempty"`
+	DownScaleCooldownPeriod time.Duration        `json:"down_scale_cooldown_period"`
+	UpScaleCooldownPeriod   time.Duration        `json:"up_scale_cooldown_period"`
+	ConstantMode            CAPConstMode         `json:"constant_mode"`
+	LinearMode              CAPLinearMode        `json:"linear_mode"`
+	ScaleSchedule           []ScaleScheduleEntry `json:"scaling_schedule"`
 }
 
 // CAPLinearMode configuration parameters needed for linear mode of the CapacityPlanner
 type CAPLinearMode struct {
-	Enable            bool    `json:"enable,omitempty"`
-	ScaleFactorWeight float64 `json:"scale_factor_weight,omitempty"`
+	Enable            bool    `json:"enable"`
+	ScaleFactorWeight float64 `json:"scale_factor_weight"`
 }
 
 // CAPConstMode configuration parameters needed for constant mode of the CapacityPlanner
 type CAPConstMode struct {
-	Enable bool `json:"enable,omitempty"`
-	Offset uint `json:"offset,omitempty"`
+	Enable bool `json:"enable"`
+	Offset uint `json:"offset"`
 }
 
 // NewDefaultConfig returns a default configuration without any alerts (mappings)
@@ -119,7 +122,7 @@ func NewDefaultConfig() Config {
 	cfg := Config{
 		Port:        11000,
 		DryRunMode:  false,
-		Logging:     Logging{Structured: false, UxTimestamp: false},
+		Logging:     Logging{Structured: false, UxTimestamp: false, Level: zerolog.InfoLevel},
 		ScaleObject: ScaleObject{},
 		Scaler: Scaler{
 			Mode:            ScalerModeNomadJob,

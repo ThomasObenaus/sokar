@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	cfglib "github.com/ThomasObenaus/go-base/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,6 +21,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 		"--scale-object.max=100",
 		"--logging.structured",
 		"--logging.unix-ts",
+		"--logging.level=debug",
 		"--cap.down-scale-cooldown=90s",
 		"--cap.up-scale-cooldown=91s",
 		"--saa.no-alert-damping=100",
@@ -64,6 +67,7 @@ func Test_FillCfg_Flags(t *testing.T) {
 	assert.Equal(t, uint(100), cfg.ScaleObject.MaxCount)
 	assert.Equal(t, time.Duration(time.Second*90), cfg.CapacityPlanner.DownScaleCooldownPeriod)
 	assert.Equal(t, time.Duration(time.Second*91), cfg.CapacityPlanner.UpScaleCooldownPeriod)
+	assert.Equal(t, zerolog.DebugLevel, cfg.Logging.Level)
 	assert.True(t, cfg.Logging.Structured)
 	assert.True(t, cfg.Logging.UxTimestamp)
 	assert.Equal(t, float32(100), cfg.ScaleAlertAggregator.NoAlertScaleDamping)
@@ -438,7 +442,6 @@ func Test_ExtractScaleScheduleFromViper(t *testing.T) {
 }
 
 func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
-	// TODO: Reenable test
 	scaleScheduleEntries, err := scaleScheduleMapToScaleSchedule(nil)
 	assert.Nil(t, scaleScheduleEntries)
 	assert.Error(t, err)
@@ -522,4 +525,35 @@ func Test_ScaleScheduleMapToScaleSchedule(t *testing.T) {
 	scaleScheduleEntries, err = scaleScheduleMapToScaleSchedule(entries)
 	assert.Empty(t, scaleScheduleEntries)
 	assert.Error(t, err)
+}
+
+func Test_StrToLogLevel(t *testing.T) {
+
+	level, err := strToLogLevel("unknown")
+	assert.Error(t, err)
+	assert.Equal(t, zerolog.NoLevel, level)
+
+	level, err = strToLogLevel(" DeBug ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.DebugLevel, level)
+
+	level, err = strToLogLevel(" InFo ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.InfoLevel, level)
+
+	level, err = strToLogLevel(" WaRn ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.WarnLevel, level)
+
+	level, err = strToLogLevel(" ErRor ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.ErrorLevel, level)
+
+	level, err = strToLogLevel(" FaTal ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.FatalLevel, level)
+
+	level, err = strToLogLevel(" OfF  ")
+	assert.NoError(t, err)
+	assert.Equal(t, zerolog.Disabled, level)
 }

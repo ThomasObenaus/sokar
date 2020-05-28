@@ -310,6 +310,17 @@ The order they are applied is:
 | flag    | --logging.no-color                              |
 | env     | SK_LOGGING_NO_COLOR                             |
 
+### Level
+
+|         |                                                                                                    |
+| ------- | -------------------------------------------------------------------------------------------------- |
+| name    | level                                                                                              |
+| usage   | The level that should be used for logs. Valid entries are debug, info, warn, error, fatal and off. |
+| type    | string                                                                                             |
+| default | info                                                                                               |
+| flag    | --logging.level                                                                                    |
+| env     | SK_LOGGING_LEVEL                                                                                   |
+
 ## ScaleAlertAggregator
 
 ### Alert Expiration Time

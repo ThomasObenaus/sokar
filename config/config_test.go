@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,6 +29,7 @@ func Test_NewDefaultConfig(t *testing.T) {
 	assert.Equal(t, time.Second*80, config.CapacityPlanner.DownScaleCooldownPeriod)
 	assert.Equal(t, time.Second*60, config.CapacityPlanner.UpScaleCooldownPeriod)
 	assert.Equal(t, uint(1), config.CapacityPlanner.ConstantMode.Offset)
+	assert.Equal(t, zerolog.InfoLevel, config.Logging.Level)
 	assert.True(t, config.CapacityPlanner.ConstantMode.Enable)
 	assert.False(t, config.CapacityPlanner.LinearMode.Enable)
 	assert.NotNil(t, config.CapacityPlanner.ScaleSchedule)
