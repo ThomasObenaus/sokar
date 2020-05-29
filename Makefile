@@ -1,5 +1,5 @@
-.DEFAULT_GOAL				:= all
-name 								:= "sokar-bin"
+.DEFAULT_GOAL := all
+name := "sokar-bin"
 build_destination := "."
 sokar_file_name := $(build_destination)/$(name)
 docker_image := "thobe/sokar:latest"
