@@ -37,20 +37,10 @@ One can build and run sokar either in docker or directly on the host.
 # build
 make build
 
-# run as scaler for nomad jobs
-./sokar-bin --config-file=<path to config file> --sca.mode="nomad-job" --sca.nomad.server-address=<address of nomad server>
+# run (as scaler for nomad jobs)
+./sokar-bin --sca.nomad.server-address=<address of nomad server>
 # example
-./sokar-bin --config-file=examples/config/full.yaml --sca.mode="nomad-job" --sca.nomad.server-address=http://localhost:4646
-
-# run as scaler for nomad instances
-./sokar-bin --config-file=<path to config file> --sca.mode="nomad-dc" --sca.nomad.server-address=<address of nomad server>
-# example
-./sokar-bin --config-file=examples/config/full.yaml --sca.mode="nomad-dc" --sca.nomad.server-address=http://localhost:4646
-
-# run as scaler for aws instances
-./sokar-bin --config-file=<path to config file> --sca.mode="aws-ec2"
-# example
-./sokar-bin --config-file=examples/config/full.yaml --sca.mode="aws-ec2"
+./sokar-bin --sca.nomad.server-address=http://localhost:4646
 ```
 
 ### Docker
@@ -59,10 +49,16 @@ make build
 # build
 make docker.build
 
-#
+# pull it from docker hub
+docker pull thobe/sokar
 
-
+# run (as scaler for nomad jobs)
+docker run -p 11000:11000 thobe/sokar:latest --sca.nomad.server-address=<address of nomad server>
+# example
+docker run -p 11000:11000 thobe/sokar:latest --sca.nomad.server-address=http://localhost:4646
 ```
+
+For more configuration options and how to specify if sokar shall run as scaler for nomad jobs, nomad instances or AWS instances see [Config.md](config/Config.md).
 
 ## Features
 
