@@ -60,7 +60,7 @@ gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defi
 
 run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.mode="aws-ec2"
+	$(sokar_file_name) --config-file="examples/config/minimal.yaml" --sca.mode="aws-ec2"
 
 run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
