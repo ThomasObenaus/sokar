@@ -115,7 +115,7 @@ The order they are applied is:
 | name    | server-address                             |
 | usage   | Specifies the address of the nomad server. |
 | type    | string                                     |
-| default | ""                                         |
+| default | "http://localhost:4646"                    |
 | flag    | --sca.nomad.server-address                 |
 | env     | SK_SCA_NOMAD_SERVER_ADDRESS                |
 

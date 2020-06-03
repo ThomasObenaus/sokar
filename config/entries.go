@@ -49,7 +49,7 @@ var scaNomadDataCenterAWSRegion = cfg.NewEntry("sca.nomad.dc-aws.region", "This 
 var scaNomadDataCenterAWSInstanceTerminationTimeout = cfg.NewEntry("sca.nomad.dc-aws.instance-termination-timeout", "The maximum time the instance termination will be monitored before assuming\n"+
 	"that this action (instance termination due to downscale) failed.", cfg.Default(time.Minute*10))
 
-var scaNomadModeServerAddress = cfg.NewEntry("sca.nomad.server-address", "Specifies the address of the nomad server.", cfg.Default(""))
+var scaNomadModeServerAddress = cfg.NewEntry("sca.nomad.server-address", "Specifies the address of the nomad server.", cfg.Default("http://localhost:4646"))
 
 // ###################### Context: scale-object ####################################################
 var scaleObjectName = cfg.NewEntry("scale-object.name", "The name of the object to be scaled.", cfg.Default(""))
