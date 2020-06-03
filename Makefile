@@ -68,7 +68,7 @@ run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 
 run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/minimal.yaml"
+	$(sokar_file_name) --config-file="examples/config/minimal.yaml" --scale-object.name="fail-service"
 
 docker.build: sep ## Builds the sokar docker image.
 	@echo "--> Build docker image thobe/sokar"
