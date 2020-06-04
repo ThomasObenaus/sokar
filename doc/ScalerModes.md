@@ -67,6 +67,28 @@ To run sokar in scaler mode `nomad-job` one just has to start sokar providing th
 ./sokar-bin --config-file=examples/config/minimal.yaml --scale-object.name="fail-service"
 ```
 
-## Nomad Node (on AWS instances)
+## Nomad Data-Center (on AWS instances)
+
+In this mode sokar is able to control the scale of the nomad nodes but only in case they are running on AWS EC2 instances whose amount is managed by a AWS AutoScalingGroup (ASG). To be precise sokar manages the count of nodes that are running for one nomad data-center.
+
+This means if due to the currently active scaling alerts an **up-scaling** is necessary, sokar will create new AWS EC2 instances by incrementing the ASG by the calculated amount of additionally needed instances.
+
+In case of a needed **down-scaling** sokar will:
+
+1. Select the nomad node which would be the best candidate for termination. That is the instance with least capacity utilization.
+2. Drain the nomad node, which forces nomad to migrate jobs running on that node to other nodes.
+3. Terminate the EC2 instance that is hosting the node that was selected for termination.
+
+To run sokar in scaler mode `nomad-dc` one just has to start sokar providing the minimal configuration file and the following parameters:
+
+- The scaler-mode: `--sca.mode=nomad-dc`
+- The name of the scale-object: `--scale-object.name=fail-service`
+- The address of nomad running on AWS instances: `--sca.nomad.server-address="http://nomad.example.com`
+  // TODO GO ON HERE
+
+```bash
+# start sokar to scale the nomad job named fail-service
+./sokar-bin --config-file=examples/config/minimal.yaml --scale-object.name=fail-service
+```
 
 ## AWS Instance
