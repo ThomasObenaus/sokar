@@ -4,9 +4,11 @@ Sokar supports to scale different scaling target types (nomad job, nomad node, A
 
 In this document the configuration of sokars scaler modes are described. As stated in [Config.md](../config/Config.md) the parameters can be set via environment variables, command line parameters or using a config file. For the sake of simplicity a minimal config file, containing the parameters all tree modes have in common, and command line parameters are used here.
 
-## Minimal Configuration File
+## Prerequisites
 
-The configuration parameters have all useful default values to get sokar up and running quickly (at least in nomad-job mode using a locally running nomad server). Hence the minimal config we use here (`minimal.yaml`) just contains the definition of the alerts sokar should use to scale the according target.
+### Minimal Configuration File
+
+The configuration parameters have all useful default values to get sokar up and running quickly (at least in nomad-job mode using a locally running nomad server). Hence the minimal config we use here (`minimal.yaml`) just contains the definition of the alerts sokar should use to scale the according target. There is one alert for scaling up (_AlertA_) and one for scaling down (_AlertB_).
 
 ```yaml
 saa:
@@ -17,6 +19,41 @@ saa:
     - name: "AlertB"
       weight: -1.5
       description: "Down alert"
+```
+
+### Issue the Alert to Trigger the Scaling
+
+For testing the according scaler mode one has to issue a scaling alert to sokar. This can be done with the following curl calls.
+As defined in the minimal config `AlertA` would lead to an up- and `AlertB` to a down-scaling of the `fail-service`.
+
+```bash
+# Issue a request to signal that 'AlertA' is active (firing) ==> UP-SCALING
+curl --request POST 'http://localhost:11000/api/alerts' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "AlertA"
+      }
+    }
+  ]
+}'
+
+# Issue a request to signal that 'AlertB' is active (firing) ==> DOWN-SCALING
+curl --request POST 'http://localhost:11000/api/alerts' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "AlertB"
+      }
+    }
+  ]
+}'
 ```
 
 ## Nomad Job
