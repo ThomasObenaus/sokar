@@ -1,0 +1,8 @@
+saa:
+  scale-alerts:
+    - name: "AlertA"
+      weight: 1.5
+      description: "Up alert"
+    - name: "AlertB"
+      weight: -1.5
+      description: "Down alert"

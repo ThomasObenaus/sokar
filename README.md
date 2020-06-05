@@ -24,12 +24,39 @@ Here comes sokar into play. Sokar is a generic auto-scaler that makes scale up/ 
 
 ### State
 
-At the moment sokar is able to **scale Nomad jobs** and **AWS EC2 instances**.
+At the moment sokar is able to scale **Nomad jobs**, **Nomad instances (running on AWS)** and **AWS EC2 instances**.
 For details about the changes see the [changelog](CHANGELOG.md).
 
 ## Build and Run
 
-- **TODO**: Fill this
+One can build and run sokar either in docker or directly on the host.
+
+### On Host
+
+```bash
+# build
+make build
+
+# run (as scaler for nomad jobs)
+make run.nomad-job
+```
+
+### Docker
+
+```bash
+# build
+make docker.build
+
+# pull it from docker hub
+docker pull thobe/sokar
+
+# run (as scaler for nomad jobs)
+docker run -p 11000:11000 thobe/sokar:latest
+# example
+docker run -p 11000:11000 thobe/sokar:latest
+```
+
+For more configuration options and how to specify if sokar shall run as scaler for nomad jobs, nomad instances or AWS instances see [Config.md](config/Config.md).
 
 ## Features
 

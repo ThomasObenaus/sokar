@@ -1,5 +1,5 @@
-.DEFAULT_GOAL				:= all
-name 								:= "sokar-bin"
+.DEFAULT_GOAL := all
+name := "sokar-bin"
 build_destination := "."
 sokar_file_name := $(build_destination)/$(name)
 docker_image := "thobe/sokar:latest"
@@ -11,7 +11,6 @@ tag := $(shell git describe --tags)
 branch := $(shell git branch | grep \* | cut -d ' ' -f2)
 revision := $(rev)$(flag)
 build_info := $(build_time)_$(revision)
-nomad_server := "http://${LOCAL_IP}:4646"
 
 packages := ./scaleschedule ./config ./alertmanager ./nomad ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./
 
@@ -61,15 +60,15 @@ gen-metrics-md: sep ## Generate metrics documentation (Metrics.md) based on defi
 
 run.aws-ec2: sep build ## Builds + runs sokar locally in aws ec2 mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.mode="aws-ec2"
+	$(sokar_file_name) --config-file="examples/config/minimal.yaml" --sca.mode="aws-ec2"
 
 run.nomad-dc: sep build ## Builds + runs sokar locally in data-center mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server) --sca.mode="nomad-dc"
+	$(sokar_file_name) --config-file="examples/config/minimal.yaml" --sca.mode="nomad-dc"
 
 run.nomad-job: sep build ## Builds + runs sokar locally in job mode.
 	@echo "--> Run $(sokar_file_name)"
-	$(sokar_file_name) --config-file="examples/config/full.yaml" --sca.nomad.server-address=$(nomad_server)
+	$(sokar_file_name) --config-file="examples/config/minimal.yaml" --scale-object.name="fail-service"
 
 docker.build: sep ## Builds the sokar docker image.
 	@echo "--> Build docker image thobe/sokar"
@@ -77,7 +76,7 @@ docker.build: sep ## Builds the sokar docker image.
 
 docker.run: sep ## Runs the sokar docker image.
 	@echo "--> Run docker image $(docker_image)"
-	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --sca.nomad.server-address=$(nomad_server) --scale-object.name="fail-service" --saa.scale-alerts="AlertA:1.0:An upscaling alert;AlertB:-1.5:A downscaling alert"
+	@docker run --rm --name=sokar -p 11000:11000 $(docker_image) --scale-object.name="fail-service" --saa.scale-alerts="AlertA:1.0:An upscaling alert;AlertB:-1.5:A downscaling alert"
 
 docker.push: sep ## Pushes the sokar docker image to docker-hub
 	@echo "--> Tag image to thobe/sokar:$(tag)"
