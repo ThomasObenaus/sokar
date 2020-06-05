@@ -82,13 +82,22 @@ In case of a needed **down-scaling** sokar will:
 To run sokar in scaler mode `nomad-dc` one just has to start sokar providing the minimal configuration file and the following parameters:
 
 - The scaler-mode: `--sca.mode=nomad-dc`
-- The name of the scale-object: `--scale-object.name=fail-service`
+- The name of the scale-object which is in this mode the name of the data-center: `--scale-object.name=my-data-center`
 - The address of nomad running on AWS instances: `--sca.nomad.server-address="http://nomad.example.com`
-  // TODO GO ON HERE
+- The [AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) that has needed permissions to modify the AutoScalingGroup nomads data-center is running on: `--sca.nomad.dc-aws.profile=my-profile`
+- The AWS region where the nomad data-center is running: `--sca.nomad.dc-aws.region=eu-central-1`
 
 ```bash
-# start sokar to scale the nomad job named fail-service
-./sokar-bin --config-file=examples/config/minimal.yaml --scale-object.name=fail-service
+# start sokar to scale the nomad data-center named 'my-data-center'
+./sokar-bin --config-file=examples/config/minimal.yaml \
+  --sca.mode=nomad-dc \
+  --scale-object.name=my-data-center \
+  --sca.nomad.server-address="http://nomad.example.com" \
+  --sca.nomad.dc-aws.profile=my-profile \
+  --sca.nomad.dc-aws.region=eu-central-1
 ```
+
+**Important Hint:** To enable sokar to scale the data-center it is necessary to tag the AWS AutoScalingGroup with the name of the nomad data-center.
+The tag on that ASG has to have the key `scale-object` and the value has to be the name of the nomad data-center (e.g. `my-data-center`). Otherwise sokar is not able to identify the ASG that manages the instances the data-center is running on.
 
 ## AWS Instance
