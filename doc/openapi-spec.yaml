@@ -142,6 +142,22 @@ paths:
       responses:
         "200":
           description: "Metrics in prometheus format"
+  /api/alerts:
+    post:
+      tags:
+        - "control"
+      summary: "Issue one to many scaling alerts to sokar. The request body is a subset of the requests the prometheus/alertmanager issues to alerting targets. Hence one can just use the alertmanager to issue the scaling-alerts directly to sokar."
+      description: ""
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/ScalingAlerts"
+      responses:
+        "200":
+          description: "successful operation"
 definitions:
   BuildInfo:
     type: "object"
@@ -186,3 +202,21 @@ definitions:
               type: "string"
               enum: [healthy, unhealthy]
               example: "healthy"
+  ScalingAlerts:
+    type: "object"
+    properties:
+      alerts:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            status:
+              type: "string"
+              enum: [firing, not-firing]
+              example: "firing"
+            labels:
+              type: "object"
+              properties:
+                alertname:
+                  type: "string"
+                  example: "AlertA"
