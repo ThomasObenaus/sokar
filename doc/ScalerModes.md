@@ -69,7 +69,7 @@ To run sokar in scaler mode `nomad-job` one just has to start sokar providing th
 
 ## Nomad Data-Center (on AWS instances)
 
-In this mode sokar is able to control the scale of the nomad nodes but only in case they are running on AWS EC2 instances whose amount is managed by a AWS AutoScalingGroup (ASG). To be precise sokar manages the count of nodes that are running for one nomad data-center.
+In this mode sokar is able to control the scale of the nomad nodes but only in case they are running on AWS EC2 instances whose amount is managed by an AWS AutoScalingGroup (ASG). To be precise sokar manages the count of nodes that are running for one nomad data-center.
 
 This means if due to the currently active scaling alerts an **up-scaling** is necessary, sokar will create new AWS EC2 instances by incrementing the ASG by the calculated amount of additionally needed instances.
 
@@ -101,3 +101,21 @@ To run sokar in scaler mode `nomad-dc` one just has to start sokar providing the
 The tag on that ASG has to have the key `scale-object` and the value has to be the name of the nomad data-center (e.g. `my-data-center`). Otherwise sokar is not able to identify the ASG that manages the instances the data-center is running on.
 
 ## AWS Instance
+
+In this mode sokar is able to control the scale of AWS EC2 instances that are managed by an AWS AutoScalingGroup (ASG). To be precise sokar manages the count of instances based on the scale-alerts that are issued.
+
+To run sokar in scaler mode `aws-ec2` one just has to start sokar providing the minimal configuration file and the following parameters:
+
+- The scaler-mode: `--sca.mode=aws-ec2`
+- The name of the scale-object which is in this mode the name of the data-center: `--scale-object.name=my-autoscaling-group`
+- The [AWS profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) that has needed permissions to modify the AutoScalingGroup: `--sca.aws-ec2.profile=my-profile`
+- The AWS region where the EC2 instances are running: `--sca.aws-ec2.region=eu-central-1`
+
+```bash
+# start sokar to scale the nomad data-center named 'my-data-center'
+./sokar-bin --config-file=examples/config/minimal.yaml \
+  --sca.mode=aws-ec2 \
+  --scale-object.name=my-autoscaling-group \
+  --sca.aws-ec2.profile=my-profile \
+  --sca.aws-ec2.region=eu-central-1
+```
