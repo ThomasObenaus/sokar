@@ -30,6 +30,30 @@ paths:
           description: "successful operation"
           schema:
             $ref: "#/definitions/BuildInfo"
+
+  /health:
+    get:
+      tags:
+        - "ops"
+      summary: "Get sokars' health status"
+      description: ""
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Response if sokar is healthy"
+          schema:
+            $ref: "#/definitions/Health"
+        "503":
+          description: "Response if sokar is NOT healthy"
+          schema:
+            $ref: "#/definitions/Health"
+            example:
+              at: "2020-06-05T13:39:36.123152289+02:00"
+              status: "unhealthy"
+              checks:
+                - name: "sokar"
+                  status: "unhealthy"
     put:
       tags:
         - "pet"
@@ -558,15 +582,43 @@ definitions:
       version:
         type: "string"
         example: "v0.0.12-115-ge6d8b397"
+        description: "Version consisting of <latest git-tag>-<number of commits ahead of tag>-<commit hash>"
       build_time:
         type: "string"
         example: "2020-06-05_13-25-21"
+        description: "Date + Time this instance was build"
       revision:
         type: "string"
         example: "e6d8b397"
+        description: "Revision of this build"
       branch:
         type: "string"
         example: "master"
+        description: "Branch of this build"
+  Health:
+    type: "object"
+    properties:
+      at:
+        type: "string"
+        example: "2020-06-05T13:39:36.123152289+02:00"
+        description: "Timestamp when the check was made"
+      status:
+        type: "string"
+        enum: [healthy, unhealthy]
+        example: "healthy"
+      checks:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            name:
+              type: "string"
+              description: "Name of the actual check"
+              example: "sokar"
+            status:
+              type: "string"
+              enum: [healthy, unhealthy]
+              example: "healthy"
   Order:
     type: "object"
     properties:
