@@ -68,6 +68,7 @@ For more configuration options and how to specify if sokar shall run as scaler f
 ## Links
 
 - For configuration see [Config.md](config/Config.md)
+- The API of sokar is specified at [openapi-spec.yaml](doc/openapi-spec.yaml)
 - For metrics see [Metrics.md](Metrics.md)
-- Example Grafana dashboards can be found at [Dashboards.md](dashboards/Dashboards.md)
 - Structure and components of sokar are described at [Components.md](doc/Components.md)
+- Example Grafana dashboards can be found at [Dashboards.md](dashboards/Dashboards.md)

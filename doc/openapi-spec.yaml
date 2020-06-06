@@ -1,0 +1,266 @@
+swagger: "2.0"
+info:
+  description: "This is the API of sokar that can be used to control and query the current internal state."
+  version: "0.1.0"
+  title: "Sokar API"
+  contact:
+    email: "obenaus.thomas@gmail.com"
+  license:
+    name: "LGPL v3.0"
+    url: "https://github.com/ThomasObenaus/sokar/blob/master/LICENSE"
+basePath: "/"
+tags:
+  - name: "ops"
+    description: "Operational information"
+  - name: "control"
+    description: "Management and control"
+schemes:
+  - "http"
+paths:
+  /api/build:
+    get:
+      tags:
+        - "ops"
+      summary: "Obtain build information about this sokar instance"
+      description: ""
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/BuildInfo"
+  /api/config:
+    get:
+      tags:
+        - "ops"
+      summary: "Obtain the current configuration parameters"
+      description: ""
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "The configuration parameters as json"
+          schema:
+            example: >
+              {
+                "port": 11000,
+                "scaler": {
+                  "mode": "nomad-dc",
+                  "nomad": {
+                    "server_addr": "http://nomad.example.com",
+                    "datacenter_aws": {
+                      "profile": "my-profile",
+                      "region": "eu-central-1",
+                      "asg_tag_key": "",
+                      "instance_termination_timeout": 600000000000
+                      }
+                    },
+                    "aws_ec2": {
+                      "profile": "",
+                      "region": "eu-central-1",
+                      "asg_tag_key": "scale-object"
+                    },
+                    "watcher_interval": 5000000000
+                  },
+                  "dry_run_mode": false,
+                  "logging": {
+                    "structured": false,
+                    "ux_timestamp": false,
+                    "no_colored_log_output": false,
+                    "level": 1
+                  },
+                  "scale_object": {
+                    "name": "my-data-center",
+                    "min_count": 1,
+                    "max_count": 10
+                  },
+                  "scale_alert_aggregator": {
+                    "no_alert_scale_damping": 1,
+                    "up_scale_threshold": 10,
+                    "down_scale_threshold": -10,
+                    "scale_alerts": [{
+                      "name": "AlertA",
+                      "weight": 1.5,
+                      "description": "Up alert"
+                    },{
+                      "name": "AlertB",
+                      "weight": -1.5,
+                      "description": "Down alert"
+                    }],
+                    "evaluation_cycle": 1000000000,
+                    "evaluation_period_factor": 10,
+                    "cleanup_cycle": 60000000000,
+                    "alert_expiration_time": 600000000000
+                  },
+                  "capacity_planner": {
+                    "down_scale_cooldown_period": 20000000000,
+                    "up_scale_cooldown_period": 10000000000,
+                    "constant_mode": {
+                      "enable": true,
+                      "offset": 1
+                    },
+                    "linear_mode": {
+                      "enable": false,
+                      "scale_factor_weight": 0.5
+                    },
+                    "scaling_schedule": []
+                  }
+                }
+  /health:
+    get:
+      tags:
+        - "ops"
+      summary: "Get sokars' health status"
+      description: ""
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "Response if sokar is healthy"
+          schema:
+            $ref: "#/definitions/Health"
+        "503":
+          description: "Response if sokar is NOT healthy"
+          schema:
+            $ref: "#/definitions/Health"
+            example:
+              at: "2020-06-05T13:39:36.123152289+02:00"
+              status: "unhealthy"
+              checks:
+                - name: "sokar"
+                  status: "unhealthy"
+  /metrics:
+    get:
+      tags:
+        - "ops"
+      summary: "Prometheus endpoint for metrics"
+      description: ""
+      produces:
+        - "text/plain"
+        - "application/protobuf"
+      responses:
+        "200":
+          description: "Metrics in prometheus format"
+  /api/alerts:
+    post:
+      tags:
+        - "control"
+      summary: "Issue one to many scaling alerts to sokar. The request body is a subset of the requests the prometheus/alertmanager issues to alerting targets. Hence one can just use the alertmanager to issue the scaling-alerts directly to sokar."
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/ScalingAlerts"
+      responses:
+        "200":
+          description: "successful operation"
+  /api/scale-by/v/{value}:
+    put:
+      tags:
+        - "control"
+      summary: "Scale the scale-object by the given value. This is only supported if sokar runs in dry-run mode."
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "value"
+          in: "path"
+          description: "Absolute amount of instances that should be scaled up or down. Use a positive value for scale up and a negative one for scale down."
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Bad Request in case sokar is not running in dry-run mode."
+  /api/scale-by/p/{percentage}:
+    put:
+      tags:
+        - "control"
+      summary: "Scale the scale-object by the given percentage. This is only supported if sokar runs in dry-run mode."
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "percentage"
+          in: "path"
+          description: "Percentage (0-100) of instances that should be scaled up or down. Use a positive value for scale up and a negative one for scale down."
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Bad Request in case sokar is not running in dry-run mode."
+definitions:
+  BuildInfo:
+    type: "object"
+    properties:
+      version:
+        type: "string"
+        example: "v0.0.12-115-ge6d8b397"
+        description: "Version consisting of <latest git-tag>-<number of commits ahead of tag>-<commit hash>"
+      build_time:
+        type: "string"
+        example: "2020-06-05_13-25-21"
+        description: "Date + Time this instance was build"
+      revision:
+        type: "string"
+        example: "e6d8b397"
+        description: "Revision of this build"
+      branch:
+        type: "string"
+        example: "master"
+        description: "Branch of this build"
+  Health:
+    type: "object"
+    properties:
+      at:
+        type: "string"
+        example: "2020-06-05T13:39:36.123152289+02:00"
+        description: "Timestamp when the check was made"
+      status:
+        type: "string"
+        enum: [healthy, unhealthy]
+        example: "healthy"
+      checks:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            name:
+              type: "string"
+              description: "Name of the actual check"
+              example: "sokar"
+            status:
+              type: "string"
+              enum: [healthy, unhealthy]
+              example: "healthy"
+  ScalingAlerts:
+    type: "object"
+    properties:
+      alerts:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            status:
+              type: "string"
+              enum: [firing, not-firing]
+              example: "firing"
+            labels:
+              type: "object"
+              properties:
+                alertname:
+                  type: "string"
+                  example: "AlertA"
