@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.1.0 (2020-06-06)
+
+- BugFixes:
+  - [#122 Fix Codesmells found by SonarCloud](https://github.com/ThomasObenaus/sokar/issues/122)
+  - [#129 Fix metrics Setup](https://github.com/ThomasObenaus/sokar/issues/129)
+  - [#136 Race Conditions Detected during Test](https://github.com/ThomasObenaus/sokar/issues/136)
+  - [#131 Reenable + Fix Service Test](https://github.com/ThomasObenaus/sokar/issues/131)
+- With [#52](https://github.com/ThomasObenaus/sokar/issues/52) the log-level is now configurable (debug, info, warn, error, fatal or off).
+- Docu: With [#56](https://github.com/ThomasObenaus/sokar/issues/56) API spec was added.
+- Docu: With [#69](https://github.com/ThomasObenaus/sokar/issues/69) sokars scaler modes were documented at [doc/ScalerModes.md](doc/ScalerModes.md).
+- With [#105](https://github.com/ThomasObenaus/sokar/issues/105) sokars dependencies are now managed using go modules instead of go dep.
+- With [#116](https://github.com/ThomasObenaus/sokar/issues/116) sokars implementation for configuration, logging, build-information, health and shutdown where replaced by the usage of [go-base](https://github.com/ThomasObenaus/go-base).
+- With [#117](https://github.com/ThomasObenaus/sokar/issues/117) an integration test was added running sokar against a real nomad job running on a nomad (in docker) cluster. Here basic functionality of sokar is tested (scale up and down based on scale alerts).
+- With [#118](https://github.com/ThomasObenaus/sokar/issues/118) sokars is now build and its code is analyzed with sonar-cloud instead of using coveralls, codacity and circle-ci.
+- With [#119](https://github.com/ThomasObenaus/sokar/issues/119) golangci-lint is used for an additional static code analysis. GolangCI-Lint is a collection of multiple linters for golang with good default settings.
+- With [#125](https://github.com/ThomasObenaus/sokar/issues/125) for all unit-tests race detection is now activated.
+- With [#132](https://github.com/ThomasObenaus/sokar/issues/132) support for the newest nomad version (0.11.2) was added.
+
 ## v0.0.12 (2019-12-31)
 
 - Capacity Planning: With [#110](https://github.com/ThomasObenaus/sokar/issues/110) the new feature **Scheduled Scaling** was added to sokar. For more details read [ScheduledScaling.md](doc/ScheduledScaling.md).
