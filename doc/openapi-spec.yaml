@@ -150,6 +150,8 @@ paths:
       description: ""
       consumes:
         - "application/json"
+      produces:
+        - "application/json"
       parameters:
         - in: "body"
           name: "body"
@@ -158,6 +160,48 @@ paths:
       responses:
         "200":
           description: "successful operation"
+  /api/scale-by/v/{value}:
+    put:
+      tags:
+        - "control"
+      summary: "Scale the scale-object by the given value. This is only supported if sokar runs in dry-run mode."
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "value"
+          in: "path"
+          description: "Absolute amount of instances that should be scaled up or down. Use a positive value for scale up and a negative one for scale down."
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Bad Request in case sokar is not running in dry-run mode."
+  /api/scale-by/p/{percentage}:
+    put:
+      tags:
+        - "control"
+      summary: "Scale the scale-object by the given percentage. This is only supported if sokar runs in dry-run mode."
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "percentage"
+          in: "path"
+          description: "Percentage (0-100) of instances that should be scaled up or down. Use a positive value for scale up and a negative one for scale down."
+          required: true
+          type: "integer"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Bad Request in case sokar is not running in dry-run mode."
 definitions:
   BuildInfo:
     type: "object"
