@@ -12,7 +12,7 @@ require (
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.0.0
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.6.0 // indirect
@@ -21,9 +21,9 @@ require (
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
+	github.com/testcontainers/testcontainers-go v0.7.0
 	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9 // indirect
-	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20200527183253-8e7acdbce89d // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
