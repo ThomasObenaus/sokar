@@ -117,3 +117,6 @@ sep:
 
 finish:
 	@echo "=================================================================================="
+
+test.container:
+	@go test -timeout 50s -run "TestNginxLatestReturn" .
