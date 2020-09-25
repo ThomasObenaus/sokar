@@ -1,5 +1,9 @@
 # Changelog
 
+- BugFixes:
+  - [#138 Race Condition Detection disabled when run in Docker (until Go 1.15)](https://github.com/ThomasObenaus/sokar/issues/138)
+- With [#138](https://github.com/ThomasObenaus/sokar/issues/138) Sokars build image was upgraded from golang:1.13.1-alpine to golang:1.15.2-alpine and the runtime image was upgraded from alpine3.10 to alpine3.12
+
 ## v0.1.0 (2020-06-06)
 
 - BugFixes:
