@@ -13,3 +13,5 @@ test/service_test/vendor
 lint.out
 
 test-report.out
+
+__debug_bin
