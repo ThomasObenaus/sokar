@@ -1,11 +1,13 @@
 package config
 
 import (
+	"fmt"
+	"reflect"
 	"time"
 
+	cfglib "github.com/ThomasObenaus/go-base/config"
+	cfglibIf "github.com/ThomasObenaus/go-base/config/interfaces"
 	"github.com/rs/zerolog"
-
-	cfg "github.com/ThomasObenaus/go-base/config"
 )
 
 // ScalerMode represents the mode the Scaler can be set to
@@ -22,11 +24,11 @@ const (
 
 // Config is a structure containing the configuration for sokar
 type Config struct {
-	Port                 int                  `json:"port"`
+	Port                 int                  `json:"port" cfg:"{'name':'port','desc':'Port where sokar is listening.','default':11000}"`
 	Scaler               Scaler               `json:"scaler"`
-	DryRunMode           bool                 `json:"dry_run_mode"`
-	Logging              Logging              `json:"logging"`
-	ScaleObject          ScaleObject          `json:"scale_object"`
+	DryRunMode           bool                 `json:"dry_run_mode" cfg:"{'name':'dry-run','If true, then sokar won\'t execute the planned scaling action. Only scaling\nactions triggered via ScaleBy end-point will be executed.','default':false}"`
+	Logging              Logging              `json:"logging" cfg:"{'name':'logging'}"`
+	ScaleObject          ScaleObject          `json:"scale_object" cfg:"{'name':'scale-object'}"`
 	ScaleAlertAggregator ScaleAlertAggregator `json:"scale_alert_aggregator"`
 	CapacityPlanner      CapacityPlanner      `json:"capacity_planner"`
 }
@@ -62,9 +64,9 @@ type SCANomadDataCenterAWS struct {
 
 // ScaleObject represents the definition for the object that should be scaled.
 type ScaleObject struct {
-	Name     string `json:"name"`
-	MinCount uint   `json:"min_count"`
-	MaxCount uint   `json:"max_count"`
+	Name     string `json:"name" cfg:"{'name':'name','desc':'The name of the object to be scaled.','default':''}"`
+	MinCount uint   `json:"min_count" cfg:"{'name':'min','desc':'The minimum count of the object to be scaled.','default':1}"`
+	MaxCount uint   `json:"max_count" cfg:"{'name':'max','desc':'The maximum count of the object to be scaled.','default':10}"`
 }
 
 // ScaleAlertAggregator is the configuration part for the ScaleAlertAggregator
@@ -88,10 +90,10 @@ type Alert struct {
 
 // Logging is used for logging configuration
 type Logging struct {
-	Structured         bool          `json:"structured"`
-	UxTimestamp        bool          `json:"ux_timestamp"`
-	NoColoredLogOutput bool          `json:"no_colored_log_output"`
-	Level              zerolog.Level `json:"level"`
+	Structured         bool          `json:"structured" cfg:"{'name':'structured','desc':'Use structured logging or not.','default':false}"`
+	UxTimestamp        bool          `json:"ux_timestamp" cfg:"{'name':'unix-ts','desc':'Use Unix-Timestamp representation for log entries.','default':false}"`
+	NoColoredLogOutput bool          `json:"no_colored_log_output" cfg:"{'name':'no-color','desc':'If true colors in log out-put will be disabled.','default':false}"`
+	Level              zerolog.Level `json:"level" cfg:"{'name':'level','desc':'The level that should be used for logs. Valid entries are debug, info, warn, error, fatal and off.','default':'info','mapfun':'strToLoglevel'}"`
 }
 
 // CapacityPlanner is used for the configuration of the CapacityPlanner
@@ -154,16 +156,43 @@ func NewDefaultConfig() Config {
 
 // New creates a new Config instance based on the given cli args
 func New(args []string, serviceAbbreviation string) (Config, error) {
-	provider := cfg.NewProvider(configEntries, serviceAbbreviation, serviceAbbreviation)
-	err := provider.ReadConfig(args)
+
+	config := Config{}
+
+	provider, err := cfglib.NewConfigProvider(
+		&config,
+		serviceAbbreviation,
+		serviceAbbreviation,
+		cfglib.CustomConfigEntries(configEntries),
+		cfglib.Logger(cfglibIf.InfoLogger),
+	)
 	if err != nil {
 		return Config{}, err
 	}
 
-	config := Config{}
+	if err := provider.RegisterMappingFunc("strToLoglevel", strToLoglevel); err != nil {
+		return Config{}, err
+	}
+
+	err = provider.ReadConfig(args)
+	if err != nil {
+
+		fmt.Printf(provider.Usage())
+		fmt.Println()
+		return Config{}, err
+	}
+
 	if err := config.fillCfgValues(provider); err != nil {
 		return Config{}, err
 	}
 
 	return config, nil
+}
+
+func strToLoglevel(rawUntypedValue interface{}, targetType reflect.Type) (interface{}, error) {
+	asString, ok := rawUntypedValue.(string)
+	if !ok {
+		return nil, fmt.Errorf("Expected type string but was %T", rawUntypedValue)
+	}
+	return zerolog.ParseLevel(asString)
 }

@@ -6,12 +6,6 @@ import (
 	cfg "github.com/ThomasObenaus/go-base/config"
 )
 
-// ###################### Context: main ####################################################
-var dryRun = cfg.NewEntry("dry-run", "If true, then sokar won't execute the planned scaling action. Only scaling\n"+
-	"actions triggered via ScaleBy end-point will be executed.", cfg.Default(false))
-
-var port = cfg.NewEntry("port", "Port where sokar is listening.", cfg.Default(11000))
-
 // ###################### Context: scaler ####################################################
 
 var scaMode = cfg.NewEntry("sca.mode", "Scaling target mode is either job based, instance-based or data-center\n"+
@@ -51,11 +45,6 @@ var scaNomadDataCenterAWSInstanceTerminationTimeout = cfg.NewEntry("sca.nomad.dc
 
 var scaNomadModeServerAddress = cfg.NewEntry("sca.nomad.server-address", "Specifies the address of the nomad server.", cfg.Default("http://localhost:4646"))
 
-// ###################### Context: scale-object ####################################################
-var scaleObjectName = cfg.NewEntry("scale-object.name", "The name of the object to be scaled.", cfg.Default(""))
-var scaleObjectMin = cfg.NewEntry("scale-object.min", "The minimum count of the object to be scaled.", cfg.Default(1))
-var scaleObjectMax = cfg.NewEntry("scale-object.max", "The maximum count of the object to be scaled.", cfg.Default(10))
-
 // ###################### Context: CapacityPlanner#########################################
 var capScaleSchedule = cfg.NewEntry("cap.scale-schedule", "Specifies time ranges within which it is ensured that the ScaleObject is scaled\n"+
 	"to at least min and not more than max. The min/ max values specified in this\n"+
@@ -77,12 +66,6 @@ var capLinearModeEnable = cfg.NewEntry("cap.linear-mode.enable", "Enable/ disabl
 var capLinearModeScaleFactorWeight = cfg.NewEntry("cap.linear-mode.scale-factor-weight", "This weight is used to adjust the impact of the scaleFactor during capacity\n"+
 	"planning in linear mode.", cfg.Default(0.5))
 
-// ###################### Context: Logging ################################################
-var loggingStructured = cfg.NewEntry("logging.structured", "Use structured logging or not.", cfg.Default(false))
-var loggingUXTS = cfg.NewEntry("logging.unix-ts", "Use Unix-Timestamp representation for log entries.", cfg.Default(false))
-var loggingNoColor = cfg.NewEntry("logging.no-color", "If true colors in log out-put will be disabled.", cfg.Default(false))
-var loggingLevel = cfg.NewEntry("logging.level", "The level that should be used for logs. Valid entries are debug, info, warn, error, fatal and off.", cfg.Default("info"))
-
 // ###################### Context: ScaleAlertAggregator ###################################
 var saaAlertExpirationTime = cfg.NewEntry("saa.alert-expiration-time", "Defines after which time an alert will be pruned if he did not get updated\n"+
 	"again by the ScaleAlertEmitter, assuming that the alert is not relevant any more.", cfg.Default(time.Minute*10))
@@ -103,18 +86,9 @@ var saaCleanupCylce = cfg.NewEntry("saa.cleanup-cycle", "Cycle/ frequency the Sc
 var saaScaleAlerts = cfg.NewEntry("saa.scale-alerts", "The alerts that should be used for scaling (up/down) the scale-object.", cfg.Default(""))
 
 var configEntries = []cfg.Entry{
-	port,
-	dryRun,
-	scaleObjectName,
-	scaleObjectMin,
-	scaleObjectMax,
 	capScaleSchedule,
 	capDownScaleCoolDown,
 	capUpScaleCoolDown,
-	loggingStructured,
-	loggingUXTS,
-	loggingNoColor,
-	loggingLevel,
 	saaNoAlertDamping,
 	saaUpThresh,
 	saaDownThresh,

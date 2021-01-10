@@ -5,9 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
-
-	cfglib "github.com/ThomasObenaus/go-base/config"
+	cfglib "github.com/ThomasObenaus/go-base/config/interfaces"
 	"github.com/spf13/cast"
 	"github.com/thomasobenaus/sokar/helper"
 )
@@ -142,9 +140,6 @@ func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
 }
 
 func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
-	// Context: main
-	cfg.DryRunMode = provider.GetBool(dryRun.Name())
-	cfg.Port = provider.GetInt(port.Name())
 
 	// Context: Scaler
 	err := cfg.fillScaler(provider)
@@ -152,27 +147,8 @@ func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 		return err
 	}
 
-	// Context: scale object
-	cfg.ScaleObject.Name = provider.GetString(scaleObjectName.Name())
-	min := provider.GetInt(scaleObjectMin.Name())
-	if min < 0 {
-		min = 0
-	}
-	cfg.ScaleObject.MinCount = uint(min)
-
-	max := provider.GetInt(scaleObjectMax.Name())
-	if max < 0 {
-		max = 0
-	}
-	cfg.ScaleObject.MaxCount = uint(max)
-
 	// Context: CapacityPlanner
 	err = cfg.fillCapacityPlanner(provider)
-	if err != nil {
-		return err
-	}
-	// Context: Logging
-	err = cfg.fillLoggingContext(provider)
 	if err != nil {
 		return err
 	}
@@ -200,6 +176,7 @@ func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 	return nil
 }
 
+/*
 func (cfg *Config) fillLoggingContext(provider cfglib.Provider) error {
 	cfg.Logging.Structured = provider.GetBool(loggingStructured.Name())
 	cfg.Logging.UxTimestamp = provider.GetBool(loggingUXTS.Name())
@@ -208,8 +185,8 @@ func (cfg *Config) fillLoggingContext(provider cfglib.Provider) error {
 	level, err := strToLogLevel(provider.GetString(loggingLevel.Name()))
 	cfg.Logging.Level = level
 	return err
-}
-
+}*/
+/*
 func strToLogLevel(v string) (zerolog.Level, error) {
 
 	v = strings.TrimSpace(v)
@@ -231,7 +208,7 @@ func strToLogLevel(v string) (zerolog.Level, error) {
 	}
 
 	return zerolog.NoLevel, fmt.Errorf("Invalid loglevel '%s'. Only debug, info, warn, error, fatal and off is supported", v)
-}
+}*/
 
 func extractAlertsFromViper(provider cfglib.Provider) ([]Alert, error) {
 	var alerts = make([]Alert, 0)
