@@ -14,7 +14,7 @@ build_info := $(build_time)_$(revision)
 
 packages := ./scaleschedule ./config ./alertmanager ./nomad ./scaler ./helper ./scaleAlertAggregator ./sokar ./sokar/iface ./capacityplanner ./aws ./awsEc2 ./nomadWorker ./api ./
 
-all: tools test build lint finish
+all: tools test build format lint finish
 
 # This target (taken from: https://gist.github.com/prwhite/8168133) is an easy way to print out a usage/ help of all make targets.
 # For all make targets the text after \#\# will be printed.
@@ -96,7 +96,7 @@ test.integration: ## Run the integration-test for sokar
 lint: ## Runs the linter to check for coding-style issues
 	@echo "--> Lint project"
 	@echo "!!!!golangci-lint has to be installed. See: https://github.com/golangci/golangci-lint#install"
-	@golangci-lint run --fast
+	@golangci-lint run --fast --enable=gofmt
 
 report.test: sep ## Runs all unittests and generates a coverage- and a test-report.
 	@echo "--> Run the unit-tests"	
@@ -105,7 +105,11 @@ report.test: sep ## Runs all unittests and generates a coverage- and a test-repo
 report.lint: ## Runs the linter to check for coding-style issues and generates the report file used in the ci pipeline
 	@echo "--> Lint project + Reporting"
 	@echo "!!!!golangci-lint has to be installed. See: https://github.com/golangci/golangci-lint#install"
-	@golangci-lint run --fast --out-format checkstyle | tee lint.out
+	@golangci-lint run --fast --out-format checkstyle --enable=gofmt | tee lint.out
+
+format: ## Formats the code with gofmt simple
+	@echo "Format the code with gofmt simple"
+	@gofmt -s -w .
 
 sep:
 	@echo "----------------------------------------------------------------------------------"

@@ -65,7 +65,7 @@ func Test_ScaleByPercentage_HTTPHandler_InvalidParam(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
 	// invalid param -> BadRequest
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "invalid"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "invalid"}}
 	sokar.ScaleByPercentage(w, req, params)
 	resp = w.Result()
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
@@ -94,7 +94,7 @@ func Test_ScaleByPercentage_HTTPHandler_OK(t *testing.T) {
 	currentScale := uint(1)
 	scaleTo := uint(2)
 	//scaleFactor := float32(0.1)
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
@@ -131,7 +131,7 @@ func Test_ScaleByPercentage_HTTPHandler_IntError(t *testing.T) {
 	currentScale := uint(1)
 	scaleTo := uint(2)
 	//scaleFactor := float32(0.1)
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
@@ -171,7 +171,7 @@ func Test_ScaleByValue_HTTPHandler_InvalidParam(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
 	// invalid param -> BadRequest
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "invalid"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "invalid"}}
 	sokar.dryRunMode = true
 	sokar.ScaleByValue(w, req, params)
 	resp = w.Result()
@@ -201,7 +201,7 @@ func Test_ScaleByValue_HTTPHandler_OK(t *testing.T) {
 	currentScale := uint(1)
 	scaleTo := uint(11)
 	//scaleFactor := float32(0.1)
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),
@@ -238,7 +238,7 @@ func Test_ScaleByValue_HTTPHandler_IntError(t *testing.T) {
 	currentScale := uint(1)
 	scaleTo := uint(11)
 	//scaleFactor := float32(0.1)
-	params := []httprouter.Param{httprouter.Param{Key: PathPartValue, Value: "10"}}
+	params := []httprouter.Param{{Key: PathPartValue, Value: "10"}}
 	gomock.InOrder(
 		scalerIF.EXPECT().GetCount().Return(currentScale, nil),
 		scalerIF.EXPECT().GetTimeOfLastScaleAction().Return(time.Now()),

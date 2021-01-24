@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	cfglib "github.com/ThomasObenaus/go-base/config"
@@ -148,6 +149,7 @@ func NewDefaultConfig() Config {
 			UpScaleCooldownPeriod:   time.Second * 60,
 			ConstantMode:            CAPConstMode{Enable: true, Offset: 1},
 			LinearMode:              CAPLinearMode{Enable: false},
+			ScaleSchedule:           make([]ScaleScheduleEntry, 0),
 		},
 	}
 
@@ -163,7 +165,6 @@ func New(args []string, serviceAbbreviation string) (Config, error) {
 		&config,
 		serviceAbbreviation,
 		serviceAbbreviation,
-		cfglib.CustomConfigEntries(configEntries),
 		cfglib.Logger(cfglibIf.InfoLogger),
 	)
 	if err != nil {
@@ -184,7 +185,11 @@ func New(args []string, serviceAbbreviation string) (Config, error) {
 		return Config{}, err
 	}
 
-	if err := config.fillCfgValues(provider); err != nil {
+	if err := validateScaler(config.Scaler); err != nil {
+		return Config{}, err
+	}
+
+	if err := validateCapacityPlanner(config.CapacityPlanner); err != nil {
 		return Config{}, err
 	}
 
@@ -215,4 +220,82 @@ func strToScaleSchedule(rawUntypedValue interface{}, targetType reflect.Type) (i
 	}
 
 	return ssEntries, nil
+}
+
+func validateScaler(scaler Scaler) error {
+	const parameterMissingErrorPattern = "The parameter '%s' is missing but this is needed in Scaler.Mode '%v'"
+
+	switch mode := scaler.Mode; mode {
+	case ScalerModeNomadJob:
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.nomad.server-address", mode)
+		}
+	case ScalerModeNomadDataCenter:
+		hasRegion := len(scaler.Nomad.DataCenterAWS.Region) > 0
+		hasProfile := len(scaler.Nomad.DataCenterAWS.Profile) > 0
+		if len(scaler.Nomad.ServerAddr) == 0 {
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.nomad.server-address", mode)
+		}
+		if !hasProfile && !hasRegion {
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", "sca.nomad.dc-aws.profile", "sca.nomad.dc-aws.region", mode)
+		}
+	case ScalerModeAwsEc2:
+		hasRegion := len(scaler.AwsEc2.Region) > 0
+		hasProfile := len(scaler.AwsEc2.Profile) > 0
+
+		if !hasProfile && !hasRegion {
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", "sca.aws-ec2.profile", "sca.aws-ec2.region", mode)
+		}
+		if len(scaler.AwsEc2.ASGTagKey) == 0 {
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.aws-ec2.asg-tag-key", mode)
+		}
+	default:
+		return fmt.Errorf(parameterMissingErrorPattern, "sca.mode", mode)
+	}
+
+	if scaler.WatcherInterval <= time.Millisecond*500 {
+		return fmt.Errorf("'%s' can't be less then 500ms", "sca.watcher-interval")
+	}
+
+	return nil
+}
+
+func parseScalingScheduleEntries(raw string) ([]ScaleScheduleEntry, error) {
+	parts := strings.Split(raw, "|")
+	result := make([]ScaleScheduleEntry, 0)
+
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if len(part) == 0 {
+			continue
+		}
+		entry, err := NewScaleScheduleEntry(part)
+		if err != nil {
+			return make([]ScaleScheduleEntry, 0), err
+		}
+		result = append(result, entry)
+	}
+
+	return result, nil
+}
+
+func validateCapacityPlanner(capacityPlanner CapacityPlanner) error {
+
+	if capacityPlanner.ConstantMode.Enable && capacityPlanner.LinearMode.Enable {
+		return fmt.Errorf("constant and linear mode are set at the same time, this is not allowed")
+	}
+
+	if !capacityPlanner.ConstantMode.Enable && !capacityPlanner.LinearMode.Enable {
+		return fmt.Errorf("neither constant nor linear mode are set, this is not allowed")
+	}
+
+	if capacityPlanner.LinearMode.Enable && capacityPlanner.LinearMode.ScaleFactorWeight <= 0 {
+		return fmt.Errorf("invalid scale factor (%f) for linear mode, it has to be greater than 0", capacityPlanner.LinearMode.ScaleFactorWeight)
+	}
+
+	if capacityPlanner.ConstantMode.Enable && capacityPlanner.ConstantMode.Offset == 0 {
+		return fmt.Errorf("invalid offset (%d) for constant mode, it has to be greater than 0", capacityPlanner.ConstantMode.Offset)
+	}
+
+	return nil
 }
