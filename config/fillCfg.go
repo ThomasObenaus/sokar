@@ -7,30 +7,11 @@ import (
 
 	cfglib "github.com/ThomasObenaus/go-base/config/interfaces"
 	"github.com/spf13/cast"
-	"github.com/thomasobenaus/sokar/helper"
 )
 
 func (cfg *Config) fillScaler(provider cfglib.Provider) error {
-	cfg.Scaler.WatcherInterval = provider.GetDuration(scaWatcherInterval.Name())
-
-	scaModeStr := provider.GetString(scaMode.Name())
-	scaMode, err := strToScalerMode(scaModeStr)
-	if err != nil {
-		return err
-	}
-	cfg.Scaler.Mode = scaMode
-
-	// Context: Scaler - AWS EC2
-	cfg.Scaler.AwsEc2.Profile = provider.GetString(scaAWSEC2Profile.Name())
-	cfg.Scaler.AwsEc2.Region = provider.GetString(scaAWSEC2Region.Name())
-	cfg.Scaler.AwsEc2.ASGTagKey = provider.GetString(scaAWSEC2ASGTagKey.Name())
-	// Context: Scaler - Nomad
-	cfg.Scaler.Nomad.ServerAddr = provider.GetString(scaNomadModeServerAddress.Name())
-	cfg.Scaler.Nomad.DataCenterAWS.Profile = provider.GetString(scaNomadDataCenterAWSProfile.Name())
-	cfg.Scaler.Nomad.DataCenterAWS.Region = provider.GetString(scaNomadDataCenterAWSRegion.Name())
-	cfg.Scaler.Nomad.DataCenterAWS.InstanceTerminationTimeout = provider.GetDuration(scaNomadDataCenterAWSInstanceTerminationTimeout.Name())
-
-	return validateScaler(cfg.Scaler)
+	//return validateScaler(cfg.Scaler)
+	return nil
 }
 
 func validateScaler(scaler Scaler) error {
@@ -39,33 +20,33 @@ func validateScaler(scaler Scaler) error {
 	switch mode := scaler.Mode; mode {
 	case ScalerModeNomadJob:
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.Name(), mode)
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.nomad.server-address", mode)
 		}
 	case ScalerModeNomadDataCenter:
 		hasRegion := len(scaler.Nomad.DataCenterAWS.Region) > 0
 		hasProfile := len(scaler.Nomad.DataCenterAWS.Profile) > 0
 		if len(scaler.Nomad.ServerAddr) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaNomadModeServerAddress.Name(), mode)
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.nomad.server-address", mode)
 		}
 		if !hasProfile && !hasRegion {
-			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaNomadDataCenterAWSProfile.Name(), scaNomadDataCenterAWSRegion.Name(), mode)
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", "sca.nomad.dc-aws.profile", "sca.nomad.dc-aws.region", mode)
 		}
 	case ScalerModeAwsEc2:
 		hasRegion := len(scaler.AwsEc2.Region) > 0
 		hasProfile := len(scaler.AwsEc2.Profile) > 0
 
 		if !hasProfile && !hasRegion {
-			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", scaAWSEC2Profile.Name(), scaAWSEC2Region.Name(), mode)
+			return fmt.Errorf("The parameter '%s' and '%s' are missing but one of both is needed in Scaler.Mode '%v'", "sca.aws-ec2.profile", "sca.aws-ec2.region", mode)
 		}
 		if len(scaler.AwsEc2.ASGTagKey) == 0 {
-			return fmt.Errorf(parameterMissingErrorPattern, scaAWSEC2ASGTagKey.Name(), mode)
+			return fmt.Errorf(parameterMissingErrorPattern, "sca.aws-ec2.asg-tag-key", mode)
 		}
 	default:
-		return fmt.Errorf(parameterMissingErrorPattern, scaMode.Name(), mode)
+		return fmt.Errorf(parameterMissingErrorPattern, "sca.mode", mode)
 	}
 
 	if scaler.WatcherInterval <= time.Millisecond*500 {
-		return fmt.Errorf("'%s' can't be less then 500ms", scaWatcherInterval.Name())
+		return fmt.Errorf("'%s' can't be less then 500ms", "sca.watcher-interval")
 	}
 
 	return nil
@@ -74,7 +55,7 @@ func validateScaler(scaler Scaler) error {
 func (cfg *Config) fillCapacityPlanner(provider cfglib.Provider) error {
 
 	// Context: CapacityPlanner
-	cfg.CapacityPlanner.DownScaleCooldownPeriod = provider.GetDuration(capDownScaleCoolDown.Name())
+	/*cfg.CapacityPlanner.DownScaleCooldownPeriod = provider.GetDuration(capDownScaleCoolDown.Name())
 	cfg.CapacityPlanner.UpScaleCooldownPeriod = provider.GetDuration(capUpScaleCoolDown.Name())
 
 	cfg.CapacityPlanner.ConstantMode.Enable = provider.GetBool(capConstantModeEnable.Name())
@@ -94,7 +75,7 @@ func (cfg *Config) fillCapacityPlanner(provider cfglib.Provider) error {
 	if err != nil {
 		return err
 	}
-	cfg.CapacityPlanner.ScaleSchedule = entries
+	cfg.CapacityPlanner.ScaleSchedule = entries*/
 
 	return validateCapacityPlanner(cfg.CapacityPlanner)
 }
@@ -154,25 +135,12 @@ func (cfg *Config) fillCfgValues(provider cfglib.Provider) error {
 	}
 
 	// Context: ScaleAlertAggregator
-	cfg.ScaleAlertAggregator.NoAlertScaleDamping = float32(provider.GetFloat64(saaNoAlertDamping.Name()))
-	cfg.ScaleAlertAggregator.UpScaleThreshold = float32(provider.GetFloat64(saaUpThresh.Name()))
-	cfg.ScaleAlertAggregator.DownScaleThreshold = float32(provider.GetFloat64(saaDownThresh.Name()))
-	cfg.ScaleAlertAggregator.EvaluationCycle = provider.GetDuration(saaEvalCylce.Name())
-
-	evalPeriodFactor := provider.GetInt(saaEvalPeriodFactor.Name())
-	if evalPeriodFactor < 0 {
-		evalPeriodFactor = 1
-	}
-	cfg.ScaleAlertAggregator.EvaluationPeriodFactor = uint(evalPeriodFactor)
-	cfg.ScaleAlertAggregator.CleanupCycle = provider.GetDuration(saaCleanupCylce.Name())
-
-	alerts, err := extractAlertsFromViper(provider)
+	/*alerts, err := extractAlertsFromViper(provider)
 	if err != nil {
 		return err
 	}
 	cfg.ScaleAlertAggregator.ScaleAlerts = alerts
-	cfg.ScaleAlertAggregator.AlertExpirationTime = provider.GetDuration(saaAlertExpirationTime.Name())
-
+	*/
 	return nil
 }
 
@@ -209,7 +177,7 @@ func strToLogLevel(v string) (zerolog.Level, error) {
 
 	return zerolog.NoLevel, fmt.Errorf("Invalid loglevel '%s'. Only debug, info, warn, error, fatal and off is supported", v)
 }*/
-
+/*
 func extractAlertsFromViper(provider cfglib.Provider) ([]Alert, error) {
 	var alerts = make([]Alert, 0)
 
@@ -234,7 +202,7 @@ func extractAlertsFromViper(provider cfglib.Provider) ([]Alert, error) {
 	}
 	return alerts, nil
 }
-
+*/
 func alertMapToAlerts(alertCfg []map[string]string) ([]Alert, error) {
 
 	if alertCfg == nil {
@@ -315,30 +283,6 @@ func strToScalerMode(mode string) (ScalerMode, error) {
 	}
 
 	return "", fmt.Errorf("Can't parse '%s' to ScalerMode. Given value is unknown", mode)
-}
-
-func extractScaleScheduleFromViper(provider cfglib.Provider) ([]ScaleScheduleEntry, error) {
-	var scaleSchedule = make([]ScaleScheduleEntry, 0)
-
-	if !provider.IsSet(capScaleSchedule.Name()) {
-		return nil, nil
-	}
-
-	scaleScheduleAsStr := provider.GetString(capScaleSchedule.Name())
-	if len(scaleScheduleAsStr) > 0 {
-		return parseScalingScheduleEntries(scaleScheduleAsStr)
-	}
-
-	scaleScheduleAsMap := helper.CastToStringMapSlice(provider.Get(capScaleSchedule.Name()))
-	if scaleScheduleAsMap == nil {
-		return scaleSchedule, nil
-	}
-
-	scaleSchedule, err := scaleScheduleMapToScaleSchedule(scaleScheduleAsMap)
-	if err != nil {
-		return scaleSchedule, fmt.Errorf("Error reading scale schedule configuration: %s", err.Error())
-	}
-	return scaleSchedule, nil
 }
 
 func scaleScheduleMapToScaleSchedule(scaleScheduleCfg []map[string]string) ([]ScaleScheduleEntry, error) {

@@ -300,6 +300,7 @@ func setupSchedule(cfg *config.Config, logger zerolog.Logger) (*scaleschedule.Sc
 	}
 
 	scaleSchedule := scaleschedule.New()
+
 	for _, entry := range cfg.CapacityPlanner.ScaleSchedule {
 		for _, day := range entry.Days {
 			minScale := uint(entry.MinScale)
