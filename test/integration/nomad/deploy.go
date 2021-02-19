@@ -49,7 +49,7 @@ func NewDeployer(t *testing.T, nomadServerAddress string) (*deployerImpl, error)
 func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVars map[string]string) *nomadApi.Job {
 	nwResource := nomadApi.NetworkResource{
 		MBits:        helper.IntToPtr(10),
-		DynamicPorts: []nomadApi.Port{nomadApi.Port{Label: "http"}},
+		DynamicPorts: []nomadApi.Port{{Label: "http"}},
 	}
 	resources := nomadApi.Resources{
 		CPU:      helper.IntToPtr(100),
@@ -60,7 +60,7 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 	service := nomadApi.Service{
 		Name:      fmt.Sprintf("%s-service", jobName),
 		PortLabel: "http",
-		Checks: []nomadApi.ServiceCheck{nomadApi.ServiceCheck{
+		Checks: []nomadApi.ServiceCheck{{
 			PortLabel: "http",
 			Type:      "http",
 			Path:      "/health",
@@ -75,7 +75,7 @@ func NewJobDescription(jobName, datacenter, dockerImage string, count int, envVa
 		Driver: "docker",
 		Config: map[string]interface{}{
 			"image":    dockerImage,
-			"port_map": []map[string]int{map[string]int{"http": 8080}},
+			"port_map": []map[string]int{{"http": 8080}},
 		},
 		Resources: &resources,
 		Services:  []*nomadApi.Service{&service},
