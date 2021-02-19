@@ -7,7 +7,6 @@ import (
 	"time"
 
 	cfglib "github.com/ThomasObenaus/go-base/config"
-	cfglibIf "github.com/ThomasObenaus/go-base/config/interfaces"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
@@ -165,7 +164,7 @@ func New(args []string, serviceAbbreviation string) (Config, error) {
 		&config,
 		serviceAbbreviation,
 		serviceAbbreviation,
-		cfglib.Logger(cfglibIf.InfoLogger),
+		cfglib.Logger(cfglib.WarnLogger),
 	)
 	if err != nil {
 		return Config{}, err
@@ -180,7 +179,12 @@ func New(args []string, serviceAbbreviation string) (Config, error) {
 
 	err = provider.ReadConfig(args)
 	if err != nil {
+		fmt.Println()
+		fmt.Println("####### Failed to load config #############################################################")
+		fmt.Println("####### Usage #############################################################################")
 		fmt.Print(provider.Usage())
+		fmt.Println()
+		fmt.Println("###########################################################################################")
 		fmt.Println()
 		return Config{}, err
 	}
