@@ -5,35 +5,36 @@
 package mock_nomad
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	api "github.com/hashicorp/nomad/api"
-	reflect "reflect"
 )
 
-// MockJobs is a mock of Jobs interface
+// MockJobs is a mock of Jobs interface.
 type MockJobs struct {
 	ctrl     *gomock.Controller
 	recorder *MockJobsMockRecorder
 }
 
-// MockJobsMockRecorder is the mock recorder for MockJobs
+// MockJobsMockRecorder is the mock recorder for MockJobs.
 type MockJobsMockRecorder struct {
 	mock *MockJobs
 }
 
-// NewMockJobs creates a new mock instance
+// NewMockJobs creates a new mock instance.
 func NewMockJobs(ctrl *gomock.Controller) *MockJobs {
 	mock := &MockJobs{ctrl: ctrl}
 	mock.recorder = &MockJobsMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockJobs) EXPECT() *MockJobsMockRecorder {
 	return m.recorder
 }
 
-// Info mocks base method
+// Info mocks base method.
 func (m *MockJobs) Info(jobID string, q *api.QueryOptions) (*api.Job, *api.QueryMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", jobID, q)
@@ -43,13 +44,13 @@ func (m *MockJobs) Info(jobID string, q *api.QueryOptions) (*api.Job, *api.Query
 	return ret0, ret1, ret2
 }
 
-// Info indicates an expected call of Info
+// Info indicates an expected call of Info.
 func (mr *MockJobsMockRecorder) Info(jobID, q interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockJobs)(nil).Info), jobID, q)
 }
 
-// Register mocks base method
+// Register mocks base method.
 func (m *MockJobs) Register(job *api.Job, q *api.WriteOptions) (*api.JobRegisterResponse, *api.WriteMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Register", job, q)
@@ -59,36 +60,36 @@ func (m *MockJobs) Register(job *api.Job, q *api.WriteOptions) (*api.JobRegister
 	return ret0, ret1, ret2
 }
 
-// Register indicates an expected call of Register
+// Register indicates an expected call of Register.
 func (mr *MockJobsMockRecorder) Register(job, q interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockJobs)(nil).Register), job, q)
 }
 
-// MockDeployments is a mock of Deployments interface
+// MockDeployments is a mock of Deployments interface.
 type MockDeployments struct {
 	ctrl     *gomock.Controller
 	recorder *MockDeploymentsMockRecorder
 }
 
-// MockDeploymentsMockRecorder is the mock recorder for MockDeployments
+// MockDeploymentsMockRecorder is the mock recorder for MockDeployments.
 type MockDeploymentsMockRecorder struct {
 	mock *MockDeployments
 }
 
-// NewMockDeployments creates a new mock instance
+// NewMockDeployments creates a new mock instance.
 func NewMockDeployments(ctrl *gomock.Controller) *MockDeployments {
 	mock := &MockDeployments{ctrl: ctrl}
 	mock.recorder = &MockDeploymentsMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDeployments) EXPECT() *MockDeploymentsMockRecorder {
 	return m.recorder
 }
 
-// Info mocks base method
+// Info mocks base method.
 func (m *MockDeployments) Info(deploymentID string, q *api.QueryOptions) (*api.Deployment, *api.QueryMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", deploymentID, q)
@@ -98,36 +99,36 @@ func (m *MockDeployments) Info(deploymentID string, q *api.QueryOptions) (*api.D
 	return ret0, ret1, ret2
 }
 
-// Info indicates an expected call of Info
+// Info indicates an expected call of Info.
 func (mr *MockDeploymentsMockRecorder) Info(deploymentID, q interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockDeployments)(nil).Info), deploymentID, q)
 }
 
-// MockEvaluations is a mock of Evaluations interface
+// MockEvaluations is a mock of Evaluations interface.
 type MockEvaluations struct {
 	ctrl     *gomock.Controller
 	recorder *MockEvaluationsMockRecorder
 }
 
-// MockEvaluationsMockRecorder is the mock recorder for MockEvaluations
+// MockEvaluationsMockRecorder is the mock recorder for MockEvaluations.
 type MockEvaluationsMockRecorder struct {
 	mock *MockEvaluations
 }
 
-// NewMockEvaluations creates a new mock instance
+// NewMockEvaluations creates a new mock instance.
 func NewMockEvaluations(ctrl *gomock.Controller) *MockEvaluations {
 	mock := &MockEvaluations{ctrl: ctrl}
 	mock.recorder = &MockEvaluationsMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockEvaluations) EXPECT() *MockEvaluationsMockRecorder {
 	return m.recorder
 }
 
-// Info mocks base method
+// Info mocks base method.
 func (m *MockEvaluations) Info(evalID string, q *api.QueryOptions) (*api.Evaluation, *api.QueryMeta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Info", evalID, q)
@@ -137,7 +138,7 @@ func (m *MockEvaluations) Info(evalID string, q *api.QueryOptions) (*api.Evaluat
 	return ret0, ret1, ret2
 }
 
-// Info indicates an expected call of Info
+// Info indicates an expected call of Info.
 func (mr *MockEvaluationsMockRecorder) Info(evalID, q interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Info", reflect.TypeOf((*MockEvaluations)(nil).Info), evalID, q)

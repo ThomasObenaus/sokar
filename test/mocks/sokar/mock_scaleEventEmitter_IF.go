@@ -5,41 +5,42 @@
 package mock_sokar
 
 import (
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 	sokar "github.com/thomasobenaus/sokar/sokar/iface"
-	reflect "reflect"
 )
 
-// MockScaleEventEmitter is a mock of ScaleEventEmitter interface
+// MockScaleEventEmitter is a mock of ScaleEventEmitter interface.
 type MockScaleEventEmitter struct {
 	ctrl     *gomock.Controller
 	recorder *MockScaleEventEmitterMockRecorder
 }
 
-// MockScaleEventEmitterMockRecorder is the mock recorder for MockScaleEventEmitter
+// MockScaleEventEmitterMockRecorder is the mock recorder for MockScaleEventEmitter.
 type MockScaleEventEmitterMockRecorder struct {
 	mock *MockScaleEventEmitter
 }
 
-// NewMockScaleEventEmitter creates a new mock instance
+// NewMockScaleEventEmitter creates a new mock instance.
 func NewMockScaleEventEmitter(ctrl *gomock.Controller) *MockScaleEventEmitter {
 	mock := &MockScaleEventEmitter{ctrl: ctrl}
 	mock.recorder = &MockScaleEventEmitterMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockScaleEventEmitter) EXPECT() *MockScaleEventEmitterMockRecorder {
 	return m.recorder
 }
 
-// Subscribe mocks base method
+// Subscribe mocks base method.
 func (m *MockScaleEventEmitter) Subscribe(eventChannel chan sokar.ScaleEvent) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Subscribe", eventChannel)
 }
 
-// Subscribe indicates an expected call of Subscribe
+// Subscribe indicates an expected call of Subscribe.
 func (mr *MockScaleEventEmitterMockRecorder) Subscribe(eventChannel interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockScaleEventEmitter)(nil).Subscribe), eventChannel)

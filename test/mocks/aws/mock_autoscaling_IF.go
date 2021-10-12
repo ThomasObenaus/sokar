@@ -5,38 +5,39 @@
 package mock_aws
 
 import (
+	reflect "reflect"
+
 	request "github.com/aws/aws-sdk-go/aws/request"
 	session "github.com/aws/aws-sdk-go/aws/session"
 	autoscaling "github.com/aws/aws-sdk-go/service/autoscaling"
 	gomock "github.com/golang/mock/gomock"
 	aws "github.com/thomasobenaus/sokar/aws/iface"
-	reflect "reflect"
 )
 
-// MockAutoScaling is a mock of AutoScaling interface
+// MockAutoScaling is a mock of AutoScaling interface.
 type MockAutoScaling struct {
 	ctrl     *gomock.Controller
 	recorder *MockAutoScalingMockRecorder
 }
 
-// MockAutoScalingMockRecorder is the mock recorder for MockAutoScaling
+// MockAutoScalingMockRecorder is the mock recorder for MockAutoScaling.
 type MockAutoScalingMockRecorder struct {
 	mock *MockAutoScaling
 }
 
-// NewMockAutoScaling creates a new mock instance
+// NewMockAutoScaling creates a new mock instance.
 func NewMockAutoScaling(ctrl *gomock.Controller) *MockAutoScaling {
 	mock := &MockAutoScaling{ctrl: ctrl}
 	mock.recorder = &MockAutoScalingMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAutoScaling) EXPECT() *MockAutoScalingMockRecorder {
 	return m.recorder
 }
 
-// DescribeAutoScalingGroups mocks base method
+// DescribeAutoScalingGroups mocks base method.
 func (m *MockAutoScaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeAutoScalingGroups", input)
@@ -45,43 +46,13 @@ func (m *MockAutoScaling) DescribeAutoScalingGroups(input *autoscaling.DescribeA
 	return ret0, ret1
 }
 
-// DescribeAutoScalingGroups indicates an expected call of DescribeAutoScalingGroups
+// DescribeAutoScalingGroups indicates an expected call of DescribeAutoScalingGroups.
 func (mr *MockAutoScalingMockRecorder) DescribeAutoScalingGroups(input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeAutoScalingGroups", reflect.TypeOf((*MockAutoScaling)(nil).DescribeAutoScalingGroups), input)
 }
 
-// UpdateAutoScalingGroup mocks base method
-func (m *MockAutoScaling) UpdateAutoScalingGroup(input *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAutoScalingGroup", input)
-	ret0, _ := ret[0].(*autoscaling.UpdateAutoScalingGroupOutput)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateAutoScalingGroup indicates an expected call of UpdateAutoScalingGroup
-func (mr *MockAutoScalingMockRecorder) UpdateAutoScalingGroup(input interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAutoScalingGroup", reflect.TypeOf((*MockAutoScaling)(nil).UpdateAutoScalingGroup), input)
-}
-
-// TerminateInstanceInAutoScalingGroupRequest mocks base method
-func (m *MockAutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*request.Request, *autoscaling.TerminateInstanceInAutoScalingGroupOutput) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TerminateInstanceInAutoScalingGroupRequest", input)
-	ret0, _ := ret[0].(*request.Request)
-	ret1, _ := ret[1].(*autoscaling.TerminateInstanceInAutoScalingGroupOutput)
-	return ret0, ret1
-}
-
-// TerminateInstanceInAutoScalingGroupRequest indicates an expected call of TerminateInstanceInAutoScalingGroupRequest
-func (mr *MockAutoScalingMockRecorder) TerminateInstanceInAutoScalingGroupRequest(input interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminateInstanceInAutoScalingGroupRequest", reflect.TypeOf((*MockAutoScaling)(nil).TerminateInstanceInAutoScalingGroupRequest), input)
-}
-
-// DescribeScalingActivitiesRequest mocks base method
+// DescribeScalingActivitiesRequest mocks base method.
 func (m *MockAutoScaling) DescribeScalingActivitiesRequest(input *autoscaling.DescribeScalingActivitiesInput) (*request.Request, *autoscaling.DescribeScalingActivitiesOutput) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DescribeScalingActivitiesRequest", input)
@@ -90,36 +61,66 @@ func (m *MockAutoScaling) DescribeScalingActivitiesRequest(input *autoscaling.De
 	return ret0, ret1
 }
 
-// DescribeScalingActivitiesRequest indicates an expected call of DescribeScalingActivitiesRequest
+// DescribeScalingActivitiesRequest indicates an expected call of DescribeScalingActivitiesRequest.
 func (mr *MockAutoScalingMockRecorder) DescribeScalingActivitiesRequest(input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DescribeScalingActivitiesRequest", reflect.TypeOf((*MockAutoScaling)(nil).DescribeScalingActivitiesRequest), input)
 }
 
-// MockAutoScalingFactory is a mock of AutoScalingFactory interface
+// TerminateInstanceInAutoScalingGroupRequest mocks base method.
+func (m *MockAutoScaling) TerminateInstanceInAutoScalingGroupRequest(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*request.Request, *autoscaling.TerminateInstanceInAutoScalingGroupOutput) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TerminateInstanceInAutoScalingGroupRequest", input)
+	ret0, _ := ret[0].(*request.Request)
+	ret1, _ := ret[1].(*autoscaling.TerminateInstanceInAutoScalingGroupOutput)
+	return ret0, ret1
+}
+
+// TerminateInstanceInAutoScalingGroupRequest indicates an expected call of TerminateInstanceInAutoScalingGroupRequest.
+func (mr *MockAutoScalingMockRecorder) TerminateInstanceInAutoScalingGroupRequest(input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TerminateInstanceInAutoScalingGroupRequest", reflect.TypeOf((*MockAutoScaling)(nil).TerminateInstanceInAutoScalingGroupRequest), input)
+}
+
+// UpdateAutoScalingGroup mocks base method.
+func (m *MockAutoScaling) UpdateAutoScalingGroup(input *autoscaling.UpdateAutoScalingGroupInput) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAutoScalingGroup", input)
+	ret0, _ := ret[0].(*autoscaling.UpdateAutoScalingGroupOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAutoScalingGroup indicates an expected call of UpdateAutoScalingGroup.
+func (mr *MockAutoScalingMockRecorder) UpdateAutoScalingGroup(input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAutoScalingGroup", reflect.TypeOf((*MockAutoScaling)(nil).UpdateAutoScalingGroup), input)
+}
+
+// MockAutoScalingFactory is a mock of AutoScalingFactory interface.
 type MockAutoScalingFactory struct {
 	ctrl     *gomock.Controller
 	recorder *MockAutoScalingFactoryMockRecorder
 }
 
-// MockAutoScalingFactoryMockRecorder is the mock recorder for MockAutoScalingFactory
+// MockAutoScalingFactoryMockRecorder is the mock recorder for MockAutoScalingFactory.
 type MockAutoScalingFactoryMockRecorder struct {
 	mock *MockAutoScalingFactory
 }
 
-// NewMockAutoScalingFactory creates a new mock instance
+// NewMockAutoScalingFactory creates a new mock instance.
 func NewMockAutoScalingFactory(ctrl *gomock.Controller) *MockAutoScalingFactory {
 	mock := &MockAutoScalingFactory{ctrl: ctrl}
 	mock.recorder = &MockAutoScalingFactoryMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAutoScalingFactory) EXPECT() *MockAutoScalingFactoryMockRecorder {
 	return m.recorder
 }
 
-// CreateAutoScaling mocks base method
+// CreateAutoScaling mocks base method.
 func (m *MockAutoScalingFactory) CreateAutoScaling(session *session.Session) aws.AutoScaling {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAutoScaling", session)
@@ -127,7 +128,7 @@ func (m *MockAutoScalingFactory) CreateAutoScaling(session *session.Session) aws
 	return ret0
 }
 
-// CreateAutoScaling indicates an expected call of CreateAutoScaling
+// CreateAutoScaling indicates an expected call of CreateAutoScaling.
 func (mr *MockAutoScalingFactoryMockRecorder) CreateAutoScaling(session interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAutoScaling", reflect.TypeOf((*MockAutoScalingFactory)(nil).CreateAutoScaling), session)
