@@ -80,6 +80,7 @@ func Test_CliAndConfig(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, cfg)
 	assert.Equal(t, nomadSrvAddr, cfg.Scaler.Nomad.ServerAddr)
+	assert.Len(t, cfg.CapacityPlanner.ScaleSchedule, 2)
 
 	args = []string{"./sokar-bin", "--co"}
 	cfg, err = cliAndConfig(args)
