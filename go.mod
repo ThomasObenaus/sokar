@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/ThomasObenaus/go-base v0.0.8
-	github.com/aws/aws-sdk-go v1.25.37
+	github.com/aws/aws-sdk-go v1.33.0
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/hashicorp/nomad/api v0.0.0-20200519162023-99f117a28892
